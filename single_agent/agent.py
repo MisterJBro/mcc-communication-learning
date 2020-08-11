@@ -159,9 +159,9 @@ class Agent:
 
 
 if __name__ == "__main__":
-    env = gym.make('LunarLander-v2')
+    env = gym.make('CartPole-v1')
     agent = Agent(env)
-    agent.train(100)
+    agent.train(30)
     while True:
         input('Press enter to continue')
         agent.test()
