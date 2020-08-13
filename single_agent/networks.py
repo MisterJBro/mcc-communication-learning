@@ -33,9 +33,9 @@ class Policy(nn.Module):
     def packed_forward(self, x):
         out, _ = self.rnn(x)
         out, lens = nn.utils.rnn.pad_packed_sequence(out, batch_first=True)
-        out = torch.cat([out[i, :x].reshape(-1, self.hidden_dim)
-                         for i, x in enumerate(lens)])
-        probs = self.fc(F.leaky_relu(out))
+
+        probs = torch.cat([self.fc(F.leaky_relu(out[i, :x].reshape(-1, self.hidden_dim)))
+                           for i, x in enumerate(lens)])
         return Categorical(probs=probs)
 
 
@@ -67,10 +67,9 @@ class ValueFunction(nn.Module):
     def packed_forward(self, x):
         out, _ = self.rnn(x)
         out, lens = nn.utils.rnn.pad_packed_sequence(out, batch_first=True)
-        out = torch.cat([out[i, :x].reshape(-1, self.hidden_dim)
+        out = torch.cat([self.fc(F.leaky_relu(out[i, :x].reshape(-1, self.hidden_dim)))
                          for i, x in enumerate(lens)])
-        out = self.fc(F.leaky_relu(out)).reshape(-1)
-        return out
+        return out.reshape(-1)
 
 
 class ValueFunctionNonRecurrent(nn.Module):

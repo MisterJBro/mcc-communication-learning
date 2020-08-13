@@ -104,7 +104,7 @@ class Agent:
         return dist.sample().item()
 
     def compute_policy_gradient(self, packed_seqs, act, adv, old_logp):
-        logp = self.policy(
+        logp = self.policy.packed_forward(
             packed_seqs).log_prob(act).to(self.device)
 
         ratio = torch.exp(logp - old_logp)
@@ -116,7 +116,7 @@ class Agent:
     def update_policy(self, packed_seqs, act, adv):
         full_loss = 0
         with torch.no_grad():
-            old_logp = self.policy(
+            old_logp = self.policy.packed_forward(
                 packed_seqs).log_prob(act).to(self.device)
         for i in range(self.iters_policy):
             self.optimizer_policy.zero_grad()
@@ -134,7 +134,7 @@ class Agent:
         for i in range(self.iters_value):
             self.optimizer_value.zero_grad()
 
-            input = self.value(packed_seqs)
+            input = self.value.packed_forward(packed_seqs)
             loss = self.criterion(input, ret)
             full_loss += loss.item()
             loss.backward()
