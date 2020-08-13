@@ -12,9 +12,9 @@ from .networks import Policy, ValueFunction
 
 
 class Agent:
-    def __init__(self, env, seed=0, device='cuda:0', lr_policy=1e-3, lr_value=1e-3, gamma=0.99, max_steps=1000,
-                 hidden_size=64, batch_size=10_000, iters_policy=80, iters_value=80, lam=0.97, clip_ratio=0.2,
-                 target_kl=0.05, num_layers=2, grad_clip=1.0, entropy_factor=0.005):
+    def __init__(self, env, seed=0, device='cuda:0', lr_policy=2e-3, lr_value=3e-3, gamma=0.99, max_steps=500,
+                 hidden_size=64, batch_size=5, iters_policy=40, iters_value=40, lam=0.97, clip_ratio=0.2,
+                 target_kl=0.05, num_layers=2, grad_clip=1.0, entropy_factor=0.0):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
@@ -84,7 +84,7 @@ class Agent:
             rews.append(episode_rew)
             self.reward_and_advantage()
             self.reset_state()
-            if self.buffer.ptr > self.batch_size:
+            if self.buffer.ptr >= self.batch_size*self.max_steps:
                 break
 
         return rews
@@ -121,21 +121,13 @@ class Agent:
     def update_policy(self, obs, act, adv):
         full_loss = 0
         with torch.no_grad():
-            old_logp = torch.empty(
-                self.buffer.ptr, dtype=torch.float32, device=self.device)
-            for start, end in self.buffer.ptrs:
-                old_logp[start:end] = self.policy(
-                    obs[start:end].reshape(1, end-start, -1)).log_prob(act[start:end]).to(self.device)
+            old_logp = self.policy(obs).log_prob(act).to(self.device)
         for i in range(self.iters_policy):
             self.optimizer_policy.zero_grad()
-            kls = []
-            for start, end in self.buffer.ptrs:
-                loss, kl = self.compute_policy_gradient(
-                    obs[start:end].reshape(1, end-start, -1), act[start:end], adv[start:end], old_logp[start:end])
-                kls.append(kl)
-                full_loss += loss.item()
-                loss.backward()
-            if np.mean(kls) > self.target_kl:
+            loss, kl = self.compute_policy_gradient(obs, act, adv, old_logp)
+            full_loss += loss.item()
+            loss.backward()
+            if kl > self.target_kl:
                 return full_loss
             torch.nn.utils.clip_grad_norm_(
                 self.policy.parameters(), self.grad_clip)
@@ -146,19 +138,18 @@ class Agent:
         full_loss = 0
         for i in range(self.iters_value):
             self.optimizer_value.zero_grad()
-            for start, end in self.buffer.ptrs:
-                input = self.value(obs[start:end].reshape(1, end-start, -1))
-                loss = self.criterion(input, ret[start:end])
-                full_loss += loss.item()
-                loss.backward()
-            # torch.nn.utils.clip_grad_norm_(
-            #    self.value.parameters(), self.grad_clip)
+            input = self.value(obs)
+            loss = self.criterion(input, ret)
+            full_loss += loss.item()
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(
+                self.value.parameters(), self.grad_clip)
             self.optimizer_value.step()
         return full_loss
 
     def update(self):
         obs = torch.as_tensor(
-            self.buffer.obs_buf[:self.buffer.ptr], dtype=torch.float32, device=self.device)
+            self.buffer.obs_buf[:self.buffer.ptr], dtype=torch.float32, device=self.device).reshape(self.batch_size, self.max_steps, -1)
         act = torch.as_tensor(
             self.buffer.act_buf[:self.buffer.ptr], dtype=torch.int32, device=self.device)
         ret = torch.as_tensor(
@@ -177,14 +168,7 @@ class Agent:
     def train(self, epochs):
         for epoch in range(epochs):
             rews = self.sample_batch()
-            print(rews)
-            if np.mean(rews) == 0:
-                tmp_p, tmp_v = self.iters_policy, self.iters_value
-                self.iters_policy, self.iters_value = 5, 5
-                pol_loss, val_loss = self.update()
-                self.iters_policy, self.iters_value = tmp_p, tmp_v
-            else:
-                pol_loss, val_loss = self.update()
+            pol_loss, val_loss = self.update()
 
             print('Epoch: {:4}  Average Reward: {:6}  Policy Loss: {:8}  Value Loss: {:08}'.format(
                 epoch, np.round(np.mean(rews), 3), np.round(pol_loss, 4), np.round(val_loss, 4)))

@@ -27,7 +27,7 @@ class Policy(nn.Module):
         x = self.fc1(x)
         out, (_, _) = self.rnn(x)
         out = out.squeeze()
-        probs = self.fc2(out)
+        probs = self.fc2(out).reshape(-1, self.out_dim)
         return Categorical(probs=probs)
 
     def with_state(self, x, state):
@@ -59,5 +59,5 @@ class ValueFunction(nn.Module):
         x = self.fc1(x)
         out, (_, _) = self.rnn(x)
         out = out.squeeze()
-        out = self.fc2(out).squeeze()
+        out = self.fc2(out).reshape(-1)
         return out
