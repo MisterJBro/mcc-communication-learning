@@ -59,7 +59,7 @@ class Buffer:
         adv_std = np.std(adv)
         self.adv_buf[:self.ptr] = (adv-adv_mean)/adv_std
 
-    def next_eipsode(self):
+    def next_episode(self):
         self.ptrs.append((self.last_ptr, self.ptr))
         self.max_len = max(self.max_len, self.ptr-self.last_ptr)
         self.last_ptr = self.ptr
