@@ -12,23 +12,29 @@ class Policy(nn.Module):
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
 
-        self.rnn = nn.LSTM(in_dim, hidden_dim,
+        self.fc1 = nn.Sequential(
+            nn.Linear(in_dim, 32),
+            nn.LeakyReLU()
+        )
+        self.rnn = nn.LSTM(32, hidden_dim,
                            num_layers=num_layers, batch_first=True)
-        self.fc = nn.Sequential(
+        self.fc2 = nn.Sequential(
             nn.Linear(hidden_dim, out_dim),
             nn.Softmax(dim=-1)
         )
 
     def forward(self, x):
+        x = self.fc1(x)
         out, (_, _) = self.rnn(x)
         out = out.squeeze()
-        probs = self.fc(out)
+        probs = self.fc2(out)
         return Categorical(probs=probs)
 
     def with_state(self, x, state):
+        x = self.fc1(x)
         _, (h_n, c_n) = self.rnn(x, state)
         x = h_n[-1]
-        probs = self.fc(x)
+        probs = self.fc2(x)
         return Categorical(probs=probs), (h_n, c_n)
 
 
@@ -39,14 +45,19 @@ class ValueFunction(nn.Module):
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
 
-        self.rnn = nn.LSTM(in_dim, hidden_dim,
+        self.fc1 = nn.Sequential(
+            nn.Linear(in_dim, 32),
+            nn.LeakyReLU()
+        )
+        self.rnn = nn.LSTM(32, hidden_dim,
                            num_layers=num_layers, batch_first=True)
-        self.fc = nn.Sequential(
+        self.fc2 = nn.Sequential(
             nn.Linear(hidden_dim, 1)
         )
 
     def forward(self, x):
+        x = self.fc1(x)
         out, (_, _) = self.rnn(x)
         out = out.squeeze()
-        out = self.fc(out).squeeze()
+        out = self.fc2(out).squeeze()
         return out

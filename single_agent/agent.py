@@ -12,9 +12,9 @@ from .networks import Policy, ValueFunction
 
 
 class Agent:
-    def __init__(self, env, seed=0, device='cuda:0', lr_policy=4e-2, lr_value=4e-2, gamma=0.99, max_steps=10_000,
-                 hidden_size=32, batch_size=2048, iters_policy=80, iters_value=80, lam=0.97, clip_ratio=0.2,
-                 target_kl=0.8, num_layers=3, grad_clip=0.5):
+    def __init__(self, env, seed=0, device='cuda:0', lr_policy=1e-2, lr_value=1e-2, gamma=0.99, max_steps=10_000,
+                 hidden_size=64, batch_size=2048, iters_policy=80, iters_value=80, lam=0.97, clip_ratio=0.2,
+                 target_kl=0.05, num_layers=2, grad_clip=0.5):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
@@ -125,14 +125,15 @@ class Agent:
                     obs[start:end].unsqueeze(0)).log_prob(act[start:end]).to(self.device)
         for i in range(self.iters_policy):
             self.optimizer_policy.zero_grad()
+            kls = []
             for start, end in self.buffer.ptrs:
                 loss, kl = self.compute_policy_gradient(
                     obs[start:end].unsqueeze(0), act[start:end], adv[start:end], old_logp[start:end])
-                # if kl > self.target_kl:
-                #    print('STOP')
-                #    return full_loss
+                kls.append(kl)
                 full_loss += loss.item()
                 loss.backward()
+            if np.mean(kls) > self.target_kl:
+                return full_loss
             torch.nn.utils.clip_grad_norm_(
                 self.policy.parameters(), self.grad_clip)
             self.optimizer_policy.step()
