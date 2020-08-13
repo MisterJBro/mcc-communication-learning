@@ -14,7 +14,7 @@ from .networks import Policy, ValueFunction
 class Agent:
     def __init__(self, env, seed=0, device='cuda:0', lr_policy=1e-2, lr_value=1e-2, gamma=0.99, max_steps=10_000,
                  hidden_size=64, batch_size=2048, iters_policy=80, iters_value=80, lam=0.97, clip_ratio=0.2,
-                 target_kl=0.05, num_layers=2, grad_clip=0.5):
+                 target_kl=0.05, num_layers=2, grad_clip=1.0):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
@@ -148,6 +148,8 @@ class Agent:
                 loss = self.criterion(input, ret[start:end])
                 full_loss += loss.item()
                 loss.backward()
+            torch.nn.utils.clip_grad_norm_(
+                self.value.parameters(), self.grad_clip)
             self.optimizer_value.step()
         return full_loss
 
@@ -174,7 +176,7 @@ class Agent:
             rews = self.sample_batch()
             pol_loss, val_loss = self.update()
 
-            print('Epoch: {:4}  Average Reward: {:6}  Policy Loss: {:08}  Value Loss: {:08}'.format(
+            print('Epoch: {:4}  Average Reward: {:6}  Policy Loss: {:8}  Value Loss: {:08}'.format(
                 epoch, np.round(np.mean(rews), 3), np.round(pol_loss, 4), np.round(val_loss, 4)))
 
     def test(self):
@@ -206,7 +208,7 @@ class Agent:
 if __name__ == "__main__":
     env = gym.make('CartPole-v1')
     agent = Agent(env)
-    agent.train(50)
+    agent.train(70)
     while True:
         input('Press enter to continue')
         agent.test()
