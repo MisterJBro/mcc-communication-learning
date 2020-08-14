@@ -13,19 +13,19 @@ from .networks import Policy, ValueFunction
 
 class Agent:
     def __init__(self, env, seed=0, device='cuda:0', lr_policy=2e-3, lr_value=3e-3, gamma=0.99, max_steps=500,
-                 hidden_size=64, batch_size=5, iters_policy=40, iters_value=40, lam=0.97, clip_ratio=0.2,
-                 target_kl=0.05, num_layers=2, grad_clip=1.0, entropy_factor=0.0):
+                 hidden_size=64, batch_size=256, iters_policy=40, iters_value=40, lam=0.97, clip_ratio=0.2,
+                 target_kl=0.05, num_layers=1, grad_clip=1.0, entropy_factor=0.000):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
 
         # Environment
-        num_world_blocks = 5
-        width = 5
-        height = 5
+        self.num_world_blocks = 4
+        self.width = 5
+        self.height = 5
         self.env = env
-        self.obs_dim = (height, width)
+        self.obs_dim = (self.num_world_blocks, self.height, self.width)
         self.act_dim = env.action_space.nvec[0]
         print('Observation shape:', self.obs_dim)
         print('Action number:', self.act_dim)
@@ -33,9 +33,9 @@ class Agent:
         # Network
         self.device = torch.device(device)
         self.policy = Policy(
-            self.obs_dim[0]*self.obs_dim[1], self.act_dim, hidden_size,  num_layers).to(self.device)
+            self.obs_dim[0]*self.obs_dim[1]*self.obs_dim[2], self.act_dim, hidden_size,  num_layers).to(self.device)
         self.value = ValueFunction(
-            self.obs_dim[0]*self.obs_dim[1], hidden_size, num_layers).to(self.device)
+            self.obs_dim[0]*self.obs_dim[1]*self.obs_dim[2], hidden_size, num_layers).to(self.device)
 
         self.optimizer_policy = optim.Adam(
             self.policy.parameters(), lr=lr_policy)
@@ -61,18 +61,24 @@ class Agent:
         self.target_kl = target_kl
         self.entropy_factor = entropy_factor
 
+    def preprocess(self, obs):
+        state = np.zeros((obs.size, self.num_world_blocks), dtype=np.uint8)
+        state[np.arange(obs.size), obs.reshape(-1)] = 1
+        state = state.reshape(obs.shape + (self.num_world_blocks,))
+        return np.moveaxis(state, -1, 0)
+
     def sample_batch(self):
         self.buffer.clear()
         rews = []
-        obs = self.env.reset()[0]
 
         while True:
+            obs = self.preprocess(self.env.reset()[0])
             episode_rew = 0
 
             for step in range(self.max_steps):
                 act = self.get_action(obs)
                 next_obs, rew, done, _ = self.env.step([act])
-                next_obs = next_obs[0]
+                next_obs = self.preprocess(next_obs[0])
                 rew = rew[0]
 
                 self.buffer.store(obs, act, rew)
@@ -100,7 +106,7 @@ class Agent:
 
     def get_action(self, obs):
         obs = torch.as_tensor(
-            obs, dtype=torch.float32).reshape(1, 1, -1).to(self.device)
+            obs, dtype=torch.float32).unsqueeze(0).to(self.device)
         with torch.no_grad():
             dist, self.policy_state = self.policy.with_state(
                 obs, self.policy_state)
@@ -149,7 +155,7 @@ class Agent:
 
     def update(self):
         obs = torch.as_tensor(
-            self.buffer.obs_buf[:self.buffer.ptr], dtype=torch.float32, device=self.device).reshape(self.batch_size, self.max_steps, -1)
+            self.buffer.obs_buf[:self.buffer.ptr], dtype=torch.float32, device=self.device).reshape(self.batch_size, self.max_steps, self.num_world_blocks, self.height, self.width)
         act = torch.as_tensor(
             self.buffer.act_buf[:self.buffer.ptr], dtype=torch.int32, device=self.device)
         ret = torch.as_tensor(
@@ -174,14 +180,14 @@ class Agent:
                 epoch, np.round(np.mean(rews), 3), np.round(pol_loss, 4), np.round(val_loss, 4)))
 
     def test(self):
-        obs = self.env.reset()[0]
+        obs = self.preprocess(self.env.reset()[0])
         episode_rew = 0
 
         while True:
             self.env.render()
             act = self.get_action(obs)
             obs, rew, done, _ = self.env.step([act])
-            obs = obs[0]
+            obs = self.preprocess(obs[0])
             episode_rew += rew[0]
 
             if done:
@@ -202,7 +208,7 @@ if __name__ == "__main__":
     env = gym.make('gym_mcc_treasure_hunt:MCCTreasureHunt-v0',
                    red_guides=0, blue_collector=0)
     agent = Agent(env)
-    agent.train(200)
+    agent.train(1000)
     while True:
         input('Press enter to continue')
         agent.test()
