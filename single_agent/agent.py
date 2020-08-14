@@ -17,7 +17,7 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agent:
-    def __init__(self, env, seed=0, device='cuda:0', lr_policy=5e-3, lr_value=5e-3, gamma=0.99, max_steps=500,
+    def __init__(self, env, seed=0, device='cuda:0', lr_policy=2e-3, lr_value=2e-3, gamma=0.99, max_steps=500,
                  hidden_size=128, batch_size=64, iters_policy=40, iters_value=40, lam=0.97, clip_ratio=0.2,
                  target_kl=0.05, num_layers=1, grad_clip=1.0, entropy_factor=0.0):
         # RNG seed
@@ -177,19 +177,19 @@ class Agent:
         val_loss = self.update_value(obs, ret)
         return pol_loss, val_loss
 
-    def train(self, epochs):
+    def train(self, epochs, prev_rews=[]):
         epoch_rews = []
         for epoch in range(epochs):
             rews = self.sample_batch()
-            pol_loss, val_loss = self.update()
-
             mean_rew = np.mean(rews)
-            print('Epoch: {:4}  Average Reward: {:6}  Policy Loss: {:7}  Value Loss: {:7}'.format(
-                epoch, np.round(mean_rew, 3), np.round(pol_loss, 4), np.round(val_loss, 4)))
             epoch_rews.append(mean_rew)
             if mean_rew > self.max_rew:
                 self.max_rew = mean_rew
-                self.save()
+                self.save(epoch_rews)
+            pol_loss, val_loss = self.update()
+
+            print('Epoch: {:4}  Average Reward: {:6}  Policy Loss: {:7}  Value Loss: {:7}'.format(
+                epoch, np.round(mean_rew, 3), np.round(pol_loss, 4), np.round(val_loss, 4)))
 
     def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
         sns.set()
@@ -199,12 +199,13 @@ class Agent:
         plt.ylabel(ylabel)
         plt.show()
 
-    def save(self, path='{}/model.pt'.format(PROJECT_PATH)):
+    def save(self, rews=[], path='{}/model.pt'.format(PROJECT_PATH)):
         torch.save({
             'policy': self.policy.state_dict(),
             'value': self.value.state_dict(),
             'optim_p': self.optimizer_policy.state_dict(),
             'optim_v': self.optimizer_value.state_dict(),
+            'rews': rews
         }, path)
 
     def load(self, path='{}/model.pt'.format(PROJECT_PATH)):
@@ -213,6 +214,7 @@ class Agent:
         self.value.load_state_dict(checkpoint['value'])
         self.optimizer_policy.load_state_dict(checkpoint['optim_p'])
         self.optimizer_value.load_state_dict(checkpoint['optim_v'])
+        # return checkpoint['rews']
 
     def test(self):
         obs = self.preprocess(self.env.reset()[0])
@@ -243,9 +245,7 @@ if __name__ == "__main__":
     env = gym.make('gym_mcc_treasure_hunt:MCCTreasureHunt-v0',
                    red_guides=0, blue_collector=0)
     agent = Agent(env)
-    agent.save()
-    agent.load()
-    agent.train(100)
+    agent.train(200)
     while True:
         input('Press enter to continue')
         agent.test()
