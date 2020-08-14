@@ -5,23 +5,19 @@ from torch.distributions import Categorical
 
 
 class Policy(nn.Module):
-    def __init__(self, in_dim, out_dim, hidden_dim, num_layers):
+    def __init__(self, in_dim, out_dim, fc_hidden=64, rnn_hidden=128, num_layers=1):
         super(Policy, self).__init__()
-        self.in_dim = in_dim
-        self.out_dim = out_dim
-        self.hidden_dim = hidden_dim
-        self.num_layers = num_layers
 
         self.fc1 = nn.Sequential(
-            nn.Linear(100, 64),
+            nn.Linear(in_dim, fc_hidden),
             nn.ELU(),
-            nn.Linear(64, 64),
+            nn.Linear(fc_hidden, fc_hidden),
             nn.ELU(),
         )
-        self.rnn = nn.LSTM(64, hidden_dim,
+        self.rnn = nn.LSTM(fc_hidden, rnn_hidden,
                            num_layers=num_layers, batch_first=True)
         self.fc2 = nn.Sequential(
-            nn.Linear(hidden_dim, out_dim),
+            nn.Linear(rnn_hidden, out_dim),
             nn.Softmax(dim=-1)
         )
 
@@ -32,13 +28,13 @@ class Policy(nn.Module):
         x = x.reshape(batch_size, seq_len, -1)
         x = self.fc1(x)
         out, (_, _) = self.rnn(x)
-        out = out.reshape(-1, self.hidden_dim)
+        out = out.reshape(-1, out.size(-1))
         probs = self.fc2(out)
         return Categorical(probs=probs)
 
     def with_state(self, x, state):
-        x = x.reshape(1, -1)
-        x = self.fc1(x).unsqueeze(0)
+        x = x.reshape(1, 1, -1)
+        x = self.fc1(x)
         _, (h_n, c_n) = self.rnn(x, state)
         x = h_n[-1]
         probs = self.fc2(x)
@@ -46,20 +42,17 @@ class Policy(nn.Module):
 
 
 class ValueFunction(nn.Module):
-    def __init__(self, in_dim, hidden_dim, num_layers):
+    def __init__(self, in_dim, fc_hidden=64, rnn_hidden=128, num_layers=1):
         super(ValueFunction, self).__init__()
-        self.in_dim = in_dim
-        self.hidden_dim = hidden_dim
-        self.num_layers = num_layers
 
         self.fc1 = nn.Sequential(
-            nn.Linear(in_dim, 32),
+            nn.Linear(in_dim, fc_hidden),
             nn.LeakyReLU()
         )
-        self.rnn = nn.LSTM(32, hidden_dim,
+        self.rnn = nn.LSTM(fc_hidden, rnn_hidden,
                            num_layers=num_layers, batch_first=True)
         self.fc2 = nn.Sequential(
-            nn.Linear(hidden_dim, 1)
+            nn.Linear(rnn_hidden, 1)
         )
 
     def forward(self, x):
@@ -69,6 +62,6 @@ class ValueFunction(nn.Module):
         x = x.reshape(batch_size, seq_len, -1)
         x = self.fc1(x)
         out, (_, _) = self.rnn(x)
-        out = out.reshape(-1, self.hidden_dim)
+        out = out.reshape(-1, out.size(-1))
         out = self.fc2(out).reshape(-1)
         return out

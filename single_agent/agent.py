@@ -9,19 +9,24 @@ import gym
 import numpy as np
 from .buffer import Buffer
 from .networks import Policy, ValueFunction
+import seaborn as sns
+import pathlib
+
+PROJECT_PATH = pathlib.Path(
+    __file__).parent.absolute().as_posix()
 
 
 class Agent:
-    def __init__(self, env, seed=0, device='cuda:0', lr_policy=2e-3, lr_value=3e-3, gamma=0.99, max_steps=500,
-                 hidden_size=64, batch_size=256, iters_policy=40, iters_value=40, lam=0.97, clip_ratio=0.2,
-                 target_kl=0.05, num_layers=1, grad_clip=1.0, entropy_factor=0.000):
+    def __init__(self, env, seed=0, device='cuda:0', lr_policy=5e-3, lr_value=5e-3, gamma=0.99, max_steps=500,
+                 hidden_size=128, batch_size=64, iters_policy=40, iters_value=40, lam=0.97, clip_ratio=0.2,
+                 target_kl=0.05, num_layers=1, grad_clip=1.0, entropy_factor=0.0):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
 
         # Environment
-        self.num_world_blocks = 4
+        self.num_world_blocks = 5
         self.width = 5
         self.height = 5
         self.env = env
@@ -31,11 +36,12 @@ class Agent:
         print('Action number:', self.act_dim)
 
         # Network
+        in_dim = self.obs_dim[0]*self.obs_dim[1]*self.obs_dim[2]
         self.device = torch.device(device)
         self.policy = Policy(
-            self.obs_dim[0]*self.obs_dim[1]*self.obs_dim[2], self.act_dim, hidden_size,  num_layers).to(self.device)
+            in_dim, self.act_dim, rnn_hidden=hidden_size,  num_layers=num_layers).to(self.device)
         self.value = ValueFunction(
-            self.obs_dim[0]*self.obs_dim[1]*self.obs_dim[2], hidden_size, num_layers).to(self.device)
+            in_dim, rnn_hidden=hidden_size,  num_layers=num_layers).to(self.device)
 
         self.optimizer_policy = optim.Adam(
             self.policy.parameters(), lr=lr_policy)
@@ -52,11 +58,12 @@ class Agent:
         self.reset_state()
 
         # RL
+        self.max_rew = 0
         self.gamma = gamma
         self.lam = lam
-        self.buffer = Buffer(max_steps*batch_size,
-                             self.obs_dim, self.gamma, self.lam)
         self.max_steps = max_steps
+        self.buffer = Buffer(self.max_steps*self.batch_size,
+                             self.obs_dim, self.gamma, self.lam)
         self.clip_ratio = clip_ratio
         self.target_kl = target_kl
         self.entropy_factor = entropy_factor
@@ -106,7 +113,7 @@ class Agent:
 
     def get_action(self, obs):
         obs = torch.as_tensor(
-            obs, dtype=torch.float32).unsqueeze(0).to(self.device)
+            obs, dtype=torch.float32).to(self.device)
         with torch.no_grad():
             dist, self.policy_state = self.policy.with_state(
                 obs, self.policy_state)
@@ -155,14 +162,13 @@ class Agent:
 
     def update(self):
         obs = torch.as_tensor(
-            self.buffer.obs_buf[:self.buffer.ptr], dtype=torch.float32, device=self.device).reshape(self.batch_size, self.max_steps, self.num_world_blocks, self.height, self.width)
+            self.buffer.obs_buf[:self.buffer.ptr], dtype=torch.float32, device=self.device)
+        obs = obs.reshape(self.batch_size, self.max_steps,
+                          self.num_world_blocks, self.height, self.width)
         act = torch.as_tensor(
             self.buffer.act_buf[:self.buffer.ptr], dtype=torch.int32, device=self.device)
         ret = torch.as_tensor(
             self.buffer.ret_buf[:self.buffer.ptr], dtype=torch.float32, device=self.device)
-        #padded_obs, lens = self.buffer.get_padded_obs()
-        # packed_seqs = torch.nn.utils.rnn.pack_padded_sequence(
-        #    padded_obs, lengths=lens, batch_first=True, enforce_sorted=False).to(self.device)
         self.buffer.standardize_adv()
         adv = torch.as_tensor(
             self.buffer.adv_buf[:self.buffer.ptr], dtype=torch.float32, device=self.device)
@@ -172,12 +178,41 @@ class Agent:
         return pol_loss, val_loss
 
     def train(self, epochs):
+        epoch_rews = []
         for epoch in range(epochs):
             rews = self.sample_batch()
             pol_loss, val_loss = self.update()
 
-            print('Epoch: {:4}  Average Reward: {:6}  Policy Loss: {:8}  Value Loss: {:08}'.format(
-                epoch, np.round(np.mean(rews), 3), np.round(pol_loss, 4), np.round(val_loss, 4)))
+            mean_rew = np.mean(rews)
+            print('Epoch: {:4}  Average Reward: {:6}  Policy Loss: {:7}  Value Loss: {:7}'.format(
+                epoch, np.round(mean_rew, 3), np.round(pol_loss, 4), np.round(val_loss, 4)))
+            epoch_rews.append(mean_rew)
+            if mean_rew > self.max_rew:
+                self.max_rew = mean_rew
+                self.save()
+
+    def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
+        sns.set()
+        plt.plot(arr)
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.show()
+
+    def save(self, path='{}/model.pt'.format(PROJECT_PATH)):
+        torch.save({
+            'policy': self.policy.state_dict(),
+            'value': self.value.state_dict(),
+            'optim_p': self.optimizer_policy.state_dict(),
+            'optim_v': self.optimizer_value.state_dict(),
+        }, path)
+
+    def load(self, path='{}/model.pt'.format(PROJECT_PATH)):
+        checkpoint = torch.load(path)
+        self.policy.load_state_dict(checkpoint['policy'])
+        self.value.load_state_dict(checkpoint['value'])
+        self.optimizer_policy.load_state_dict(checkpoint['optim_p'])
+        self.optimizer_value.load_state_dict(checkpoint['optim_v'])
 
     def test(self):
         obs = self.preprocess(self.env.reset()[0])
@@ -208,7 +243,9 @@ if __name__ == "__main__":
     env = gym.make('gym_mcc_treasure_hunt:MCCTreasureHunt-v0',
                    red_guides=0, blue_collector=0)
     agent = Agent(env)
-    agent.train(1000)
+    agent.save()
+    agent.load()
+    agent.train(100)
     while True:
         input('Press enter to continue')
         agent.test()
