@@ -17,9 +17,9 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, env, seed=0, device='cuda:0', lr_policy=1e-3, lr_value=1e-3, gamma=0.99, max_steps=500,
-                 hidden_size=128, batch_size=64, iters_policy=40, iters_value=40, lam=0.97, clip_ratio=0.2,
-                 target_kl=0.05, num_layers=1, grad_clip=1.0, entropy_factor=0.0):
+    def __init__(self, env, seed=0, device='cuda:0', lr_policy=2e-5, lr_value=2e-5, gamma=0.99, max_steps=500,
+                 hidden_size=128, batch_size=256, iters_policy=40, iters_value=40, lam=0.97, clip_ratio=0.2,
+                 target_kl=0.03, num_layers=1, grad_clip=1.0, entropy_factor=0.0):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
@@ -265,7 +265,9 @@ if __name__ == "__main__":
     env = gym.make('gym_mcc_treasure_hunt:MCCTreasureHunt-v0',
                    red_guides=0, blue_collector=1)
     agents = Agents(env)
-    agents.load()
+    print(np.array(agents.load()))
+    #agents.max_rew = 3.73
+    # agents.train(100)
 
     while True:
         input('Press enter to continue')
