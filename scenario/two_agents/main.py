@@ -9,7 +9,7 @@ import gym
 import numpy as np
 from scenario.utils.buffer import Buffer
 from scenario.utils.networks import Policy, ValueFunction
-import seaborn as snss
+import seaborn as sns
 import pathlib
 
 PROJECT_PATH = pathlib.Path(
@@ -232,7 +232,7 @@ class Agents:
         self.value.load_state_dict(checkpoint['value'])
         self.optimizer_policy.load_state_dict(checkpoint['optim_p'])
         self.optimizer_value.load_state_dict(checkpoint['optim_v'])
-        # return checkpoint['rews']
+        return checkpoint['rews']
 
     def test(self):
         obs = self.preprocess(self.env.reset())
@@ -265,7 +265,8 @@ if __name__ == "__main__":
     env = gym.make('gym_mcc_treasure_hunt:MCCTreasureHunt-v0',
                    red_guides=0, blue_collector=1)
     agents = Agents(env)
-    agents.train(200)
+    agents.load()
+
     while True:
         input('Press enter to continue')
         agents.test()
