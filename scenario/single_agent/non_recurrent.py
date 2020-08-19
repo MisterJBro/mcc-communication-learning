@@ -245,11 +245,13 @@ class Agents:
         episode_rew = 0
 
         while True:
+            import time
             self.env.render()
             act = self.get_action(obs)
             obs, rew, done, _ = self.env.step([act])
             obs = self.preprocess(obs[0])
             episode_rew += rew[0]
+            time.sleep(1.0)
 
             if done:
                 break
@@ -259,7 +261,6 @@ if __name__ == "__main__":
     env = gym.make('gym_mcc_treasure_hunt:MCCTreasureHunt-v0',
                    red_guides=0, blue_collector=0)
     agents = Agents(env)
-    # agents.train(100)
     agents.load()
     while True:
         input('Press enter to continue')

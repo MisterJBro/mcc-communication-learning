@@ -2,7 +2,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-single_non_recurrent_avg_rewards = np.arrays([
+single_non_recurrent_avg_rewards = np.array([
     0.153,
     0.168,
     0.262,
