@@ -8,7 +8,6 @@ import random
 import gym
 import numpy as np
 from scenario.utils.buffer import Buffer
-from scenario.utils.networks import Policy, ValueFunction
 import seaborn as sns
 import pathlib
 
@@ -16,8 +15,40 @@ PROJECT_PATH = pathlib.Path(
     __file__).parent.absolute().as_posix()
 
 
+class Policy(nn.Module):
+    def __init__(self, in_dim, out_dim):
+        super(Policy, self).__init__()
+        self.model = nn.Sequential(
+            nn.Linear(in_dim, 64),
+            nn.ELU(),
+            nn.Linear(64, 64),
+            nn.ELU(),
+            nn.Linear(64, out_dim),
+            nn.Softmax(dim=-1)
+        )
+
+    def forward(self, x):
+        probs = self.model(x)
+        return Categorical(probs=probs)
+
+
+class ValueFunction(nn.Module):
+    def __init__(self, in_dim):
+        super(ValueFunction, self).__init__()
+        self.model = nn.Sequential(
+            nn.Linear(in_dim, 64),
+            nn.ELU(),
+            nn.Linear(64, 64),
+            nn.ELU(),
+            nn.Linear(64, 1)
+        )
+
+    def forward(self, x):
+        return self.model(x).reshape(-1)
+
+
 class Agents:
-    def __init__(self, env, seed=0, device='cpu', lr_policy=2e-3, lr_value=2e-3, gamma=0.99, max_steps=500,
+    def __init__(self, env, seed=0, device='cuda:0', lr_policy=2e-3, lr_value=2e-3, gamma=0.99, max_steps=500,
                  hidden_size=128, batch_size=64, iters_policy=40, iters_value=40, lam=0.97, clip_ratio=0.2,
                  target_kl=0.05, num_layers=1, grad_clip=1.0, entropy_factor=0.0):
         # RNG seed
@@ -39,9 +70,9 @@ class Agents:
         in_dim = self.obs_dim[0]*self.obs_dim[1]*self.obs_dim[2]
         self.device = torch.device(device)
         self.policy = Policy(
-            in_dim, self.act_dim, rnn_hidden=hidden_size,  num_layers=num_layers).to(self.device)
+            in_dim, self.act_dim).to(self.device)
         self.value = ValueFunction(
-            in_dim, rnn_hidden=hidden_size,  num_layers=num_layers).to(self.device)
+            in_dim).to(self.device)
 
         self.optimizer_policy = optim.Adam(
             self.policy.parameters(), lr=lr_policy)
@@ -52,10 +83,6 @@ class Agents:
         self.iters_value = iters_value
         self.criterion = nn.MSELoss()
         self.grad_clip = grad_clip
-
-        self.num_layers = num_layers
-        self.hidden_size = hidden_size
-        self.reset_state()
 
         # RL
         self.max_rew = 0
@@ -96,7 +123,6 @@ class Agents:
                     break
             rews.append(episode_rew)
             self.reward_and_advantage()
-            self.reset_state()
             if self.buffer.ptr >= self.batch_size*self.max_steps:
                 break
 
@@ -104,7 +130,7 @@ class Agents:
 
     def reward_and_advantage(self):
         obs = torch.as_tensor(
-            self.buffer.obs_buf[self.buffer.last_ptr:self.buffer.ptr], dtype=torch.float32).reshape(1, self.buffer.ptr-self.buffer.last_ptr, -1).to(self.device)
+            self.buffer.obs_buf[self.buffer.last_ptr:self.buffer.ptr], dtype=torch.float32).reshape(self.buffer.ptr-self.buffer.last_ptr, -1).to(self.device)
         with torch.no_grad():
             values = self.value(obs).cpu().numpy()
         self.buffer.expected_returns()
@@ -115,8 +141,7 @@ class Agents:
         obs = torch.as_tensor(
             obs, dtype=torch.float32).to(self.device)
         with torch.no_grad():
-            dist, self.policy_state = self.policy.with_state(
-                obs.reshape(1, 1, -1), self.policy_state)
+            dist = self.policy(obs.reshape(1, -1))
 
         return dist.sample().item()
 
@@ -163,8 +188,7 @@ class Agents:
     def update(self):
         obs = torch.as_tensor(
             self.buffer.obs_buf[:self.buffer.ptr], dtype=torch.float32, device=self.device)
-        obs = obs.reshape(self.batch_size, self.max_steps,
-                          self.num_world_blocks, self.height, self.width)
+        obs = obs.reshape(self.batch_size*self.max_steps, -1)
         act = torch.as_tensor(
             self.buffer.act_buf[:self.buffer.ptr], dtype=torch.int32, device=self.device)
         ret = torch.as_tensor(
@@ -199,7 +223,7 @@ class Agents:
         plt.ylabel(ylabel)
         plt.show()
 
-    def save(self, rews=[], path='{}/model.pt'.format(PROJECT_PATH)):
+    def save(self, rews=[], path='{}/model_non_recurrent.pt'.format(PROJECT_PATH)):
         torch.save({
             'policy': self.policy.state_dict(),
             'value': self.value.state_dict(),
@@ -208,13 +232,13 @@ class Agents:
             'rews': rews
         }, path)
 
-    def load(self, path='{}/model.pt'.format(PROJECT_PATH)):
+    def load(self, path='{}/model_non_recurrent.pt'.format(PROJECT_PATH)):
         checkpoint = torch.load(path)
         self.policy.load_state_dict(checkpoint['policy'])
         self.value.load_state_dict(checkpoint['value'])
         self.optimizer_policy.load_state_dict(checkpoint['optim_p'])
         self.optimizer_value.load_state_dict(checkpoint['optim_v'])
-        # return checkpoint['rews']
+        return checkpoint['rews']
 
     def test(self):
         obs = self.preprocess(self.env.reset()[0])
@@ -229,21 +253,13 @@ class Agents:
 
             if done:
                 break
-        self.reset_state()
-
-    def reset_state(self):
-        self.policy_state = (
-            torch.zeros(self.num_layers, 1, self.hidden_size,
-                        device=self.device),
-            torch.zeros(self.num_layers, 1, self.hidden_size,
-                        device=self.device),
-        )
 
 
 if __name__ == "__main__":
     env = gym.make('gym_mcc_treasure_hunt:MCCTreasureHunt-v0',
                    red_guides=0, blue_collector=0)
     agents = Agents(env)
+    # agents.train(100)
     agents.load()
     while True:
         input('Press enter to continue')
