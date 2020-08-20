@@ -17,7 +17,7 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, env, seed=0, device='cpu', lr_policy=2e-3, lr_value=2e-3, gamma=0.99, max_steps=500,
+    def __init__(self, env, seed=0, device='cuda:0', lr_policy=2e-3, lr_value=2e-3, gamma=0.99, max_steps=500,
                  hidden_size=128, batch_size=64, iters_policy=40, iters_value=40, lam=0.97, clip_ratio=0.2,
                  target_kl=0.03, num_layers=1, grad_clip=1.0, entropy_factor=0.0):
         # RNG seed
@@ -64,9 +64,9 @@ class Agents:
         self.gamma = gamma
         self.lam = lam
         self.max_steps = max_steps
-        self.buffer_r = Buffer(self.max_steps*self.batch_size,
+        self.buffer_c = Buffer(self.max_steps*self.batch_size,
                                self.obs_dim, self.gamma, self.lam)
-        self.buffer_b = Buffer(self.max_steps*self.batch_size,
+        self.buffer_g = Buffer(self.max_steps*self.batch_size,
                                self.obs_dim, self.gamma, self.lam)
         self.clip_ratio = clip_ratio
         self.target_kl = target_kl
@@ -79,20 +79,16 @@ class Agents:
         return np.moveaxis(state, -1, 0)
 
     def preprocess(self, obs_list):
-        processed = [self.single_preprocess(obs) for obs in obs_list]
-        tmp = np.copy(processed[1][4])
-        processed[1][4] = np.copy(processed[1][3])
-        processed[1][3] = tmp
-        return np.stack(processed)
+        return np.stack([self.single_preprocess(obs) for obs in obs_list])
 
     def sample_batch(self):
-        self.buffer_r.clear()
-        self.buffer_b.clear()
+        self.buffer_c.clear()
+        self.buffer_g.clear()
         rews = []
 
         while True:
             obs = self.preprocess(self.env.reset())
-            episode_rew = [0, 0]
+            episode_rew = 0
 
             for step in range(self.max_steps):
                 act = self.get_actions(obs)
@@ -116,7 +112,7 @@ class Agents:
         return rews
 
     def reward_and_advantage(self):
-        for buffer in [self.buffer_r, self.buffer_b]:
+        for buffer in [self.buffer_c, self.buffer_g]:
             obs = torch.as_tensor(
                 buffer.obs_buf[buffer.last_ptr:buffer.ptr], dtype=torch.float32).reshape(1, buffer.ptr-buffer.last_ptr, -1).to(self.device)
             with torch.no_grad():
@@ -177,7 +173,7 @@ class Agents:
     def update(self):
         pol_losses = []
         val_losses = []
-        for index, buffer in enumerate([self.buffer_r, self.buffer_b]):
+        for index, buffer in enumerate([self.buffer_c, self.buffer_g]):
             obs = torch.as_tensor(
                 buffer.obs_buf[:buffer.ptr], dtype=torch.float32, device=self.device)
             obs = obs.reshape(self.batch_size, self.max_steps,
@@ -236,7 +232,7 @@ class Agents:
 
     def test(self):
         obs = self.preprocess(self.env.reset())
-        episode_rew = [0, 0]
+        episode_rew = 0
 
         while True:
             self.env.render()
@@ -244,8 +240,7 @@ class Agents:
             obs, rew, done, _ = self.env.step(act)
             obs = self.preprocess(obs)
 
-            episode_rew[0] += rew[0]
-            episode_rew[1] += rew[1]
+            episode_rew += rew[0] + rew[1]
 
             if done:
                 break
@@ -264,7 +259,7 @@ if __name__ == "__main__":
     env = gym.make('gym_mcc_treasure_hunt:MCCTreasureHunt-v0',
                    red_guides=1, blue_collector=0)
     agents = Agents(env)
-    agents.load()
+    # agents.load()
 
     while True:
         input('Press enter to continue')
