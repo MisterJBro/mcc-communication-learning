@@ -17,7 +17,7 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, env, seed=0, device='cuda:0', lr_policy=2e-3, lr_value=2e-3, gamma=0.99, max_steps=500,
+    def __init__(self, env, seed=0, device='cpu', lr_policy=2e-3, lr_value=2e-3, gamma=0.99, max_steps=500,
                  hidden_size=128, batch_size=64, iters_policy=40, iters_value=40, lam=0.97, clip_ratio=0.2,
                  target_kl=0.03, num_layers=1, grad_clip=1.0, entropy_factor=0.0):
         # RNG seed
@@ -44,11 +44,6 @@ class Agents:
             in_dim, self.act_dim, rnn_hidden=hidden_size,  num_layers=num_layers).to(self.device)
         self.value = ValueFunction(
             in_dim, rnn_hidden=hidden_size,  num_layers=num_layers).to(self.device)
-        self.trained_policy = Policy(
-            in_dim, self.act_dim, rnn_hidden=hidden_size,  num_layers=num_layers).to(self.device)
-        self.trained_value = ValueFunction(
-            in_dim, rnn_hidden=hidden_size,  num_layers=num_layers).to(self.device)
-        self.load_trained()
 
         self.optimizer_policy = optim.Adam(
             self.policy.parameters(), lr=lr_policy)
@@ -69,14 +64,15 @@ class Agents:
         self.gamma = gamma
         self.lam = lam
         self.max_steps = max_steps
-        self.buffer = Buffer(self.max_steps*self.batch_size,
+        self.buffer_r = Buffer(self.max_steps*self.batch_size,
+                               self.obs_dim, self.gamma, self.lam)
+        self.buffer_b = Buffer(self.max_steps*self.batch_size,
                                self.obs_dim, self.gamma, self.lam)
         self.clip_ratio = clip_ratio
         self.target_kl = target_kl
         self.entropy_factor = entropy_factor
 
     def single_preprocess(self, obs):
-        obs = obs[0]
         state = np.zeros((obs.size, self.num_world_blocks), dtype=np.uint8)
         state[np.arange(obs.size), obs.reshape(-1)] = 1
         state = state.reshape(obs.shape + (self.num_world_blocks,))
@@ -90,12 +86,14 @@ class Agents:
         return np.stack(processed)
 
     def sample_batch(self):
-        self.buffer.clear()
+        self.buffer_r.clear()
+        self.buffer_b.clear()
         rews = []
 
         while True:
             obs = self.preprocess(self.env.reset())
-            episode_rew = 0
+            episode_rew = [0, 0]
+
             for step in range(self.max_steps):
                 act = self.get_actions(obs)
                 next_obs, rew, done, _ = self.env.step(act)
@@ -236,11 +234,6 @@ class Agents:
         self.optimizer_value.load_state_dict(checkpoint['optim_v'])
         return checkpoint['rews']
 
-    def load_trained(self, path='{}/model.pt'.format(PROJECT_PATH)):
-        checkpoint = torch.load(path)
-        self.trained_policy.load_state_dict(checkpoint['policy'])
-        self.trained_value.load_state_dict(checkpoint['value'])
-
     def test(self):
         obs = self.preprocess(self.env.reset())
         episode_rew = [0, 0]
@@ -268,13 +261,10 @@ class Agents:
 
 
 if __name__ == "__main__":
-    game_len = 500
     env = gym.make('gym_mcc_treasure_hunt:MCCTreasureHunt-v0',
-                   red_guides=0, blue_collector=1, competition=True, game_length=game_len)
-    agents = Agents(env, max_steps=game_len)
+                   red_guides=1, blue_collector=0)
+    agents = Agents(env)
     agents.load()
-    # agents.train(200)
-    # agents.save()
 
     while True:
         input('Press enter to continue')
