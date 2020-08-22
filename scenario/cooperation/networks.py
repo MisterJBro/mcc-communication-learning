@@ -4,9 +4,10 @@ import torch.nn.functional as F
 from torch.distributions import Categorical
 
 
-class Network(nn.Module):
-    def __init__(self, in_dim, action_num, message_num, fc_hidden=64, rnn_hidden=128, num_layers=1):
-        super(Network, self).__init__()
+class Policy(nn.Module):
+    def __init__(self, in_dim, action_num, message_num, fc_hidden=64, rnn_hidden=128, num_layers=1, tau=1.0):
+        super(Policy, self).__init__()
+        self.tau = tau
 
         self.mlp = nn.Sequential(
             nn.Linear(in_dim, fc_hidden),
@@ -28,19 +29,34 @@ class Network(nn.Module):
             nn.Linear(rnn_hidden, 1),
         )
 
-    def next_action(self, x, state):
+    def next_action(self, x, c, state):
         x = self.mlp(x)
         _, (h_n, c_n) = self.rnn(x, state)
         x = h_n[-1]
+        action_dist = Categorical(probs=self.action(x))
+        message = F.gumbel_softmax(self.message(x), self.tau, hard=True)
 
         return action_dist, message, (h_n, c_n)
 
-    def forward(self, x):
+    def forward(self, x, c):
+        x = self.tail(x)
+
+        action_dists = Categorical(probs=self.action(x))
+        messages = F.gumbel_softmax(self.message(x), self.tau, hard=True)
+        values = self.value(x)
+        return action_dists, messages, values
+
+    def value_only(self, x):
+        x = self.tail(x)
+        return self.value(x)
+
+    def action_only(self, x):
+        x = self.tail(x)
+        return Categorical(probs=self.action(x))
+
+    def tail(self, x):
         x = self.mlp(x)
         x, _ = self.rnn(x)
         x = x.reshape(-1, x.size(-1))
 
-        action_dists = Categorical(probs=self.action(x))
-        messages = F.gumbel_softmax(self.message(x), tau, hard=True)
-        values = self.value(x)
-        return action_dists, messages, values
+        return x
