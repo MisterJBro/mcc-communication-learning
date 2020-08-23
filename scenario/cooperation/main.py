@@ -11,13 +11,14 @@ from scenario.utils.buffer import Buffer
 from scenario.cooperation.networks import Policy
 import seaborn as sns
 import pathlib
+from scenario.utils.envs import Envs
 
 PROJECT_PATH = pathlib.Path(
     __file__).parent.absolute().as_posix()
 
 
 class Agents:
-    def __init__(self, env, seed=0, device='cuda:0', lr_collector=2e-3, lr_guide=2e-3, gamma=0.99, max_steps=500,
+    def __init__(self, envs, seed=0, device='cuda:0', lr_collector=2e-3, lr_guide=2e-3, gamma=0.99, max_steps=500,
                  fc_hidden=64, rnn_hidden=128, batch_size=64, iters_policy=40, iters_value=40, lam=0.97, clip_ratio=0.2,
                  target_kl=0.03, num_layers=1, grad_clip=1.0, entropy_factor=0.0, message_num=5, tau=1.0):
         # RNG seed
@@ -29,10 +30,10 @@ class Agents:
         self.num_world_blocks = 5
         self.width = 5
         self.height = 5
-        self.env = env
-        self.obs_dim = (self.num_world_blocks,) + env.observation_space.shape
-        self.act_dim = env.action_space.nvec[0]
-        self.agents_num = env.agents_num
+        self.envs = envs
+        self.obs_dim = (self.num_world_blocks,) + envs.observation_space.shape
+        self.act_dim = envs.action_space.nvec[0]
+        self.agents_num = envs.agents_num
         print('Observation shape:', self.obs_dim)
         print('Action number:', self.act_dim)
         print('Agent number:', self.agents_num)
@@ -79,6 +80,7 @@ class Agents:
         return np.moveaxis(state, -1, 0)
 
     def preprocess(self, obs_list):
+        print(obs_list)
         return [self.single_preprocess(obs) for obs in obs_list]
 
     def sample_batch(self):
@@ -87,12 +89,12 @@ class Agents:
         total_rews = []
 
         while True:
-            obs_c, obs_g = self.preprocess(self.env.reset())
+            obs_c, obs_g = self.preprocess(self.envs.reset())
             episode_rew = 0
 
             for step in range(self.max_steps):
                 acts = self.get_actions(obs_c, obs_g)
-                next_obs, rews, done, _ = self.env.step(acts)
+                next_obs, rews, done, _ = self.envs.step(acts)
                 next_obs_c, next_obs_g = self.preprocess(next_obs)
 
                 self.buffer_c.store(obs_c, acts[0], rews[0])
@@ -248,13 +250,13 @@ class Agents:
         return checkpoint['rews']
 
     def test(self):
-        obs = self.preprocess(self.env.reset())
+        obs = self.preprocess(self.envs.reset())
         episode_rew = 0
 
         while True:
-            self.env.render()
+            self.envs.render()
             act = self.get_actions(obs)
-            obs, rew, done, _ = self.env.step(act)
+            obs, rew, done, _ = self.envs.step(act)
             obs = self.preprocess(obs)
 
             episode_rew += rew[0] + rew[1]
@@ -279,9 +281,9 @@ class Agents:
 
 
 if __name__ == "__main__":
-    env = gym.make('gym_mcc_treasure_hunt:MCCTreasureHunt-v0',
-                   red_guides=1, blue_collector=0)
-    agents = Agents(env)
+    batch_size = 64
+    envs = Envs(batch_size)
+    agents = Agents(envs, batch_size=batch_size)
     agents.train(10)
 
     while True:
