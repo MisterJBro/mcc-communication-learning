@@ -18,9 +18,9 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=2e-3, lr_guide=2e-3, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=64, iters_policy=40, iters_value=40, lam=0.97, clip_ratio=0.2,
-                 target_kl=0.03, num_layers=1, grad_clip=1.0, entropy_factor=0.0, message_num=5, tau=1.0):
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, gamma=0.99, max_steps=500,
+                 fc_hidden=64, rnn_hidden=128, batch_size=64, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.03,
+                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
@@ -28,13 +28,11 @@ class Agents:
 
         # Environment
         self.num_world_blocks = 5
-        self.width = 5
-        self.height = 5
-        self.envs = Envs(batch_size)
+        self.envs = Envs(batch_size, red_guides=0, blue_collector=0)
         self.obs_dim = (self.num_world_blocks,) + \
             self.envs.observation_space.shape
         self.act_dim = self.envs.action_space.nvec[0]
-        self.agents_num = self.envs.agents_num
+        self.agents_num = 1  # self.envs.agents_num
         print('Observation shape:', self.obs_dim)
         print('Action number:', self.act_dim)
         print('Agent number:', self.agents_num)
@@ -43,20 +41,20 @@ class Agents:
         in_dim = self.obs_dim[0]*self.obs_dim[1]*self.obs_dim[2]
         self.device = torch.device(device)
         self.collector = Policy(
-            in_dim, self.act_dim, message_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
-        self.guide = Policy(
-            in_dim, self.act_dim, message_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
+            in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
+        # self.guide = Policy(
+        #    in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
 
         self.optimizer_c = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
-        self.optimizer_g = optim.Adam(
-            self.guide.parameters(), lr=lr_guide)
+        # self.optimizer_g = optim.Adam(
+        #    self.guide.parameters(), lr=lr_guide)
         self.batch_size = batch_size
-        self.iters_policy = iters_policy
-        self.iters_value = iters_value
+        self.iters = iters
         self.criterion = nn.MSELoss()
         self.grad_clip = grad_clip
 
+        self.symbol_num = symbol_num
         self.num_layers = num_layers
         self.rnn_hidden = rnn_hidden
         self.reset_states()
@@ -68,11 +66,10 @@ class Agents:
         self.max_steps = max_steps
         self.buffer_c = Buffer(self.batch_size, self.max_steps,
                                self.obs_dim, self.gamma, self.lam)
-        self.buffer_g = Buffer(self.batch_size, self.max_steps,
-                               self.obs_dim, self.gamma, self.lam)
+        # self.buffer_g = Buffer(self.batch_size, self.max_steps,
+        #                       self.obs_dim, self.gamma, self.lam)
         self.clip_ratio = clip_ratio
         self.target_kl = target_kl
-        self.entropy_factor = entropy_factor
 
     def single_preprocess(self, obs):
         state = np.zeros((obs.size, self.num_world_blocks), dtype=np.uint8)
@@ -84,35 +81,43 @@ class Agents:
         obs_c, obs_g = [], []
         for x in range(self.batch_size):
             obs_c.append(self.single_preprocess(obs_list[x][0]))
-            obs_g.append(self.single_preprocess(obs_list[x][1]))
-        return [np.array(obs_c), np.array(obs_g)]
+            # obs_g.append(self.single_preprocess(obs_list[x][1]))
+        return np.array(obs_c)  # [np.array(obs_c), np.array(obs_g)]
 
     def sample_batch(self):
         self.buffer_c.clear()
-        self.buffer_g.clear()
+        # self.buffer_g.clear()
         episode_rew = np.zeros(self.batch_size)
 
-        obs_c, obs_g = self.preprocess(self.envs.reset())
+        #obs_c, obs_g = self.preprocess(self.envs.reset())
+        obs_c = self.preprocess(self.envs.reset())
 
         for step in range(self.max_steps):
-            acts = self.get_actions(obs_c, obs_g)
+            #acts = self.get_actions(obs_c, obs_g)
+            acts = self.get_actions(obs_c)
             next_obs, rews, _, _ = self.envs.step(acts)
             rews = np.array(rews)
-            next_obs_c, next_obs_g = self.preprocess(next_obs)
+            #next_obs_c, next_obs_g = self.preprocess(next_obs)
+            next_obs_c = self.preprocess(next_obs)
 
-            episode_rew += rews[:, 0] + rews[:, 1]
-            self.buffer_c.store(obs_c, acts[:, 0], episode_rew)
-            self.buffer_g.store(obs_g, acts[:, 1], episode_rew)
+            #team_rew = rews[:, 0] + rews[:, 1]
+            #self.buffer_c.store(obs_c, acts[:, 0], team_rew)
+            #self.buffer_g.store(obs_g, acts[:, 1], team_rew)
+            #episode_rew += rews[:, 0] + rews[:, 1]
+
+            episode_rew += rews[:, 0]
+            self.buffer_c.store(obs_c, acts[:, 0], rews[:, 0])
 
             obs_c = next_obs_c
-            obs_g = next_obs_g
+            #obs_g = next_obs_g
         self.reward_and_advantage()
         self.reset_states()
 
         return episode_rew
 
     def reward_and_advantage(self):
-        for buffer, net in [(self.buffer_c, self.collector), (self.buffer_g, self.guide)]:
+        for buffer, net in [(self.buffer_c, self.collector)]:
+            # [(self.buffer_c, self.collector), (self.buffer_g, self.guide)]:
             obs = torch.as_tensor(buffer.obs_buf, dtype=torch.float32).reshape(
                 self.batch_size, self.max_steps, -1).to(self.device)
             with torch.no_grad():
@@ -121,21 +126,23 @@ class Agents:
             buffer.expected_returns()
             buffer.advantage_estimation(values, np.zeros((self.batch_size, 1)))
 
-    def get_actions(self, obs_c, obs_g):
+    # def get_actions(self, obs_c, obs_g):
+    def get_actions(self, obs_c):
         obs_c = torch.as_tensor(
             obs_c, dtype=torch.float32).reshape(self.batch_size, 1, -1).to(self.device)
-        obs_g = torch.as_tensor(
-            obs_g, dtype=torch.float32).reshape(self.batch_size, 1, -1).to(self.device)
+        # obs_g = torch.as_tensor(
+        #    obs_g, dtype=torch.float32).reshape(self.batch_size, 1, -1).to(self.device)
         with torch.no_grad():
             act_dist_c, message_c, self.state_c = self.collector.next_action(
                 obs_c, 1, self.state_c)
-            act_dist_g, message_g, self.state_g = self.guide.next_action(
-                obs_g, 1, self.state_g)
+            # act_dist_g, message_g, self.state_g = self.guide.next_action(
+            #    obs_g, 1, self.state_g)
 
             act_c = act_dist_c.sample().cpu().numpy()
-            act_g = act_dist_g.sample().cpu().numpy()
+            #act_g = act_dist_g.sample().cpu().numpy()
 
-        return np.stack([act_c, act_g]).T
+        return np.expand_dims(act_c, axis=1)
+        # return np.stack([act_c, act_g]).T
 
     def compute_policy_gradient(self, net, dist, act, adv, old_logp):
         logp = dist.log_prob(act)
@@ -160,7 +167,7 @@ class Agents:
             full_loss += loss.item()
             if kl > self.target_kl:
                 return full_loss
-            loss.backward(retain_graph=True)
+            loss.backward()
 
             loss = self.criterion(vals.reshape(-1), ret)
             full_loss += loss.item()
@@ -233,18 +240,18 @@ class Agents:
     def save(self, rews=[], path='{}/model.pt'.format(PROJECT_PATH)):
         torch.save({
             'collector': self.collector.state_dict(),
-            'guide': self.guide.state_dict(),
+            # 'guide': self.guide.state_dict(),
             'optim_c': self.optimizer_c.state_dict(),
-            'optim_g': self.optimizer_g.state_dict(),
+            # 'optim_g': self.optimizer_g.state_dict(),
             'rews': rews
         }, path)
 
     def load(self, path='{}/model.pt'.format(PROJECT_PATH)):
         checkpoint = torch.load(path)
         self.collector.state_dict(checkpoint['collector'])
-        self.guide.state_dict(checkpoint['guide'])
+        # self.guide.state_dict(checkpoint['guide'])
         self.optimizer_c.load_state_dict(checkpoint['optim_c'])
-        self.optimizer_g.load_state_dict(checkpoint['optim_g'])
+        # self.optimizer_g.load_state_dict(checkpoint['optim_g'])
         return checkpoint['rews']
 
     def test(self):
@@ -280,7 +287,7 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    agents.train(10)
+    agents.train(100)
 
     while True:
         input('Press enter to continue')
