@@ -149,8 +149,7 @@ class Agents:
 
         ratio = torch.exp(logp - old_logp)
         clipped = torch.clamp(ratio, 1-self.clip_ratio, 1+self.clip_ratio)*adv
-        loss = -torch.min(ratio*adv, clipped).mean() - \
-            self.entropy_factor*dist.entropy().mean()
+        loss = -torch.min(ratio*adv, clipped).mean()
         kl_approx = (old_logp - logp).mean().item()
         return loss, kl_approx
 
@@ -158,7 +157,7 @@ class Agents:
         full_loss = 0
         with torch.no_grad():
             old_logp = net.action_only(obs).log_prob(act).to(self.device)
-        for i in range(self.iters_policy):
+        for i in range(self.iters):
             opt.zero_grad()
             dist, msgs, vals = net(obs, 0)
 
@@ -193,8 +192,8 @@ class Agents:
     def update(self):
         pol_losses = []
         val_losses = []
-        for index, (buffer, net, opt) in enumerate([(self.buffer_c, self.collector, self.optimizer_c),
-                                                    (self.buffer_g, self.guide, self.optimizer_g)]):
+        for index, (buffer, net, opt) in enumerate([(self.buffer_c, self.collector, self.optimizer_c)]):
+            # , (self.buffer_g, self.guide, self.optimizer_g)]):
             obs = torch.as_tensor(
                 buffer.obs_buf, dtype=torch.float32, device=self.device)
             obs = obs.reshape(self.batch_size, self.max_steps, -1)
