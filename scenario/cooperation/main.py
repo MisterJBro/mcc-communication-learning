@@ -106,21 +106,20 @@ class Agents:
             obs_c = next_obs_c
             obs_g = next_obs_g
             episode_rew += rews[:, 0] + rews[:, 1]
-        # total_rews.append(episode_rew)
-        # self.reward_and_advantage()
+        self.reward_and_advantage()
         self.reset_states()
 
         return episode_rew
 
     def reward_and_advantage(self):
         for buffer, net in [(self.buffer_c, self.collector), (self.buffer_g, self.guide)]:
-            obs = torch.as_tensor(
-                buffer.obs_buf[buffer.last_ptr:buffer.ptr], dtype=torch.float32).reshape(1, buffer.ptr-buffer.last_ptr, -1).to(self.device)
+            obs = torch.as_tensor(buffer.obs_buf, dtype=torch.float32).reshape(
+                self.batch_size, self.max_steps, -1).to(self.device)
             with torch.no_grad():
-                values = net.value_only(obs).cpu().numpy()
+                values = net.value_only(obs).reshape(
+                    self.batch_size, self.max_steps,).cpu().numpy()
             buffer.expected_returns()
-            buffer.advantage_estimation(values, 0.0)
-            buffer.next_episode()
+            buffer.advantage_estimation(values, np.zeros((self.batch_size, 1)))
 
     def get_actions(self, obs_c, obs_g):
         obs_c = torch.as_tensor(
