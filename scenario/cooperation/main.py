@@ -20,7 +20,7 @@ PROJECT_PATH = pathlib.Path(
 class Agents:
     def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, gamma=0.99, max_steps=500,
                  fc_hidden=64, rnn_hidden=128, batch_size=64, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.03,
-                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
+                 num_layers=1, grad_clip=1.0, symbol_num=4, tau=1.0):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
@@ -32,7 +32,7 @@ class Agents:
         self.obs_dim = (self.num_world_blocks,) + \
             self.envs.observation_space.shape
         self.act_dim = self.envs.action_space.nvec[0]
-        self.agents_num = 1  # self.envs.agents_num
+        self.agents_num = self.envs.agents_num
         print('Observation shape:', self.obs_dim)
         print('Action number:', self.act_dim)
         print('Agent number:', self.agents_num)
@@ -42,13 +42,13 @@ class Agents:
         self.device = torch.device(device)
         self.collector = Policy(
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
-        # self.guide = Policy(
-        #    in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
+        self.guide = Policy(
+            in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
 
         self.optimizer_c = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
-        # self.optimizer_g = optim.Adam(
-        #    self.guide.parameters(), lr=lr_guide)
+        self.optimizer_g = optim.Adam(
+            self.guide.parameters(), lr=lr_guide)
         self.batch_size = batch_size
         self.iters = iters
         self.criterion = nn.MSELoss()
@@ -66,8 +66,8 @@ class Agents:
         self.max_steps = max_steps
         self.buffer_c = Buffer(self.batch_size, self.max_steps,
                                self.obs_dim, self.gamma, self.lam)
-        # self.buffer_g = Buffer(self.batch_size, self.max_steps,
-        #                       self.obs_dim, self.gamma, self.lam)
+        self.buffer_g = Buffer(self.batch_size, self.max_steps,
+                               self.obs_dim, self.gamma, self.lam)
         self.clip_ratio = clip_ratio
         self.target_kl = target_kl
 
@@ -81,43 +81,36 @@ class Agents:
         obs_c, obs_g = [], []
         for x in range(self.batch_size):
             obs_c.append(self.single_preprocess(obs_list[x][0]))
-            # obs_g.append(self.single_preprocess(obs_list[x][1]))
-        return np.array(obs_c)  # [np.array(obs_c), np.array(obs_g)]
+            obs_g.append(self.single_preprocess(obs_list[x][1]))
+        return [np.array(obs_c), np.array(obs_g)]
 
     def sample_batch(self):
         self.buffer_c.clear()
-        # self.buffer_g.clear()
+        self.buffer_g.clear()
         episode_rew = np.zeros(self.batch_size)
 
-        #obs_c, obs_g = self.preprocess(self.envs.reset())
-        obs_c = self.preprocess(self.envs.reset())
+        obs_c, obs_g = self.preprocess(self.envs.reset())
 
         for step in range(self.max_steps):
-            #acts = self.get_actions(obs_c, obs_g)
-            acts = self.get_actions(obs_c)
+            acts = self.get_actions(obs_c, obs_g)
             next_obs, rews, _, _ = self.envs.step(acts)
             rews = np.array(rews)
-            #next_obs_c, next_obs_g = self.preprocess(next_obs)
-            next_obs_c = self.preprocess(next_obs)
+            next_obs_c, next_obs_g = self.preprocess(next_obs)
 
-            #team_rew = rews[:, 0] + rews[:, 1]
-            #self.buffer_c.store(obs_c, acts[:, 0], team_rew)
-            #self.buffer_g.store(obs_g, acts[:, 1], team_rew)
-            #episode_rew += rews[:, 0] + rews[:, 1]
-
-            episode_rew += rews[:, 0]
-            self.buffer_c.store(obs_c, acts[:, 0], rews[:, 0])
+            team_rew = rews[:, 0] + rews[:, 1]
+            self.buffer_c.store(obs_c, acts[:, 0], team_rew)
+            self.buffer_g.store(obs_g, acts[:, 1], team_rew)
+            episode_rew += rews[:, 0] + rews[:, 1]
 
             obs_c = next_obs_c
-            #obs_g = next_obs_g
+            obs_g = next_obs_g
         self.reward_and_advantage()
         self.reset_states()
 
         return episode_rew
 
     def reward_and_advantage(self):
-        for buffer, net in [(self.buffer_c, self.collector)]:
-            # [(self.buffer_c, self.collector), (self.buffer_g, self.guide)]:
+        for buffer, net in [(self.buffer_c, self.collector), (self.buffer_g, self.guide)]:
             obs = torch.as_tensor(buffer.obs_buf, dtype=torch.float32).reshape(
                 self.batch_size, self.max_steps, -1).to(self.device)
             with torch.no_grad():
@@ -126,23 +119,21 @@ class Agents:
             buffer.expected_returns()
             buffer.advantage_estimation(values, np.zeros((self.batch_size, 1)))
 
-    # def get_actions(self, obs_c, obs_g):
-    def get_actions(self, obs_c):
+    def get_actions(self, obs_c, obs_g):
         obs_c = torch.as_tensor(
             obs_c, dtype=torch.float32).reshape(self.batch_size, 1, -1).to(self.device)
-        # obs_g = torch.as_tensor(
-        #    obs_g, dtype=torch.float32).reshape(self.batch_size, 1, -1).to(self.device)
+        obs_g = torch.as_tensor(
+            obs_g, dtype=torch.float32).reshape(self.batch_size, 1, -1).to(self.device)
         with torch.no_grad():
             act_dist_c, message_c, self.state_c = self.collector.next_action(
                 obs_c, 1, self.state_c)
-            # act_dist_g, message_g, self.state_g = self.guide.next_action(
-            #    obs_g, 1, self.state_g)
+            act_dist_g, message_g, self.state_g = self.guide.next_action(
+                obs_g, 1, self.state_g)
 
             act_c = act_dist_c.sample().cpu().numpy()
-            #act_g = act_dist_g.sample().cpu().numpy()
+            act_g = act_dist_g.sample().cpu().numpy()
 
-        return np.expand_dims(act_c, axis=1)
-        # return np.stack([act_c, act_g]).T
+        return np.stack([act_c, act_g]).T
 
     def compute_policy_gradient(self, net, dist, act, adv, old_logp):
         logp = dist.log_prob(act)
@@ -178,7 +169,7 @@ class Agents:
 
     def update(self):
         losses = []
-        for index, (buffer, net, opt) in [(self.buffer_c, self.collector, self.optimizer_c), (self.buffer_g, self.guide, self.optimizer_g)]:
+        for buffer, net, opt in [(self.buffer_c, self.collector, self.optimizer_c), (self.buffer_g, self.guide, self.optimizer_g)]:
             obs = torch.as_tensor(
                 buffer.obs_buf, dtype=torch.float32, device=self.device)
             obs = obs.reshape(self.batch_size, self.max_steps, -1)
