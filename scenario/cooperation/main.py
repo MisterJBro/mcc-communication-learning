@@ -153,7 +153,7 @@ class Agents:
         kl_approx = (old_logp - logp).mean().item()
         return loss, kl_approx
 
-    def update_policy(self, net, opt, obs, act, adv, ret):
+    def update_net(self, net, opt, obs, act, adv, ret):
         full_loss = 0
         with torch.no_grad():
             old_logp = net.action_only(obs).log_prob(act).to(self.device)
@@ -166,7 +166,7 @@ class Agents:
             full_loss += loss.item()
             if kl > self.target_kl:
                 return full_loss
-            loss.backward()
+            loss.backward(retain_graph=True)
 
             loss = self.criterion(vals.reshape(-1), ret)
             full_loss += loss.item()
@@ -176,22 +176,8 @@ class Agents:
             opt.step()
         return full_loss
 
-    def update_value(self, obs, ret):
-        full_loss = 0
-        for i in range(self.iters_value):
-            self.optimizer_value.zero_grad()
-            input = self.value(obs)
-            loss = self.criterion(input, ret)
-            full_loss += loss.item()
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(
-                self.value.parameters(), self.grad_clip)
-            self.optimizer_value.step()
-        return full_loss
-
     def update(self):
-        pol_losses = []
-        val_losses = []
+        losses = []
         for index, (buffer, net, opt) in enumerate([(self.buffer_c, self.collector, self.optimizer_c)]):
             # , (self.buffer_g, self.guide, self.optimizer_g)]):
             obs = torch.as_tensor(
@@ -205,9 +191,8 @@ class Agents:
             adv = torch.as_tensor(
                 buffer.adv_buf, dtype=torch.float32, device=self.device).reshape(-1)
 
-            pol_losses.append(self.update_policy(net, opt, obs, act, adv, ret))
-            val_losses.append(0)  # self.update_value(obs, ret))
-        return pol_losses, val_losses
+            losses.append(self.update_net(net, opt, obs, act, adv, ret))
+        return losses
 
     def train(self, epochs, prev_rews=[]):
         epoch_rews = []

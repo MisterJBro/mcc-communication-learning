@@ -15,12 +15,7 @@ class Policy(nn.Module):
             nn.Linear(fc_hidden, fc_hidden),
             nn.ELU(),
         )
-        self.test = nn.Sequential(
-            nn.Linear(in_dim, fc_hidden),
-            nn.ELU(),
-        )
-        self.rnn_test = nn.LSTM(fc_hidden, rnn_hidden,
-                                num_layers=num_layers, batch_first=True)
+
         self.rnn = nn.LSTM(fc_hidden, rnn_hidden,
                            num_layers=num_layers, batch_first=True)
 
@@ -45,22 +40,15 @@ class Policy(nn.Module):
         return action_dist, message, (h_n, c_n)
 
     def forward(self, x, c):
-        a = self.tail(x)
+        x = self.tail(x)
 
-        b = self.test(x)
-        b, _ = self.rnn_test(b)
-        b = b.reshape(-1, b.size(-1))
-
-        action_dists = Categorical(probs=self.action(a))
-        messages = F.gumbel_softmax(self.message(a), self.tau, hard=True)
-        values = self.value(b)
+        action_dists = Categorical(probs=self.action(x))
+        messages = F.gumbel_softmax(self.message(x), self.tau, hard=True)
+        values = self.value(x)
         return action_dists, messages, values
 
     def value_only(self, x):
-        #x = self.tail(x)
-        x = self.test(x)
-        x, _ = self.rnn_test(x)
-        x = x.reshape(-1, x.size(-1))
+        x = self.tail(x)
         return self.value(x)
 
     def action_only(self, x):
