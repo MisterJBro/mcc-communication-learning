@@ -28,7 +28,7 @@ class Agents:
 
         # Environment
         self.num_world_blocks = 5
-        self.envs = Envs(batch_size, red_guides=0, blue_collector=0)
+        self.envs = Envs(batch_size, red_guides=1, blue_collector=0)
         self.obs_dim = (self.num_world_blocks,) + \
             self.envs.observation_space.shape
         self.act_dim = self.envs.action_space.nvec[0]
@@ -188,16 +188,12 @@ class Agents:
         epoch_rews = []
 
         for epoch in range(epochs):
-            import time
-
-            start = time.time()
             rews = self.sample_batch()
             mean_rew = rews.mean()
             epoch_rews.append(mean_rew)
             if mean_rew > self.max_rew:
                 self.max_rew = mean_rew
                 self.save(epoch_rews)
-            print(time.time()-start)
             pol_losses, val_losses = self.update()
 
             print('Epoch: {:4}  Average Reward: {:6}'.format(
@@ -229,19 +225,19 @@ class Agents:
         return checkpoint['rews']
 
     def test(self):
-        obs = self.preprocess(self.envs.reset())
+        obs_c, obs_g = self.preprocess(self.envs.reset())
         episode_rew = 0
 
         for step in range(self.max_steps):
             self.envs.envs[0].render()
-            act = self.get_actions(obs)
+            act = self.get_actions(obs_c, obs_g)
             obs, rew, _, _ = self.envs.step(act)
             rew = np.array(rew)
-            obs = self.preprocess(obs)
+            obs_c, obs_g = self.preprocess(obs)
 
             episode_rew += rew[0][0] + rew[0][1]
         print('Result reward: ', episode_rew)
-        self.reset_state()
+        self.reset_states()
 
     def reset_states(self):
         self.state_c = (
@@ -260,7 +256,8 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    agents.train(100)
+    agents.load()
+    # agents.train(100)
 
     while True:
         input('Press enter to continue')

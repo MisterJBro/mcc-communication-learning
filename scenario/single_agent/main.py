@@ -230,7 +230,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     agents.load()
-    agents.train(100)
+    # agents.train(100)
 
     while True:
         input('Press enter to continue')
