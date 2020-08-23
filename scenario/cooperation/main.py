@@ -100,12 +100,12 @@ class Agents:
             rews = np.array(rews)
             next_obs_c, next_obs_g = self.preprocess(next_obs)
 
-            self.buffer_c.store(obs_c, acts[:, 0], rews[:, 0])
-            self.buffer_g.store(obs_g, acts[:, 1], rews[:, 1])
+            episode_rew += rews[:, 0] + rews[:, 1]
+            self.buffer_c.store(obs_c, acts[:, 0], episode_rew)
+            self.buffer_g.store(obs_g, acts[:, 1], episode_rew)
 
             obs_c = next_obs_c
             obs_g = next_obs_g
-            episode_rew += rews[:, 0] + rews[:, 1]
         self.reward_and_advantage()
         self.reset_states()
 
@@ -189,15 +189,15 @@ class Agents:
         for index, (buffer, net, opt) in enumerate([(self.buffer_c, self.collector, self.optimizer_c),
                                                     (self.buffer_g, self.guide, self.optimizer_g)]):
             obs = torch.as_tensor(
-                buffer.obs_buf[:buffer.ptr], dtype=torch.float32, device=self.device)
+                buffer.obs_buf, dtype=torch.float32, device=self.device)
             obs = obs.reshape(self.batch_size, self.max_steps, -1)
             act = torch.as_tensor(
-                buffer.act_buf[:buffer.ptr], dtype=torch.int32, device=self.device)
+                buffer.act_buf, dtype=torch.int32, device=self.device).reshape(-1)
             ret = torch.as_tensor(
-                buffer.ret_buf[:buffer.ptr], dtype=torch.float32, device=self.device)
+                buffer.ret_buf, dtype=torch.float32, device=self.device).reshape(-1)
             buffer.standardize_adv()
             adv = torch.as_tensor(
-                buffer.adv_buf[:buffer.ptr], dtype=torch.float32, device=self.device)
+                buffer.adv_buf, dtype=torch.float32, device=self.device).reshape(-1)
 
             pol_losses.append(self.update_policy(net, opt, obs, act, adv, ret))
             val_losses.append(0)  # self.update_value(obs, ret))
