@@ -18,8 +18,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=2e-3, lr_guide=2e-3, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=128, iters=80, lam=0.97, clip_ratio=0.2, target_kl=0.03,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-4, lr_guide=1e-4, gamma=0.99, max_steps=500,
+                 fc_hidden=64, rnn_hidden=128, batch_size=1024, iters=60, lam=0.97, clip_ratio=0.2, target_kl=0.03,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -199,7 +199,7 @@ class Agents:
 
     def load(self, path='{}/model.pt'.format(PROJECT_PATH)):
         checkpoint = torch.load(path)
-        self.collector.state_dict(checkpoint['collector'])
+        self.collector.load_state_dict(checkpoint['collector'])
         self.optimizer_c.load_state_dict(checkpoint['optim_c'])
         return checkpoint['rews']
 
@@ -207,20 +207,16 @@ class Agents:
         obs = self.preprocess(self.envs.reset())
         episode_rew = 0
 
-        while True:
+        for step in range(self.max_steps):
             self.envs.envs[0].render()
             act = self.get_actions(obs)
-            obs, rew, done, _ = self.envs.step(act)
+            obs, rew, _, _ = self.envs.step(act)
             rew = np.array(rew)
             obs = self.preprocess(obs)
 
-            print(rew.shape)
             episode_rew += rew[0][0]
-
-            if done:
-                break
         print('Result reward: ', episode_rew)
-        self.reset_state()
+        self.reset_states()
 
     def reset_states(self):
         self.state_c = (
@@ -233,6 +229,7 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
+    agents.load()
     agents.train(100)
 
     while True:

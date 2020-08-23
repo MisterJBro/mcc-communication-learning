@@ -178,8 +178,7 @@ class Agents:
 
     def update(self):
         losses = []
-        for index, (buffer, net, opt) in enumerate([(self.buffer_c, self.collector, self.optimizer_c)]):
-            # , (self.buffer_g, self.guide, self.optimizer_g)]):
+        for index, (buffer, net, opt) in [(self.buffer_c, self.collector, self.optimizer_c), (self.buffer_g, self.guide, self.optimizer_g)]:
             obs = torch.as_tensor(
                 buffer.obs_buf, dtype=torch.float32, device=self.device)
             obs = obs.reshape(self.batch_size, self.max_steps, -1)
@@ -224,34 +223,33 @@ class Agents:
     def save(self, rews=[], path='{}/model.pt'.format(PROJECT_PATH)):
         torch.save({
             'collector': self.collector.state_dict(),
-            # 'guide': self.guide.state_dict(),
+            'guide': self.guide.state_dict(),
             'optim_c': self.optimizer_c.state_dict(),
-            # 'optim_g': self.optimizer_g.state_dict(),
+            'optim_g': self.optimizer_g.state_dict(),
             'rews': rews
         }, path)
 
     def load(self, path='{}/model.pt'.format(PROJECT_PATH)):
         checkpoint = torch.load(path)
-        self.collector.state_dict(checkpoint['collector'])
-        # self.guide.state_dict(checkpoint['guide'])
+        self.collector.load_state_dict(checkpoint['collector'])
+        self.guide.load_state_dict(checkpoint['guide'])
         self.optimizer_c.load_state_dict(checkpoint['optim_c'])
-        # self.optimizer_g.load_state_dict(checkpoint['optim_g'])
+        self.optimizer_g.load_state_dict(checkpoint['optim_g'])
         return checkpoint['rews']
 
     def test(self):
         obs = self.preprocess(self.envs.reset())
         episode_rew = 0
 
-        while True:
-            self.envs.render()
+        for step in range(self.max_steps):
+            self.envs.envs[0].render()
             act = self.get_actions(obs)
-            obs, rew, done, _ = self.envs.step(act)
+            obs, rew, _, _ = self.envs.step(act)
+            rew = np.array(rew)
             obs = self.preprocess(obs)
 
-            episode_rew += rew[0] + rew[1]
-
-            if done:
-                break
+            episode_rew += rew[0][0] + rew[0][1]
+        print('Result reward: ', episode_rew)
         self.reset_state()
 
     def reset_states(self):
