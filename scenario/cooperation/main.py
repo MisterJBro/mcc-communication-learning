@@ -18,7 +18,7 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, gamma=0.99, max_steps=500,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=8e-3, lr_guide=8e-3, gamma=0.99, max_steps=500,
                  fc_hidden=64, rnn_hidden=128, batch_size=128, iters=5, lam=0.97, clip_ratio=0.2, target_kl=0.03,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
@@ -152,14 +152,15 @@ class Agents:
         kl_approx = (old_logp - logp).mean().item()
         return loss, kl_approx
 
-    def update_net(self, net, opt, obs, act, adv, ret, msg=None):
+    def update_net(self, net, opt, obs, act, adv, ret, msg=None, other_net=None, other_obs=None):
         full_loss = 0
         with torch.no_grad():
             if msg is not None:
                 old_logp = net.action_only(
                     obs, msg).log_prob(act).to(self.device)
             else:
-                old_logp = net.action_only(obs).log_prob(act).to(self.device)
+                old_logp = net.action_only(
+                    obs).log_prob(act).to(self.device)
 
         for i in range(self.iters):
             opt.zero_grad()
@@ -178,10 +179,16 @@ class Agents:
 
             loss = self.criterion(vals.reshape(-1), ret)
             full_loss += loss.item()
-            loss.backward(retain_graph=True)
+            loss.backward()
             torch.nn.utils.clip_grad_norm_(
                 net.parameters(), self.grad_clip)
             opt.step()
+            if other_net is not None:
+                _, msg, _ = other_net(other_obs[:, :-1])
+                msg = msg.reshape(self.batch_size, self.max_steps-1, -1)
+                msg = torch.cat(
+                    (torch.zeros(self.batch_size, 1, self.symbol_num).to(self.device), msg), 1)
+
         return full_loss
 
     def update(self):
@@ -189,7 +196,7 @@ class Agents:
             self.device)
 
         self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, msg=msg)
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, msg=msg, other_net=self.guide, other_obs=obs_g)
         self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g)
 
@@ -237,21 +244,18 @@ class Agents:
         self.optimizer_g.load_state_dict(checkpoint['optim_g'])
 
     def test(self):
-        obs_c, obs_g = self.preprocess(self.envs.reset())
-        msg_c = np.zeros((self.batch_size, self.symbol_num))
-        msg_g = np.zeros((self.batch_size, self.symbol_num))
+        obs = self.preprocess(self.envs.reset())
+        msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
         episode_rew = 0
 
         for step in range(self.max_steps):
             self.envs.envs[0].render()
-            acts, msg_c, msg_g = self.get_actions(
-                obs_c, obs_g, msg_c, msg_g)
-            print(msg_c[0], msg_g[0])
-            obs, rew, _, _ = self.envs.step(acts)
-            rew = np.array(rew)
-            obs_c, obs_g = self.preprocess(obs)
+            print(msg[0].detach().cpu().numpy())
+            acts, msg = self.get_actions(obs, msg)
+            obs, rews, _, _ = self.envs.step(acts)
+            obs = self.preprocess(obs)
 
-            episode_rew += rew[0][0] + rew[0][1]
+            episode_rew += rews[0][0] + rews[0][1]
         print('Result reward: ', episode_rew)
         self.reset_states()
 
@@ -274,7 +278,8 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    agents.train(400)
+    agents.load()
+    agents.train(100)
 
     import code
     # code.interact(local=locals())
