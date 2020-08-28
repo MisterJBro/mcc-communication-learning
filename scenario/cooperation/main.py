@@ -163,7 +163,9 @@ class Agents:
                     obs).log_prob(act).to(self.device)
 
         for i in range(self.iters):
-            opt.zero_grad()
+            # opt.zero_grad()
+            self.optimizer_c.zero_grad()
+            self.optimizer_g.zero_grad()
 
             if msg is not None:
                 dist, vals = net(obs, msg)
@@ -182,7 +184,9 @@ class Agents:
             loss.backward()
             torch.nn.utils.clip_grad_norm_(
                 net.parameters(), self.grad_clip)
-            opt.step()
+
+            self.optimizer_c.step()
+            self.optimizer_g.step()
             if other_net is not None:
                 _, msg, _ = other_net(other_obs[:, :-1])
                 msg = msg.reshape(self.batch_size, self.max_steps-1, -1)
@@ -195,10 +199,23 @@ class Agents:
         obs_c, act_c, ret_c, adv_c, msg, obs_g, act_g, ret_g, adv_g = self.buffers.get_tensors(
             self.device)
 
+        print(self.guide.message[0].weight[2][3:6])
+
+        # self.optimizer_g.zero_grad()
+        # test = torch.cat((torch.ones(self.batch_size, self.max_steps, 1), torch.zeros(
+        #    self.batch_size, self.max_steps, 4)), 2).to(self.device)
+
+        #loss = torch.nn.MSELoss()(msg, test)
+        # loss.backward()
+
+        # self.optimizer_g.step()
+
         self.update_net(
             self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, msg=msg, other_net=self.guide, other_obs=obs_g)
+        print(self.guide.message[0].weight[2][3:6])
         self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g)
+        print(self.guide.message[0].weight[2][3:6])
 
         return []
 
