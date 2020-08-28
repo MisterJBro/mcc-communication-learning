@@ -19,7 +19,7 @@ PROJECT_PATH = pathlib.Path(
 
 class Agents:
     def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=128, iters=50, lam=0.97, clip_ratio=0.2, target_kl=0.03,
+                 fc_hidden=64, rnn_hidden=128, batch_size=512, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.03,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -87,7 +87,8 @@ class Agents:
     def sample_batch(self):
         self.buffer_c.clear()
         self.buffer_g.clear()
-        episode_rew = np.zeros(self.batch_size)
+        episode_rew_1 = np.zeros(self.batch_size)
+        episode_rew_2 = np.zeros(self.batch_size)
 
         obs_c, obs_g = self.preprocess(self.envs.reset())
         msg_c = np.zeros((self.batch_size, self.symbol_num))
@@ -103,7 +104,8 @@ class Agents:
             team_rew = rews[:, 0] + rews[:, 1]
             self.buffer_c.store(obs_c, acts[:, 0], team_rew, msg_g)
             self.buffer_g.store(obs_g, acts[:, 1], team_rew, msg_c)
-            episode_rew += rews[:, 0] + rews[:, 1]
+            episode_rew_1 += rews[:, 0]
+            episode_rew_2 += team_rew
 
             obs_c = next_obs_c
             obs_g = next_obs_g
@@ -112,7 +114,7 @@ class Agents:
         self.reward_and_advantage()
         self.reset_states()
 
-        return episode_rew
+        return episode_rew_1, episode_rew_2
 
     def reward_and_advantage(self):
         for buffer, net in [(self.buffer_c, self.collector), (self.buffer_g, self.guide)]:
@@ -198,17 +200,20 @@ class Agents:
             other_msg = torch.as_tensor(
                 other_buf.msg_buf, dtype=torch.float32, device=self.device)
             backprop_msg = other_net.message_only(
-                obs, other_msg).reshape(self.batch_size, self.max_steps, -1)
+                obs[:, :-1, :], other_msg[:, :-1, :]).reshape(self.batch_size, self.max_steps-1, -1)
+            start = torch.zeros(self.batch_size, 1, self.symbol_num,
+                                dtype=torch.float32, device=self.device)
+            backprop_msg = torch.cat((backprop_msg, start), 1)
 
             losses.append(self.update_net(
-                net, opt, obs, act, adv, ret, msg, backprop_msg))
+                net, opt, obs, act, adv, ret, msg, msg))
         return losses
 
     def train(self, epochs, prev_rews=[]):
         epoch_rews = []
 
         for epoch in range(epochs):
-            rews = self.sample_batch()
+            solo_rews, rews = self.sample_batch()
             mean_rew = rews.mean()
             epoch_rews.append(mean_rew)
             if mean_rew > self.max_rew:
@@ -216,8 +221,8 @@ class Agents:
                 self.save(epoch_rews)
             pol_losses, val_losses = self.update()
 
-            print('Epoch: {:4}  Average Reward: {:6}'.format(
-                epoch, np.round(mean_rew, 3)))
+            print('Epoch: {:4}  Collector Reward: {:5}  Average Reward: {:5}'.format(
+                epoch, np.round(solo_rews.mean(), 3), np.round(mean_rew, 3)))
 
     def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
         sns.set()
@@ -246,12 +251,16 @@ class Agents:
 
     def test(self):
         obs_c, obs_g = self.preprocess(self.envs.reset())
+        msg_c = np.zeros((self.batch_size, self.symbol_num))
+        msg_g = np.zeros((self.batch_size, self.symbol_num))
         episode_rew = 0
 
         for step in range(self.max_steps):
             self.envs.envs[0].render()
-            act = self.get_actions(obs_c, obs_g)
-            obs, rew, _, _ = self.envs.step(act)
+            acts, msg_c, msg_g = self.get_actions(
+                obs_c, obs_g, msg_c, msg_g)
+            print(msg_c[0], msg_g[0])
+            obs, rew, _, _ = self.envs.step(acts)
             rew = np.array(rew)
             obs_c, obs_g = self.preprocess(obs)
 
@@ -277,8 +286,10 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     agents.load()
-    agents.train(100)
+    agents.train(400)
 
+    import code
+    # code.interact(local=locals())
     while True:
         input('Press enter to continue')
         agents.test()
