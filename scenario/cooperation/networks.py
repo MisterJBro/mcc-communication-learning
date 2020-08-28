@@ -131,6 +131,7 @@ class Speaker(nn.Module):
 
         return x
 
+
 class Listener(nn.Module):
     def __init__(self, in_dim, action_num, symbol_num, fc_hidden=64, rnn_hidden=128, num_layers=1, tau=1.0):
         super(Listener, self).__init__()
@@ -160,7 +161,6 @@ class Listener(nn.Module):
         _, (h_n, c_n) = self.rnn(x, state)
         x = h_n[-1]
         action_dist = Categorical(probs=self.action(x))
-        message = F.gumbel_softmax(self.message(x), self.tau, hard=True)
 
         return action_dist, (h_n, c_n)
 
@@ -168,9 +168,8 @@ class Listener(nn.Module):
         x = self.tail(x, c)
 
         action_dists = Categorical(probs=self.action(x))
-        messages = F.gumbel_softmax(self.message(x), self.tau, hard=True)
         values = self.value(x)
-        return action_dists, messages, values
+        return action_dists, values
 
     def value_only(self, x, c):
         x = self.tail(x, c)
@@ -179,10 +178,6 @@ class Listener(nn.Module):
     def action_only(self, x, c):
         x = self.tail(x, c)
         return Categorical(probs=self.action(x))
-
-    def message_only(self, x, c):
-        x = self.tail(x, c)
-        return F.gumbel_softmax(self.message(x), self.tau, hard=True)
 
     def tail(self, x, c):
         x = self.mlp(x)

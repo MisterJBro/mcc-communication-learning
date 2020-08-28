@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 import random
 import gym
 import numpy as np
-from scenario.cooperation.buffer import Buffer
-from scenario.cooperation.networks import Policy
+from scenario.cooperation.buffers import Buffers
+from scenario.cooperation.networks import Policy, Listener, Speaker
 import seaborn as sns
 import pathlib
 from scenario.utils.envs import Envs
@@ -19,7 +19,7 @@ PROJECT_PATH = pathlib.Path(
 
 class Agents:
     def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=512, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.03,
+                 fc_hidden=64, rnn_hidden=128, batch_size=128, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.03,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -40,9 +40,9 @@ class Agents:
         # Networks
         in_dim = self.obs_dim[0]*self.obs_dim[1]*self.obs_dim[2]
         self.device = torch.device(device)
-        self.collector = Policy(
+        self.collector = Listener(
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
-        self.guide = Policy(
+        self.guide = Speaker(
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
 
         self.optimizer_c = optim.Adam(
@@ -64,9 +64,7 @@ class Agents:
         self.gamma = gamma
         self.lam = lam
         self.max_steps = max_steps
-        self.buffer_c = Buffer(self.batch_size, self.max_steps,
-                               self.obs_dim, self.gamma, self.lam, self.symbol_num)
-        self.buffer_g = Buffer(self.batch_size, self.max_steps,
+        self.buffers = Buffers(self.batch_size, self.max_steps,
                                self.obs_dim, self.gamma, self.lam, self.symbol_num)
         self.clip_ratio = clip_ratio
         self.target_kl = target_kl
@@ -82,72 +80,70 @@ class Agents:
         for x in range(self.batch_size):
             obs_c.append(self.single_preprocess(obs_list[x][0]))
             obs_g.append(self.single_preprocess(obs_list[x][1]))
-        return [np.array(obs_c), np.array(obs_g)]
+        return np.array([obs_c, obs_g])
 
     def sample_batch(self):
-        self.buffer_c.clear()
-        self.buffer_g.clear()
-        episode_rew_1 = np.zeros(self.batch_size)
-        episode_rew_2 = np.zeros(self.batch_size)
+        """ Samples a batch of trajectories """
 
-        obs_c, obs_g = self.preprocess(self.envs.reset())
-        msg_c = np.zeros((self.batch_size, self.symbol_num))
-        msg_g = np.zeros((self.batch_size, self.symbol_num))
+        self.buffers.clear()
+        batch_rew = np.zeros(self.batch_size)
+        obs = self.preprocess(self.envs.reset())
+        msg = np.zeros((self.batch_size, self.symbol_num))
 
         for step in range(self.max_steps):
-            acts, next_msg_c, next_msg_g = self.get_actions(
-                obs_c, obs_g, msg_c, msg_g)
+            acts, next_msg = self.get_actions(obs, msg)
             next_obs, rews, _, _ = self.envs.step(acts)
-            rews = np.array(rews)
-            next_obs_c, next_obs_g = self.preprocess(next_obs)
+            next_obs = self.preprocess(next_obs)
 
-            team_rew = rews[:, 0] + rews[:, 1]
-            self.buffer_c.store(obs_c, acts[:, 0], team_rew, msg_g)
-            self.buffer_g.store(obs_g, acts[:, 1], team_rew, msg_c)
-            episode_rew_1 += rews[:, 0]
-            episode_rew_2 += team_rew
+            team_rew = np.sum(rews, axis=1)
+            self.buffers.store(obs, acts, team_rew, msg)
+            batch_rew += team_rew
 
-            obs_c = next_obs_c
-            obs_g = next_obs_g
-            msg_c = next_msg_c
-            msg_g = next_msg_g
+            obs = next_obs
+            msg = next_msg
         self.reward_and_advantage()
         self.reset_states()
 
-        return episode_rew_1, episode_rew_2
+        return np.mean(batch_rew)
 
     def reward_and_advantage(self):
-        for buffer, net in [(self.buffer_c, self.collector), (self.buffer_g, self.guide)]:
-            obs = torch.as_tensor(buffer.obs_buf, dtype=torch.float32).reshape(
-                self.batch_size, self.max_steps, -1).to(self.device)
-            msgs = torch.as_tensor(
-                buffer.msg_buf, dtype=torch.float32).to(self.device)
-            with torch.no_grad():
-                values = net.value_only(obs, msgs).reshape(
-                    self.batch_size, self.max_steps,).cpu().numpy()
-            buffer.expected_returns()
-            buffer.advantage_estimation(values, np.zeros((self.batch_size, 1)))
+        """ Calculates the rewards and General Advantage Estimation """
 
-    def get_actions(self, obs_c, obs_g, msg_c, msg_g):
-        obs_c = torch.as_tensor(
-            obs_c, dtype=torch.float32).reshape(self.batch_size, 1, -1).to(self.device)
-        obs_g = torch.as_tensor(
-            obs_g, dtype=torch.float32).reshape(self.batch_size, 1, -1).to(self.device)
-        msg_c = torch.as_tensor(msg_c, dtype=torch.float32).reshape(
-            self.batch_size, 1, -1).to(self.device)
-        msg_g = torch.as_tensor(msg_g, dtype=torch.float32).reshape(
+        obs_c = torch.as_tensor(self.buffers.buffer_c.obs_buf, dtype=torch.float32).reshape(
+            self.batch_size, self.max_steps, -1).to(self.device)
+        obs_g = torch.as_tensor(self.buffers.buffer_g.obs_buf, dtype=torch.float32).reshape(
+            self.batch_size, self.max_steps, -1).to(self.device)
+        msg = torch.as_tensor(self.buffers.buffer_c.msg_buf,
+                              dtype=torch.float32).to(self.device)
+
+        with torch.no_grad():
+            val_c = self.collector.value_only(obs_c, msg).reshape(
+                self.batch_size, self.max_steps).cpu().numpy()
+            val_g = self.guide.value_only(obs_g).reshape(
+                self.batch_size, self.max_steps).cpu().numpy()
+
+        self.buffers.expected_returns()
+        self.buffers.advantage_estimation([val_c, val_g])
+
+    def get_actions(self, obs, msg):
+        """ Gets action according the agents networks """
+
+        obs = torch.as_tensor(obs, dtype=torch.float32).reshape(
+            self.agents_num, self.batch_size, 1, -1).to(self.device)
+        msg = torch.as_tensor(msg, dtype=torch.float32).reshape(
             self.batch_size, 1, -1).to(self.device)
 
         with torch.no_grad():
-            act_dist_c, next_msg_c, self.state_c = self.collector.next_action(
-                obs_c, msg_c, self.state_c)
-            act_dist_g, next_msg_g, self.state_g = self.guide.next_action(
-                obs_g, msg_g, self.state_g)
+            act_dist_c, self.state_c = self.collector.next_action(
+                obs[0], msg, self.state_c)
+            act_dist_g, next_msg, self.state_g = self.guide.next_action(
+                obs[1], self.state_g)
 
+            next_msg = next_msg.cpu().numpy()
             act_c = act_dist_c.sample().cpu().numpy()
             act_g = act_dist_g.sample().cpu().numpy()
 
-        return np.stack([act_c, act_g]).T, next_msg_c.cpu().numpy(), next_msg_g.cpu().numpy()
+        return np.stack([act_c, act_g]).T, next_msg
 
     def compute_policy_gradient(self, net, dist, act, adv, old_logp):
         logp = dist.log_prob(act)
@@ -206,23 +202,27 @@ class Agents:
             backprop_msg = torch.cat((backprop_msg, start), 1)
 
             losses.append(self.update_net(
-                net, opt, obs, act, adv, ret, msg, msg))
+                net, opt, obs, act, adv, ret, msg, backprop_msg))
         return losses
 
-    def train(self, epochs, prev_rews=[]):
+    def train(self, epochs):
+        """ Trains the agent for given epochs """
         epoch_rews = []
 
         for epoch in range(epochs):
-            solo_rews, rews = self.sample_batch()
-            mean_rew = rews.mean()
-            epoch_rews.append(mean_rew)
-            if mean_rew > self.max_rew:
-                self.max_rew = mean_rew
-                self.save(epoch_rews)
+            import time
+            start = time.time()
+            rew = self.sample_batch()
+            print(time.time()-start)
+            epoch_rews.append(rew)
+
+            if rew > self.max_rew:
+                self.max_rew = rew
+                self.save()
             pol_losses, val_losses = self.update()
 
-            print('Epoch: {:4}  Collector Reward: {:5}  Average Reward: {:5}'.format(
-                epoch, np.round(solo_rews.mean(), 3), np.round(mean_rew, 3)))
+            print('Epoch: {:4}  Average Reward: {:5}'.format(
+                epoch, np.round(rew, 3)))
 
     def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
         sns.set()
@@ -232,22 +232,22 @@ class Agents:
         plt.ylabel(ylabel)
         plt.show()
 
-    def save(self, rews=[], path='{}/model.pt'.format(PROJECT_PATH)):
+    def save(self, path='{}/model.pt'.format(PROJECT_PATH)):
+        """ Saves the networks and optimizers to later continue training """
         torch.save({
             'collector': self.collector.state_dict(),
             'guide': self.guide.state_dict(),
             'optim_c': self.optimizer_c.state_dict(),
             'optim_g': self.optimizer_g.state_dict(),
-            'rews': rews
         }, path)
 
     def load(self, path='{}/model.pt'.format(PROJECT_PATH)):
+        """ Loads a training checkpoint """
         checkpoint = torch.load(path)
         self.collector.load_state_dict(checkpoint['collector'])
         self.guide.load_state_dict(checkpoint['guide'])
         self.optimizer_c.load_state_dict(checkpoint['optim_c'])
         self.optimizer_g.load_state_dict(checkpoint['optim_g'])
-        return checkpoint['rews']
 
     def test(self):
         obs_c, obs_g = self.preprocess(self.envs.reset())
@@ -269,6 +269,8 @@ class Agents:
         self.reset_states()
 
     def reset_states(self):
+        """ Reset cell and hidden rnn states """
+
         self.state_c = (
             torch.zeros(self.num_layers, self.batch_size, self.rnn_hidden,
                         device=self.device),
@@ -285,7 +287,6 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    agents.load()
     agents.train(400)
 
     import code
