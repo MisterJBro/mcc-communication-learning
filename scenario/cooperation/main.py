@@ -19,7 +19,7 @@ PROJECT_PATH = pathlib.Path(
 
 class Agents:
     def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=128, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.03,
+                 fc_hidden=64, rnn_hidden=128, batch_size=128, iters=5, lam=0.97, clip_ratio=0.2, target_kl=0.03,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -88,7 +88,7 @@ class Agents:
         self.buffers.clear()
         batch_rew = np.zeros(self.batch_size)
         obs = self.preprocess(self.envs.reset())
-        msg = np.zeros((self.batch_size, self.symbol_num))
+        msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
 
         for step in range(self.max_steps):
             acts, next_msg = self.get_actions(obs, msg)
@@ -113,8 +113,7 @@ class Agents:
             self.batch_size, self.max_steps, -1).to(self.device)
         obs_g = torch.as_tensor(self.buffers.buffer_g.obs_buf, dtype=torch.float32).reshape(
             self.batch_size, self.max_steps, -1).to(self.device)
-        msg = torch.as_tensor(self.buffers.buffer_c.msg_buf,
-                              dtype=torch.float32).to(self.device)
+        msg = self.buffers.backprop_msg
 
         with torch.no_grad():
             val_c = self.collector.value_only(obs_c, msg).reshape(
@@ -124,6 +123,7 @@ class Agents:
 
         self.buffers.expected_returns()
         self.buffers.advantage_estimation([val_c, val_g])
+        self.buffers.standardize_adv()
 
     def get_actions(self, obs, msg):
         """ Gets action according the agents networks """
@@ -133,15 +133,13 @@ class Agents:
         msg = torch.as_tensor(msg, dtype=torch.float32).reshape(
             self.batch_size, 1, -1).to(self.device)
 
-        with torch.no_grad():
-            act_dist_c, self.state_c = self.collector.next_action(
-                obs[0], msg, self.state_c)
-            act_dist_g, next_msg, self.state_g = self.guide.next_action(
-                obs[1], self.state_g)
+        act_dist_c, self.state_c = self.collector.next_action(
+            obs[0], msg, self.state_c)
+        act_dist_g, next_msg, self.state_g = self.guide.next_action(
+            obs[1], self.state_g)
 
-            next_msg = next_msg.cpu().numpy()
-            act_c = act_dist_c.sample().cpu().numpy()
-            act_g = act_dist_g.sample().cpu().numpy()
+        act_c = act_dist_c.sample().cpu().numpy()
+        act_g = act_dist_g.sample().cpu().numpy()
 
         return np.stack([act_c, act_g]).T, next_msg
 
@@ -154,13 +152,22 @@ class Agents:
         kl_approx = (old_logp - logp).mean().item()
         return loss, kl_approx
 
-    def update_net(self, net, opt, obs, act, adv, ret, msg, backprop_msg):
+    def update_net(self, net, opt, obs, act, adv, ret, msg=None):
         full_loss = 0
         with torch.no_grad():
-            old_logp = net.action_only(obs, msg).log_prob(act).to(self.device)
+            if msg is not None:
+                old_logp = net.action_only(
+                    obs, msg).log_prob(act).to(self.device)
+            else:
+                old_logp = net.action_only(obs).log_prob(act).to(self.device)
+
         for i in range(self.iters):
             opt.zero_grad()
-            dist, msgs, vals = net(obs, backprop_msg)
+
+            if msg is not None:
+                dist, vals = net(obs, msg)
+            else:
+                dist, _, vals = net(obs)
 
             loss, kl = self.compute_policy_gradient(
                 net, dist, act, adv, old_logp)
@@ -178,48 +185,28 @@ class Agents:
         return full_loss
 
     def update(self):
-        losses = []
-        for buffer, net, opt, other_net, other_buf in [(self.buffer_c, self.collector, self.optimizer_c, self.guide, self.buffer_g), (self.buffer_g, self.guide, self.optimizer_g, self.collector, self.buffer_c)]:
-            obs = torch.as_tensor(
-                buffer.obs_buf, dtype=torch.float32, device=self.device)
-            obs = obs.reshape(self.batch_size, self.max_steps, -1)
-            act = torch.as_tensor(
-                buffer.act_buf, dtype=torch.int32, device=self.device).reshape(-1)
-            ret = torch.as_tensor(
-                buffer.ret_buf, dtype=torch.float32, device=self.device).reshape(-1)
-            buffer.standardize_adv()
-            adv = torch.as_tensor(
-                buffer.adv_buf, dtype=torch.float32, device=self.device).reshape(-1)
-            msg = torch.as_tensor(
-                buffer.msg_buf, dtype=torch.float32, device=self.device)
+        obs_c, act_c, ret_c, adv_c, msg, obs_g, act_g, ret_g, adv_g = self.buffers.get_tensors(
+            self.device)
 
-            other_msg = torch.as_tensor(
-                other_buf.msg_buf, dtype=torch.float32, device=self.device)
-            backprop_msg = other_net.message_only(
-                obs[:, :-1, :], other_msg[:, :-1, :]).reshape(self.batch_size, self.max_steps-1, -1)
-            start = torch.zeros(self.batch_size, 1, self.symbol_num,
-                                dtype=torch.float32, device=self.device)
-            backprop_msg = torch.cat((backprop_msg, start), 1)
+        self.update_net(
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, msg=msg)
+        self.update_net(
+            self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g)
 
-            losses.append(self.update_net(
-                net, opt, obs, act, adv, ret, msg, backprop_msg))
-        return losses
+        return []
 
     def train(self, epochs):
         """ Trains the agent for given epochs """
         epoch_rews = []
 
         for epoch in range(epochs):
-            import time
-            start = time.time()
             rew = self.sample_batch()
-            print(time.time()-start)
             epoch_rews.append(rew)
 
             if rew > self.max_rew:
                 self.max_rew = rew
                 self.save()
-            pol_losses, val_losses = self.update()
+            self.update()
 
             print('Epoch: {:4}  Average Reward: {:5}'.format(
                 epoch, np.round(rew, 3)))

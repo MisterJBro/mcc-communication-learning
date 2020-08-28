@@ -9,8 +9,6 @@ class Buffer:
         self.rew_buf = np.empty((batch_size, size), dtype=np.float32)
         self.ret_buf = np.zeros((batch_size, size), dtype=np.float32)
         self.adv_buf = np.zeros((batch_size, size), dtype=np.float32)
-        self.msg_buf = np.empty(
-            (batch_size, size, symbol_num), dtype=np.float32)
 
         self.ptr = 0
         self.batch_size = batch_size
@@ -23,15 +21,12 @@ class Buffer:
         self.ret_buf = np.zeros((self.batch_size, self.size), dtype=np.float32)
         self.adv_buf = np.zeros((self.batch_size, self.size), dtype=np.float32)
 
-    def store(self, obs, act, rew, msg=None):
+    def store(self, obs, act, rew):
         assert self.ptr < self.size, 'Buffer full!'
 
         self.obs_buf[:, self.ptr] = obs
         self.act_buf[:, self.ptr] = act
         self.rew_buf[:, self.ptr] = rew
-
-        if msg is not None:
-            self.msg_buf[:, self.ptr] = msg
         self.ptr += 1
 
     def expected_returns(self):
