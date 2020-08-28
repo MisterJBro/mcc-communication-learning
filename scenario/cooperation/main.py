@@ -18,8 +18,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=8e-3, lr_guide=8e-3, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=128, iters=5, lam=0.97, clip_ratio=0.2, target_kl=0.03,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, gamma=0.99, max_steps=500,
+                 fc_hidden=64, rnn_hidden=128, batch_size=256, iters=20, lam=0.97, clip_ratio=0.2, target_kl=0.03,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -45,9 +45,9 @@ class Agents:
         self.guide = Speaker(
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
 
-        self.optimizer_c = optim.Adam(
+        self.optimizer_c = optim.RMSprop(
             self.collector.parameters(), lr=lr_collector)
-        self.optimizer_g = optim.Adam(
+        self.optimizer_g = optim.RMSprop(
             self.guide.parameters(), lr=lr_guide)
         self.batch_size = batch_size
         self.iters = iters
@@ -199,7 +199,7 @@ class Agents:
         obs_c, act_c, ret_c, adv_c, msg, obs_g, act_g, ret_g, adv_g = self.buffers.get_tensors(
             self.device)
 
-        print(self.guide.message[0].weight[2][3:6])
+        # print(self.guide.message[0].weight[2][3:6])
 
         # self.optimizer_g.zero_grad()
         # test = torch.cat((torch.ones(self.batch_size, self.max_steps, 1), torch.zeros(
@@ -212,10 +212,10 @@ class Agents:
 
         self.update_net(
             self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, msg=msg, other_net=self.guide, other_obs=obs_g)
-        print(self.guide.message[0].weight[2][3:6])
+        # print(self.guide.message[0].weight[2][3:6])
         self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g)
-        print(self.guide.message[0].weight[2][3:6])
+        # print(self.guide.message[0].weight[2][3:6])
 
         return []
 
@@ -295,8 +295,8 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    agents.load()
-    agents.train(100)
+    # agents.load()
+    agents.train(300)
 
     import code
     # code.interact(local=locals())
