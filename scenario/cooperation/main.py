@@ -19,8 +19,8 @@ PROJECT_PATH = pathlib.Path(
 
 class Agents:
     def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=512, iters=20, lam=0.97, clip_ratio=0.2, target_kl=0.02,
-                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
+                 fc_hidden=64, rnn_hidden=128, batch_size=256, iters=20, lam=0.97, clip_ratio=0.2, target_kl=0.02,
+                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=0.5):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
@@ -152,70 +152,58 @@ class Agents:
         kl_approx = (old_logp - logp).mean().item()
         return loss, kl_approx
 
-    def update_net(self, net, opt, obs, act, adv, ret, msg=None, other_net=None, other_obs=None):
+    def update_net(self, net, opt, obs, act, adv, ret, old_logp, msg=None, other_net=None, other_obs=None):
         full_loss = 0
-        with torch.no_grad():
-            if msg is not None:
-                old_logp = net.action_only(
-                    obs, msg).log_prob(act).to(self.device)
-            else:
-                old_logp = net.action_only(
-                    obs).log_prob(act).to(self.device)
 
-        for i in range(self.iters):
-            # opt.zero_grad()
-            self.optimizer_c.zero_grad()
-            self.optimizer_g.zero_grad()
+        if msg is not None:
+            dist, vals = net(obs, msg)
+        else:
+            dist, _, vals = net(obs)
 
-            if msg is not None:
-                dist, vals = net(obs, msg)
-            else:
-                dist, _, vals = net(obs)
+        loss, kl = self.compute_policy_gradient(
+            net, dist, act, adv, old_logp)
+        full_loss += loss.item()
+        if kl > self.target_kl:
+            return full_loss, True
+        loss.backward(retain_graph=True)
 
-            loss, kl = self.compute_policy_gradient(
-                net, dist, act, adv, old_logp)
-            full_loss += loss.item()
-            if kl > self.target_kl:
-                return full_loss
-            loss.backward(retain_graph=True)
+        loss = self.criterion(vals.reshape(-1), ret)
+        full_loss += loss.item()
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(
+            net.parameters(), self.grad_clip)
 
-            loss = self.criterion(vals.reshape(-1), ret)
-            full_loss += loss.item()
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(
-                net.parameters(), self.grad_clip)
-
-            self.optimizer_c.step()
-            self.optimizer_g.step()
-            if other_net is not None:
-                _, msg, _ = other_net(other_obs[:, :-1])
-                msg = msg.reshape(self.batch_size, self.max_steps-1, -1)
-                msg = torch.cat(
-                    (torch.zeros(self.batch_size, 1, self.symbol_num).to(self.device), msg), 1)
-
-        return full_loss
+        return full_loss, False
 
     def update(self):
         obs_c, act_c, ret_c, adv_c, msg, obs_g, act_g, ret_g, adv_g = self.buffers.get_tensors(
             self.device)
 
-        # print(self.guide.message[0].weight[2][3:6])
+        with torch.no_grad():
+            old_logp_c = self.collector.action_only(
+                obs_c, msg).log_prob(act).to(self.device)
+            old_logp_g = self.guide.action_only(
+                obs_g).log_prob(act).to(self.device)
 
-        # self.optimizer_g.zero_grad()
-        # test = torch.cat((torch.ones(self.batch_size, self.max_steps, 1), torch.zeros(
-        #    self.batch_size, self.max_steps, 4)), 2).to(self.device)
+        for i in range(self.iters):
+            self.optimizer_c.zero_grad()
+            self.optimizer_g.zero_grad()
 
-        #loss = torch.nn.MSELoss()(msg, test)
-        # loss.backward()
+            loss_c, done_c = self.update_net(
+                self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, old_logp_c, msg=msg)
+            loss_g, done_g = self.update_net(
+                self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, old_logp_g)
 
-        # self.optimizer_g.step()
+            if done_c or done_g:
+                break
 
-        self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, msg=msg, other_net=self.guide, other_obs=obs_g)
-        # print(self.guide.message[0].weight[2][3:6])
-        self.update_net(
-            self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g)
-        # print(self.guide.message[0].weight[2][3:6])
+            _, msg, _ = self.guide(obs_g[:, :-1])
+            msg = msg.reshape(self.batch_size, self.max_steps-1, -1)
+            msg = torch.cat(
+                (torch.zeros(self.batch_size, 1, self.symbol_num).to(self.device), msg), 1)
+
+            self.optimizer_c.step()
+            self.optimizer_g.step()
 
         return []
 
@@ -299,8 +287,7 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    agents.load()
-    # agents.train(2000)
+    agents.train(2000)
 
     import code
     # code.interact(local=locals())

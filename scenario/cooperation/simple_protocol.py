@@ -254,9 +254,11 @@ class Agents:
         self.last_message = ''
 
         for step in range(self.max_steps):
-            import time
+            import random
             # time.sleep(0.01)
-            #msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
+            # msg[0] = random.choices([torch.tensor([1., 0., 0., 0., 0.]).to(
+            #    self.device), torch.tensor([0., 1., 0., 0., 0.]).to(self.device)])[0]
+
             msg_show = msg[0].detach().cpu().numpy()
             self.last_message = self.interpret(msg_show)
 
