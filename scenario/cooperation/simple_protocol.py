@@ -28,7 +28,8 @@ class Agents:
 
         # Environment
         self.num_world_blocks = 5
-        self.envs = Envs(batch_size, red_guides=1, blue_collector=0)
+        self.envs = Envs(batch_size, red_guides=1,
+                         blue_collector=0, show_messages=True)
         self.obs_dim = (self.num_world_blocks,) + \
             self.envs.observation_space.shape
         self.act_dim = self.envs.action_space.nvec[0]
@@ -163,7 +164,6 @@ class Agents:
                     obs).log_prob(act).to(self.device)
 
         for i in range(self.iters):
-            # opt.zero_grad()
             self.optimizer_c.zero_grad()
             self.optimizer_g.zero_grad()
 
@@ -199,23 +199,10 @@ class Agents:
         obs_c, act_c, ret_c, adv_c, msg, obs_g, act_g, ret_g, adv_g = self.buffers.get_tensors(
             self.device)
 
-        # print(self.guide.message[0].weight[2][3:6])
-
-        # self.optimizer_g.zero_grad()
-        # test = torch.cat((torch.ones(self.batch_size, self.max_steps, 1), torch.zeros(
-        #    self.batch_size, self.max_steps, 4)), 2).to(self.device)
-
-        #loss = torch.nn.MSELoss()(msg, test)
-        # loss.backward()
-
-        # self.optimizer_g.step()
-
         self.update_net(
             self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, msg=msg, other_net=self.guide, other_obs=obs_g)
-        # print(self.guide.message[0].weight[2][3:6])
         self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g)
-        # print(self.guide.message[0].weight[2][3:6])
 
         return []
 
@@ -243,7 +230,7 @@ class Agents:
         plt.ylabel(ylabel)
         plt.show()
 
-    def save(self, path='{}/model.pt'.format(PROJECT_PATH)):
+    def save(self, path='{}/simple_protocol.pt'.format(PROJECT_PATH)):
         """ Saves the networks and optimizers to later continue training """
         torch.save({
             'collector': self.collector.state_dict(),
@@ -252,7 +239,7 @@ class Agents:
             'optim_g': self.optimizer_g.state_dict(),
         }, path)
 
-    def load(self, path='{}/model.pt'.format(PROJECT_PATH)):
+    def load(self, path='{}/simple_protocol.pt'.format(PROJECT_PATH)):
         """ Loads a training checkpoint """
         checkpoint = torch.load(path)
         self.collector.load_state_dict(checkpoint['collector'])
@@ -264,14 +251,17 @@ class Agents:
         obs = self.preprocess(self.envs.reset())
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
         episode_rew = 0
+        self.last_message = ''
 
         for step in range(self.max_steps):
             import time
-            time.sleep(0.05)
-
+            # time.sleep(0.01)
             #msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
-            self.envs.envs[0].render()
-            print(msg[0].detach().cpu().numpy())
+            msg_show = msg[0].detach().cpu().numpy()
+            self.last_message = self.interpret(msg_show)
+
+            self.envs.envs[0].render(msg=self.interpret(msg_show))
+            # print(msg[0].detach().cpu().numpy())
             acts, msg = self.get_actions(obs, msg)
             obs, rews, _, _ = self.envs.step(acts)
             obs = self.preprocess(obs)
@@ -279,6 +269,18 @@ class Agents:
             episode_rew += rews[0][0] + rews[0][1]
         print('Result reward: ', episode_rew)
         self.reset_states()
+
+    def interpret(self, msg):
+        if msg[0]:
+            return self.last_message
+        if msg[1]:
+            return 'Treasure in Tunnel 1'
+        if msg[2]:
+            return 'Nothing in Tunnel 1'
+        if msg[3]:
+            return 'Nothing in Tunnel 1'
+        if msg[4]:
+            return 'Not ready!'
 
     def reset_states(self):
         """ Reset cell and hidden rnn states """
@@ -300,10 +302,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     agents.load()
-    # agents.train(2000)
 
-    import code
-    # code.interact(local=locals())
     while True:
         input('Press enter to continue')
         agents.test()
