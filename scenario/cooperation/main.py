@@ -20,7 +20,7 @@ PROJECT_PATH = pathlib.Path(
 class Agents:
     def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, gamma=0.99, max_steps=500,
                  fc_hidden=64, rnn_hidden=128, batch_size=128, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.03,
-                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
+                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0, entropy_factor=-0.1):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
@@ -87,7 +87,7 @@ class Agents:
     def sample_batch(self):
         """ Samples a batch of trajectories """
         self.buffers.clear()
-        batch_rew = np.zeros(self.batch_size)
+        batch_rew = np.zeros((2, self.batch_size))
         obs = self.preprocess(self.envs.reset())
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
 
@@ -97,15 +97,17 @@ class Agents:
             next_obs = self.preprocess(next_obs)
 
             team_rew = np.sum(rews, axis=1)
-            self.buffers.store(obs, acts, team_rew, msg)
-            batch_rew += team_rew
+            self.buffers.store(
+                obs, acts, rews[:, 0], rews[:, 0]+rews[:, 1], msg)
+            batch_rew[0] += rews[:, 0]
+            batch_rew[1] += rews[:, 0]+rews[:, 1]
 
             obs = next_obs
             msg = next_msg
         self.reward_and_advantage()
         self.reset_states()
 
-        return np.mean(batch_rew)
+        return np.mean(batch_rew, 1)
 
     def reward_and_advantage(self):
         """ Calculates the rewards and General Advantage Estimation """
@@ -152,7 +154,7 @@ class Agents:
         kl_approx = (old_logp - logp).mean().item()
         return loss, kl_approx
 
-    def update_net(self, net, opt, obs, act, adv, ret, msg=None, other_net=None, other_obs=None):
+    def update_net(self, net, opt, obs, act, adv, ret, msg=None, other_net=None, other_obs=None, other_opt=None):
         """ Updates the net """
         policy_loss = 0
         value_loss = 0
@@ -165,11 +167,16 @@ class Agents:
                     obs).log_prob(act).to(self.device)
 
         for i in range(self.iters):
-            self.optimizer_c.zero_grad()
-            self.optimizer_g.zero_grad()
+            opt.zero_grad()
+            if other_opt is not None:
+                other_opt.zero_grad()
 
             if msg is not None:
                 dist, vals = net(obs, msg)
+
+                msg_loss = (Categorical(
+                    probs=msg[:, 1:].reshape(-1, self.symbol_num).mean(0)).entropy() * 0.05)
+                msg_loss.backward(retain_graph=True)
             else:
                 dist, _, vals = net(obs)
 
@@ -186,8 +193,9 @@ class Agents:
             torch.nn.utils.clip_grad_norm_(
                 net.parameters(), self.grad_clip)
 
-            self.optimizer_c.step()
-            self.optimizer_g.step()
+            opt.step()
+            if other_opt is not None:
+                other_opt.step()
             if other_net is not None:
                 _, msg, _ = other_net(other_obs[:, :-1])
                 msg = msg.reshape(self.batch_size, self.max_steps-1, -1)
@@ -200,14 +208,15 @@ class Agents:
         """ Updates all nets """
         obs_c, act_c, ret_c, adv_c, msg, obs_g, act_g, ret_g, adv_g = self.buffers.get_tensors(
             self.device)
-
-        p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, msg=msg, other_net=self.guide, other_obs=obs_g)
-        p_loss_g, v_loss_g = self.update_net(
-            self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g)
-
         msg_ent = Categorical(
             probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
+
+        # self.guide.set_requires_grad(False)
+        p_loss_c, v_loss_c = self.update_net(
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g)
+        # self.guide.set_requires_grad(True)
+        p_loss_g, v_loss_g = self.update_net(
+            self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g)
 
         return p_loss_c, v_loss_c, p_loss_g, v_loss_g, msg_ent
 
@@ -219,13 +228,13 @@ class Agents:
             rew = self.sample_batch()
             epoch_rews.append(rew)
 
-            if rew > self.max_rew:
-                self.max_rew = rew
+            if rew.sum() > self.max_rew:
+                self.max_rew = rew.sum()
                 self.save()
             p_loss_c, v_loss_c, p_loss_g, v_loss_g, msg_ent = self.update()
 
-            print('Epoch: {:4}  Average Reward: {:5}  Collector - Policy Loss {:4}  Value Loss {:4}  Message Entropy: {:4}'.format(
-                epoch, np.round(rew, 3), np.round(p_loss_c, 3), np.round(v_loss_c, 3), np.round(msg_ent, 3)))
+            print('Epoch: {:4}  Average Reward: {:5}, {:5}  Collector - Policy Loss {:4}  Value Loss {:4}  Message Entropy: {:4}'.format(
+                epoch, np.round(rew[0], 3), np.round(rew[1], 3), np.round(p_loss_c, 3), np.round(v_loss_c, 3), np.round(msg_ent, 3)))
 
     def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
         """ Plots a given series """
@@ -258,6 +267,7 @@ class Agents:
         obs = self.preprocess(self.envs.reset())
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
         episode_rew = 0
+        msg_sum = np.zeros(self.symbol_num)
 
         for step in range(self.max_steps):
             import time
@@ -266,12 +276,14 @@ class Agents:
             #msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
             self.envs.envs[0].render()
             print(msg[0].detach().cpu().numpy())
+            msg_sum += msg[0].detach().cpu().numpy()
             acts, msg = self.get_actions(obs, msg)
             obs, rews, _, _ = self.envs.step(acts)
             obs = self.preprocess(obs)
 
             episode_rew += rews[0][0] + rews[0][1]
         print('Result reward: ', episode_rew)
+        print(msg_sum)
         self.reset_states()
 
     def reset_states(self):
@@ -293,7 +305,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     # agents.load()
-    agents.train(2000)
+    agents.train(200)
 
     import code
     # code.interact(local=locals())

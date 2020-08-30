@@ -95,6 +95,12 @@ class Speaker(nn.Module):
             nn.Linear(rnn_hidden, 1),
         )
 
+    def set_requires_grad(self, grad):
+        for params in self.mlp.parameters():
+            params.requires_grad = grad
+        for params in self.rnn.parameters():
+            params.requires_grad = grad
+
     def next_action(self, x, state):
         x = self.mlp(x)
         _, (h_n, c_n) = self.rnn(x, state)

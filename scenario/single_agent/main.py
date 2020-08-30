@@ -140,7 +140,7 @@ class Agents:
             full_loss += loss.item()
             if kl > self.target_kl:
                 return full_loss
-            loss.backward(retain_graph=True) 
+            loss.backward(retain_graph=True)
 
             loss = self.criterion(vals.reshape(-1), ret)
             full_loss += loss.item()

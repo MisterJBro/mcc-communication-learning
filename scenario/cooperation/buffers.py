@@ -19,9 +19,9 @@ class Buffers:
         self.buffer_g.clear()
         self.backprop_msg = None
 
-    def store(self, obs, acts, rews, msg):
-        self.buffer_c.store(obs[0], acts[:, 0], rews)
-        self.buffer_g.store(obs[1], acts[:, 1], rews)
+    def store(self, obs, acts, rews_c, rews_g, msg):
+        self.buffer_c.store(obs[0], acts[:, 0], rews_c)
+        self.buffer_g.store(obs[1], acts[:, 1], rews_g)
 
         if self.backprop_msg is None:
             self.backprop_msg = msg.reshape(self.batch_size, 1, -1)
