@@ -174,8 +174,18 @@ class Agents:
             if msg is not None:
                 dist, vals = net(obs, msg)
 
+                # Dirichlet process
+                n = (self.max_steps-1)*self.batch_size
+                alpha = 0
+                n_k = msg[:, 1:].reshape(-1, self.symbol_num).sum(0)
+
+                logp_c_k = torch.log(n_k / (alpha+n-1))
+
+                #dir_rew = -(logp_c_k * n_k).sum()*1e-4
+                # dir_rew.backward(retain_graph=True)
+
                 msg_loss = (Categorical(
-                    probs=msg[:, 1:].reshape(-1, self.symbol_num).mean(0)).entropy() * 0.05)
+                    probs=msg[:, 1:].reshape(-1, self.symbol_num).mean(0)).entropy() * 1e-5)
                 msg_loss.backward(retain_graph=True)
             else:
                 dist, _, vals = net(obs)
@@ -304,7 +314,7 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    # agents.load()
+    agents.load()
     agents.train(200)
 
     import code
