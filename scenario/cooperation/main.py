@@ -70,12 +70,14 @@ class Agents:
         self.target_kl = target_kl
 
     def single_preprocess(self, obs):
+        """ Processes a single observation into one hot encoding """
         state = np.zeros((obs.size, self.num_world_blocks), dtype=np.uint8)
         state[np.arange(obs.size), obs.reshape(-1)] = 1
         state = state.reshape(obs.shape + (self.num_world_blocks,))
         return np.moveaxis(state, -1, 0)
 
     def preprocess(self, obs_list):
+        """ Processes all observation """
         obs_c, obs_g = [], []
         for x in range(self.batch_size):
             obs_c.append(self.single_preprocess(obs_list[x][0]))
@@ -84,7 +86,6 @@ class Agents:
 
     def sample_batch(self):
         """ Samples a batch of trajectories """
-
         self.buffers.clear()
         batch_rew = np.zeros(self.batch_size)
         obs = self.preprocess(self.envs.reset())
@@ -108,7 +109,6 @@ class Agents:
 
     def reward_and_advantage(self):
         """ Calculates the rewards and General Advantage Estimation """
-
         obs_c = torch.as_tensor(self.buffers.buffer_c.obs_buf, dtype=torch.float32).reshape(
             self.batch_size, self.max_steps, -1).to(self.device)
         obs_g = torch.as_tensor(self.buffers.buffer_g.obs_buf, dtype=torch.float32).reshape(
@@ -127,7 +127,6 @@ class Agents:
 
     def get_actions(self, obs, msg):
         """ Gets action according the agents networks """
-
         obs = torch.as_tensor(obs, dtype=torch.float32).reshape(
             self.agents_num, self.batch_size, 1, -1).to(self.device)
         msg = torch.as_tensor(msg, dtype=torch.float32).reshape(
@@ -144,6 +143,7 @@ class Agents:
         return np.stack([act_c, act_g]).T, next_msg
 
     def compute_policy_gradient(self, net, dist, act, adv, old_logp):
+        """ Computes the policy gradient with PPO """
         logp = dist.log_prob(act)
 
         ratio = torch.exp(logp - old_logp)
@@ -153,6 +153,7 @@ class Agents:
         return loss, kl_approx
 
     def update_net(self, net, opt, obs, act, adv, ret, msg=None, other_net=None, other_obs=None):
+        """ Updates the net """
         policy_loss = 0
         value_loss = 0
         with torch.no_grad():
@@ -196,6 +197,7 @@ class Agents:
         return policy_loss, value_loss
 
     def update(self):
+        """ Updates all nets """
         obs_c, act_c, ret_c, adv_c, msg, obs_g, act_g, ret_g, adv_g = self.buffers.get_tensors(
             self.device)
 
@@ -226,6 +228,7 @@ class Agents:
                 epoch, np.round(rew, 3), np.round(p_loss_c, 3), np.round(v_loss_c, 3), np.round(msg_ent, 3)))
 
     def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
+        """ Plots a given series """
         sns.set()
         plt.plot(arr)
         plt.title(title)
@@ -251,6 +254,7 @@ class Agents:
         self.optimizer_g.load_state_dict(checkpoint['optim_g'])
 
     def test(self):
+        """ Tests the agent """
         obs = self.preprocess(self.envs.reset())
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
         episode_rew = 0
@@ -272,7 +276,6 @@ class Agents:
 
     def reset_states(self):
         """ Reset cell and hidden rnn states """
-
         self.state_c = (
             torch.zeros(self.num_layers, self.batch_size, self.rnn_hidden,
                         device=self.device),
