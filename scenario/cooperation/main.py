@@ -19,8 +19,8 @@ PROJECT_PATH = pathlib.Path(
 
 class Agents:
     def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=256, iters=20, lam=0.97, clip_ratio=0.2, target_kl=0.02,
-                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=0.2):
+                 fc_hidden=64, rnn_hidden=128, batch_size=128, iters=20, lam=0.97, clip_ratio=0.2, target_kl=0.02,
+                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
@@ -139,7 +139,7 @@ class Agents:
             obs[1], self.state_g)
 
         act_c = act_dist_c.sample().cpu().numpy()
-        act_g = act_dist_g.sample().cpu().numpy()
+        act_g = np.ones(self.batch_size)*4  # act_dist_g.sample().cpu().numpy()
 
         return np.stack([act_c, act_g]).T, next_msg
 
@@ -153,7 +153,6 @@ class Agents:
         return loss, kl_approx
 
     def update_net(self, net, opt, obs, act, adv, ret, old_logp, msg=None, other_net=None, other_obs=None):
-        full_loss = 0
 
         if msg is not None:
             dist, vals = net(obs, msg)
@@ -162,24 +161,25 @@ class Agents:
 
         loss, kl = self.compute_policy_gradient(
             net, dist, act, adv, old_logp)
-        full_loss += loss.item()
+        grad_loss = loss.item()
         if kl > self.target_kl:
-            return full_loss, True
+            return 0, 0, True
         loss.backward(retain_graph=True)
 
         loss = self.criterion(vals.reshape(-1), ret)
-        full_loss += loss.item()
+        val_loss = loss.item()
         loss.backward()
         torch.nn.utils.clip_grad_norm_(
             net.parameters(), self.grad_clip)
 
-        return full_loss, False
+        return grad_loss, val_loss, False
 
     def update(self):
         obs_c, act_c, ret_c, adv_c, msg, obs_g, act_g, ret_g, adv_g = self.buffers.get_tensors(
             self.device)
 
-        torch.autograd.set_detect_anomaly(True)
+        total_pol_loss_c, total_val_loss_c = 0, 0
+
         with torch.no_grad():
             old_logp_c = self.collector.action_only(
                 obs_c, msg).log_prob(act_c).to(self.device)
@@ -190,10 +190,14 @@ class Agents:
             self.optimizer_c.zero_grad()
             self.optimizer_g.zero_grad()
 
-            loss_c, done_c = self.update_net(
+            pol_loss_c, val_loss_c, done_c = self.update_net(
                 self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, old_logp_c, msg=msg)
-            loss_g, done_g = self.update_net(
-                self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, old_logp_g)
+            # loss_g, done_g = self.update_net(
+            #    self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, old_logp_g)
+            done_g = False
+
+            total_pol_loss_c += pol_loss_c
+            total_val_loss_c += val_loss_c
 
             self.optimizer_c.step()
             self.optimizer_g.step()
@@ -206,7 +210,10 @@ class Agents:
             msg = torch.cat(
                 (torch.zeros(self.batch_size, 1, self.symbol_num).to(self.device), msg), 1)
 
-        return []
+        msg_ent = Categorical(
+            probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
+
+        return total_pol_loss_c, total_val_loss_c, msg_ent
 
     def train(self, epochs):
         """ Trains the agent for given epochs """
@@ -219,10 +226,10 @@ class Agents:
             if rew > self.max_rew:
                 self.max_rew = rew
                 self.save()
-            self.update()
+            p_loss_c, v_loss_c, msg_ent = self.update()
 
-            print('Epoch: {:4}  Average Reward: {:5}'.format(
-                epoch, np.round(rew, 3)))
+            print('Epoch: {:4}  Average Reward: {:5}  Collector - Policy Loss {:4}  Value Loss {:4}  Message Entropy: {:4}'.format(
+                epoch, np.round(rew, 3), np.round(p_loss_c, 3), np.round(v_loss_c, 3), np.round(msg_ent, 3)))
 
     def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
         sns.set()
