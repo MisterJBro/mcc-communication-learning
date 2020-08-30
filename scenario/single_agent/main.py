@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 import random
 import gym
 import numpy as np
-from scenario.cooperation.buffer import Buffer
-from scenario.cooperation.networks import Policy
+from scenario.single_agent.buffer import Buffer
+from scenario.single_agent.networks import Policy
 import seaborn as sns
 import pathlib
 from scenario.utils.envs import Envs
@@ -18,8 +18,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-5, lr_guide=1e-5, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=1024, iters=60, lam=0.97, clip_ratio=0.2, target_kl=0.03,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, gamma=0.99, max_steps=500,
+                 fc_hidden=64, rnn_hidden=128, batch_size=128, iters=60, lam=0.97, clip_ratio=0.2, target_kl=0.05,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -229,8 +229,9 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    agents.load()
-    # agents.train(100)
+    agents.max_rew = 100
+    # agents.load()
+    agents.train(200)
 
     while True:
         input('Press enter to continue')

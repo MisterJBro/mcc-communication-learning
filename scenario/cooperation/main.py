@@ -18,8 +18,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=128, iters=20, lam=0.97, clip_ratio=0.2, target_kl=0.02,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=6.25e-4, lr_guide=6.25e-4, gamma=0.99, max_steps=500,
+                 fc_hidden=64, rnn_hidden=128, batch_size=128, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.03,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -45,9 +45,9 @@ class Agents:
         self.guide = Speaker(
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
 
-        self.optimizer_c = optim.RMSprop(
+        self.optimizer_c = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
-        self.optimizer_g = optim.RMSprop(
+        self.optimizer_g = optim.Adam(
             self.guide.parameters(), lr=lr_guide)
         self.batch_size = batch_size
         self.iters = iters
@@ -100,7 +100,7 @@ class Agents:
             batch_rew += team_rew
 
             obs = next_obs
-            msg = next_msg
+            #msg = next_msg
         self.reward_and_advantage()
         self.reset_states()
 
@@ -188,7 +188,7 @@ class Agents:
 
         for i in range(self.iters):
             self.optimizer_c.zero_grad()
-            self.optimizer_g.zero_grad()
+            # self.optimizer_g.zero_grad()
 
             pol_loss_c, val_loss_c, done_c = self.update_net(
                 self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, old_logp_c, msg=msg)
@@ -200,16 +200,15 @@ class Agents:
             total_val_loss_c += val_loss_c
 
             self.optimizer_c.step()
-            self.optimizer_g.step()
+            # self.optimizer_g.step()
 
             if done_c or done_g:
                 break
 
-            _, msg, _ = self.guide(obs_g[:, :-1])
-            msg = msg.reshape(self.batch_size, self.max_steps-1, -1)
-            msg = torch.cat(
-                (torch.zeros(self.batch_size, 1, self.symbol_num).to(self.device), msg), 1)
-
+            #_, msg, _ = self.guide(obs_g[:, :-1])
+            #msg = msg.reshape(self.batch_size, self.max_steps-1, -1)
+            # msg = torch.cat(
+            #    (torch.zeros(self.batch_size, 1, self.symbol_num).to(self.device), msg), 1)
         msg_ent = Categorical(
             probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
 
@@ -268,7 +267,7 @@ class Agents:
             #msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
             self.envs.envs[0].render()
             print(msg[0].detach().cpu().numpy())
-            acts, msg = self.get_actions(obs, msg)
+            acts, next_msg = self.get_actions(obs, msg)
             obs, rews, _, _ = self.envs.step(acts)
             obs = self.preprocess(obs)
 
@@ -295,6 +294,7 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
+    # agents.load()
     agents.train(2000)
 
     import code
