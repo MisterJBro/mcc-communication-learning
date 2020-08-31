@@ -48,7 +48,7 @@ class Agents:
         self.optimizer_c = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
         self.optimizer_g = optim.Adam(
-            self.guide.parameters(), lr=lr_guide)
+            self.guide.parameters(), lr=lr_guide, betas=(0.01, 0.999))
         self.batch_size = batch_size
         self.iters = iters
         self.val_criterion = nn.MSELoss()
@@ -157,7 +157,7 @@ class Agents:
         kl_approx = (old_logp - logp).mean().item()
         return loss, kl_approx
 
-    def update_net(self, net, opt, obs, act, adv, ret, iters, msg=None, other_net=None, other_obs=None, other_opt=None):
+    def update_net(self, net, opt, obs, act, adv, ret, iters, msg=None, other_net=None, other_obs=None, other_opt=None, other_act=None, other_adv=None, other_ret=None):
         """ Updates the net """
         policy_loss = 0
         value_loss = 0
@@ -168,6 +168,10 @@ class Agents:
             else:
                 old_logp = net.action_only(
                     obs).log_prob(act).to(self.device)
+
+            if other_net is not None:
+                other_old_logp = other_net.action_only(
+                    other_obs).log_prob(other_act).to(self.device)
 
         for i in range(iters):
             opt.zero_grad()
@@ -192,6 +196,19 @@ class Agents:
             torch.nn.utils.clip_grad_norm_(
                 net.parameters(), self.grad_clip)
 
+            if other_net is not None:
+                other_dist, _,  other_vals = other_net(other_obs)
+                other_loss, _ = self.compute_policy_gradient(
+                    other_net, other_dist, other_act, other_adv, other_old_logp)
+
+                other_loss.backward(retain_graph=True)
+
+                other_loss = self.val_criterion(
+                    other_vals.reshape(-1), other_ret)
+                other_loss.backward()
+                torch.nn.utils.clip_grad_norm_(
+                    other_net.parameters(), self.grad_clip)
+
             opt.step()
             if other_opt is not None:
                 other_opt.step()
@@ -212,7 +229,7 @@ class Agents:
 
         # self.guide.set_requires_grad(False)
         p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 10, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g)
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 10, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         # self.guide.set_requires_grad(True)
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 40)
