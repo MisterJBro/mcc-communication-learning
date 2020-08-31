@@ -96,30 +96,21 @@ class Agents:
         for step in range(self.max_steps):
             trs = self.envs.get_treasure_tunnels()
 
-            acts, next_msg, pred = self.get_actions(obs, msg)
+            acts, next_msg = self.get_actions(obs, msg)
             next_obs, rews, _, _ = self.envs.step(acts)
             next_obs = self.preprocess(next_obs)
 
-            pred_rew = self.prediction_reward(trs, pred)
             self.buffers.store(
-                obs, acts, rews[:, 0], pred_rew, msg, trs)
+                obs, acts, rews[:, 0], rews[:, 1], msg, trs)
             batch_rew[0] += rews[:, 0]
-            batch_rew[1] += pred_rew
+            batch_rew[1] += rews[:, 1]
 
             obs = next_obs
             msg = next_msg
         self.reward_and_advantage()
         self.reset_states()
 
-        batch_rew[1] /= self.max_steps
         return np.mean(batch_rew, 1)
-
-    def prediction_reward(self, trs, pred):
-        trs = torch.as_tensor(
-            trs, dtype=torch.long).to(self.device)
-        pred = torch.argmax(pred, dim=1)
-
-        return (trs == pred).float().cpu().numpy()
 
     def reward_and_advantage(self):
         """ Calculates the rewards and General Advantage Estimation """
@@ -148,13 +139,13 @@ class Agents:
 
         act_dist_c, self.state_c = self.collector.next_action(
             obs[0], msg, self.state_c)
-        act_dist_g, next_msg, pred, self.state_g = self.guide.next_action(
+        act_dist_g, next_msg, self.state_g = self.guide.next_action(
             obs[1], self.state_g)
 
         act_c = act_dist_c.sample().cpu().numpy()
         act_g = act_dist_g.sample().cpu().numpy()
 
-        return np.stack([act_c, act_g]).T, next_msg, pred
+        return np.stack([act_c, act_g]).T, next_msg
 
     def compute_policy_gradient(self, net, dist, act, adv, old_logp):
         """ Computes the policy gradient with PPO """
@@ -166,7 +157,7 @@ class Agents:
         kl_approx = (old_logp - logp).mean().item()
         return loss, kl_approx
 
-    def update_net(self, net, opt, obs, act, adv, ret, msg=None, other_net=None, other_obs=None, other_opt=None, trs=None):
+    def update_net(self, net, opt, obs, act, adv, ret, iters, msg=None, other_net=None, other_obs=None, other_opt=None):
         """ Updates the net """
         policy_loss = 0
         value_loss = 0
@@ -178,7 +169,7 @@ class Agents:
                 old_logp = net.action_only(
                     obs).log_prob(act).to(self.device)
 
-        for i in range(self.iters):
+        for i in range(iters):
             opt.zero_grad()
             if other_opt is not None:
                 other_opt.zero_grad()
@@ -186,11 +177,7 @@ class Agents:
             if msg is not None:
                 dist, vals = net(obs, msg)
             else:
-                dist, _, preds, vals = net(obs)
-
-            if trs is not None:
-                pred_loss = self.pred_criterion(preds, trs)
-                pred_loss.backward(retain_graph=True)
+                dist, _, vals = net(obs)
 
             loss, kl = self.compute_policy_gradient(
                 net, dist, act, adv, old_logp)
@@ -209,7 +196,7 @@ class Agents:
             if other_opt is not None:
                 other_opt.step()
             if other_net is not None:
-                _, msg, _, _ = other_net(other_obs[:, :-1])
+                _, msg, _ = other_net(other_obs[:, :-1])
                 msg = msg.reshape(self.batch_size, self.max_steps-1, -1)
                 msg = torch.cat(
                     (torch.zeros(self.batch_size, 1, self.symbol_num).to(self.device), msg), 1)
@@ -224,34 +211,29 @@ class Agents:
             probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
 
         # self.guide.set_requires_grad(False)
-        # p_loss_c, v_loss_c = self.update_net(
-        #    self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g)
+        p_loss_c, v_loss_c = self.update_net(
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 10, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g)
         # self.guide.set_requires_grad(True)
         p_loss_g, v_loss_g = self.update_net(
-            self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, trs=trs)
-        p_loss_c, v_loss_c = 0, 0
+            self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 40)
 
         return p_loss_c, v_loss_c, p_loss_g, v_loss_g, msg_ent
 
     def train(self, epochs):
         """ Trains the agent for given epochs """
         epoch_rews = []
-        accs = []
 
         for epoch in range(epochs):
             rew = self.sample_batch()
             epoch_rews.append(rew)
-            accs.append(rew[1]*100)
 
-            if rew.sum() > self.max_rew:
-                self.max_rew = rew.sum()
+            if rew[0] > self.max_rew:
+                self.max_rew = rew[0]
                 self.save()
             p_loss_c, v_loss_c, p_loss_g, v_loss_g, msg_ent = self.update()
 
-            ma = self.moving_average(accs, n=min(len(accs), 10))
-
-            print('Epoch: {:4}  Avg Rew: {:5}  Pred Acc: {:3}%  Collector - Pol Loss {:4}  Val Loss {:4}  Msg Entr: {:4}'.format(
-                epoch, np.round(rew[0], 3), np.round(ma, 1), np.round(p_loss_c, 3), np.round(v_loss_c, 3), np.round(msg_ent, 3)))
+            print('Epoch: {:4}  Collector Rew: {:4}  Guide Rew: {:4}  Collector - Pol Loss {:4}  Val Loss {:4}  Msg Entr: {:4}'.format(
+                epoch, np.round(rew[0], 3), np.round(rew[1], 1), np.round(p_loss_c, 3), np.round(v_loss_c, 3), np.round(msg_ent, 3)))
 
     def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
         """ Plots a given series """
@@ -292,11 +274,11 @@ class Agents:
 
             # msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
             self.envs.envs[0].render()
-            # print(msg[0].detach().cpu().numpy())
+            print(msg[0].detach().cpu().numpy())
             msg_sum += msg[0].detach().cpu().numpy()
-            acts, msg, pred = self.get_actions(obs, msg)
-            print(pred[0].detach().cpu().numpy())
+            acts, msg = self.get_actions(obs, msg)
             obs, rews, _, _ = self.envs.step(acts)
+            print(rews[0][1])
             obs = self.preprocess(obs)
 
             episode_rew += rews[0][0] + rews[0][1]
@@ -318,11 +300,6 @@ class Agents:
             torch.zeros(self.num_layers, self.batch_size, self.rnn_hidden,
                         device=self.device),
         )
-
-    def moving_average(self, series, n=10):
-        ret = np.cumsum(series, dtype=float)
-        ret[n:] = ret[n:] - ret[:-n]
-        return (ret[n - 1:] / n)[-1]
 
 
 if __name__ == "__main__":
