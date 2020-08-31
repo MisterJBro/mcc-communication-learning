@@ -162,7 +162,7 @@ class Agents:
 
         ratio = torch.exp(logp - old_logp)
         clipped = torch.clamp(ratio, 1-self.clip_ratio, 1+self.clip_ratio)*adv
-        loss = -torch.min(ratio*adv, clipped).mean()
+        loss = -(torch.min(ratio*adv, clipped)).mean()
         kl_approx = (old_logp - logp).mean().item()
         return loss, kl_approx
 
@@ -224,29 +224,34 @@ class Agents:
             probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
 
         # self.guide.set_requires_grad(False)
-        p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g)
+        # p_loss_c, v_loss_c = self.update_net(
+        #    self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g)
         # self.guide.set_requires_grad(True)
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, trs=trs)
+        p_loss_c, v_loss_c = 0, 0
 
         return p_loss_c, v_loss_c, p_loss_g, v_loss_g, msg_ent
 
     def train(self, epochs):
         """ Trains the agent for given epochs """
         epoch_rews = []
+        accs = []
 
         for epoch in range(epochs):
             rew = self.sample_batch()
             epoch_rews.append(rew)
+            accs.append(rew[1]*100)
 
             if rew.sum() > self.max_rew:
                 self.max_rew = rew.sum()
                 self.save()
             p_loss_c, v_loss_c, p_loss_g, v_loss_g, msg_ent = self.update()
 
+            ma = self.moving_average(accs, n=min(len(accs), 10))
+
             print('Epoch: {:4}  Avg Rew: {:5}  Pred Acc: {:3}%  Collector - Pol Loss {:4}  Val Loss {:4}  Msg Entr: {:4}'.format(
-                epoch, np.round(rew[0], 3), np.round(rew[1]*100, 1), np.round(p_loss_c, 3), np.round(v_loss_c, 3), np.round(msg_ent, 3)))
+                epoch, np.round(rew[0], 3), np.round(ma, 1), np.round(p_loss_c, 3), np.round(v_loss_c, 3), np.round(msg_ent, 3)))
 
     def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
         """ Plots a given series """
@@ -285,11 +290,12 @@ class Agents:
             import time
             time.sleep(0.05)
 
-            #msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
+            # msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
             self.envs.envs[0].render()
-            print(msg[0].detach().cpu().numpy())
+            # print(msg[0].detach().cpu().numpy())
             msg_sum += msg[0].detach().cpu().numpy()
-            acts, msg = self.get_actions(obs, msg)
+            acts, msg, pred = self.get_actions(obs, msg)
+            print(pred[0].detach().cpu().numpy())
             obs, rews, _, _ = self.envs.step(acts)
             obs = self.preprocess(obs)
 
@@ -313,11 +319,16 @@ class Agents:
                         device=self.device),
         )
 
+    def moving_average(self, series, n=10):
+        ret = np.cumsum(series, dtype=float)
+        ret[n:] = ret[n:] - ret[:-n]
+        return (ret[n - 1:] / n)[-1]
+
 
 if __name__ == "__main__":
     agents = Agents()
-    # agents.load()
-    agents.train(200)
+    agents.load()
+    agents.train(2000)
 
     import code
     # code.interact(local=locals())
