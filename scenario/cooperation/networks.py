@@ -70,7 +70,7 @@ class Policy(nn.Module):
 
 
 class Speaker(nn.Module):
-    def __init__(self, in_dim, action_num, symbol_num, fc_hidden=64, rnn_hidden=128, num_layers=1, tau=1.0):
+    def __init__(self, in_dim, action_num, symbol_num, fc_hidden=64, rnn_hidden=128, num_layers=1, tau=1.0, random_tunnels_num=4):
         super(Speaker, self).__init__()
         self.tau = tau
 
@@ -94,6 +94,10 @@ class Speaker(nn.Module):
         self.value = nn.Sequential(
             nn.Linear(rnn_hidden, 1),
         )
+        self.prediction = nn.Sequential(
+            nn.Linear(rnn_hidden, random_tunnels_num),
+            nn.Softmax(dim=-1)
+        )
 
     def set_requires_grad(self, grad):
         for params in self.mlp.parameters():
@@ -107,8 +111,9 @@ class Speaker(nn.Module):
         x = h_n[-1]
         action_dist = Categorical(probs=self.action(x))
         message = F.gumbel_softmax(self.message(x), self.tau, hard=True)
+        predictions = self.prediction(x)
 
-        return action_dist, message, (h_n, c_n)
+        return action_dist, message, predictions, (h_n, c_n)
 
     def forward(self, x):
         x = self.tail(x)
@@ -116,7 +121,8 @@ class Speaker(nn.Module):
         action_dists = Categorical(probs=self.action(x))
         messages = F.gumbel_softmax(self.message(x), self.tau, hard=True)
         values = self.value(x)
-        return action_dists, messages, values
+        predictions = self.prediction(x)
+        return action_dists, messages, predictions, values
 
     def value_only(self, x):
         x = self.tail(x)
@@ -129,6 +135,10 @@ class Speaker(nn.Module):
     def message_only(self, x):
         x = self.tail(x)
         return F.gumbel_softmax(self.message(x), self.tau, hard=True)
+
+    def prediction_only(self, x):
+        x = self.tail(x)
+        return self.prediction(x)
 
     def tail(self, x):
         x = self.mlp(x)

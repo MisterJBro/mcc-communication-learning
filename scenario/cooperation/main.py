@@ -51,7 +51,9 @@ class Agents:
             self.guide.parameters(), lr=lr_guide)
         self.batch_size = batch_size
         self.iters = iters
-        self.criterion = nn.MSELoss()
+        self.val_criterion = nn.MSELoss()
+        self.pred_criterion = nn.CrossEntropyLoss()
+
         self.grad_clip = grad_clip
 
         self.symbol_num = symbol_num
@@ -92,22 +94,32 @@ class Agents:
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
 
         for step in range(self.max_steps):
-            acts, next_msg = self.get_actions(obs, msg)
+            trs = self.envs.get_treasure_tunnels()
+
+            acts, next_msg, pred = self.get_actions(obs, msg)
             next_obs, rews, _, _ = self.envs.step(acts)
             next_obs = self.preprocess(next_obs)
 
-            team_rew = np.sum(rews, axis=1)
+            pred_rew = self.prediction_reward(trs, pred)
             self.buffers.store(
-                obs, acts, rews[:, 0], rews[:, 0]+rews[:, 1], msg)
+                obs, acts, rews[:, 0], pred_rew, msg, trs)
             batch_rew[0] += rews[:, 0]
-            batch_rew[1] += rews[:, 0]+rews[:, 1]
+            batch_rew[1] += pred_rew
 
             obs = next_obs
             msg = next_msg
         self.reward_and_advantage()
         self.reset_states()
 
+        batch_rew[1] /= self.max_steps
         return np.mean(batch_rew, 1)
+
+    def prediction_reward(self, trs, pred):
+        trs = torch.as_tensor(
+            trs, dtype=torch.long).to(self.device)
+        pred = torch.argmax(pred, dim=1)
+
+        return (trs == pred).float().cpu().numpy()
 
     def reward_and_advantage(self):
         """ Calculates the rewards and General Advantage Estimation """
@@ -136,13 +148,13 @@ class Agents:
 
         act_dist_c, self.state_c = self.collector.next_action(
             obs[0], msg, self.state_c)
-        act_dist_g, next_msg, self.state_g = self.guide.next_action(
+        act_dist_g, next_msg, pred, self.state_g = self.guide.next_action(
             obs[1], self.state_g)
 
         act_c = act_dist_c.sample().cpu().numpy()
         act_g = act_dist_g.sample().cpu().numpy()
 
-        return np.stack([act_c, act_g]).T, next_msg
+        return np.stack([act_c, act_g]).T, next_msg, pred
 
     def compute_policy_gradient(self, net, dist, act, adv, old_logp):
         """ Computes the policy gradient with PPO """
@@ -154,7 +166,7 @@ class Agents:
         kl_approx = (old_logp - logp).mean().item()
         return loss, kl_approx
 
-    def update_net(self, net, opt, obs, act, adv, ret, msg=None, other_net=None, other_obs=None, other_opt=None):
+    def update_net(self, net, opt, obs, act, adv, ret, msg=None, other_net=None, other_obs=None, other_opt=None, trs=None):
         """ Updates the net """
         policy_loss = 0
         value_loss = 0
@@ -173,22 +185,12 @@ class Agents:
 
             if msg is not None:
                 dist, vals = net(obs, msg)
-
-                # Dirichlet process
-                n = (self.max_steps-1)*self.batch_size
-                alpha = 0
-                n_k = msg[:, 1:].reshape(-1, self.symbol_num).sum(0)
-
-                logp_c_k = torch.log(n_k / (alpha+n-1))
-
-                #dir_rew = -(logp_c_k * n_k).sum()*1e-4
-                # dir_rew.backward(retain_graph=True)
-
-                msg_loss = (Categorical(
-                    probs=msg[:, 1:].reshape(-1, self.symbol_num).mean(0)).entropy() * 1e-5)
-                msg_loss.backward(retain_graph=True)
             else:
-                dist, _, vals = net(obs)
+                dist, _, preds, vals = net(obs)
+
+            if trs is not None:
+                pred_loss = self.pred_criterion(preds, trs)
+                pred_loss.backward(retain_graph=True)
 
             loss, kl = self.compute_policy_gradient(
                 net, dist, act, adv, old_logp)
@@ -197,7 +199,7 @@ class Agents:
                 return policy_loss, value_loss
             loss.backward(retain_graph=True)
 
-            loss = self.criterion(vals.reshape(-1), ret)
+            loss = self.val_criterion(vals.reshape(-1), ret)
             value_loss += loss.item()
             loss.backward()
             torch.nn.utils.clip_grad_norm_(
@@ -207,7 +209,7 @@ class Agents:
             if other_opt is not None:
                 other_opt.step()
             if other_net is not None:
-                _, msg, _ = other_net(other_obs[:, :-1])
+                _, msg, _, _ = other_net(other_obs[:, :-1])
                 msg = msg.reshape(self.batch_size, self.max_steps-1, -1)
                 msg = torch.cat(
                     (torch.zeros(self.batch_size, 1, self.symbol_num).to(self.device), msg), 1)
@@ -216,7 +218,7 @@ class Agents:
 
     def update(self):
         """ Updates all nets """
-        obs_c, act_c, ret_c, adv_c, msg, obs_g, act_g, ret_g, adv_g = self.buffers.get_tensors(
+        obs_c, act_c, ret_c, adv_c, obs_g, act_g, ret_g, adv_g, msg, trs = self.buffers.get_tensors(
             self.device)
         msg_ent = Categorical(
             probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
@@ -226,7 +228,7 @@ class Agents:
             self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g)
         # self.guide.set_requires_grad(True)
         p_loss_g, v_loss_g = self.update_net(
-            self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g)
+            self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, trs=trs)
 
         return p_loss_c, v_loss_c, p_loss_g, v_loss_g, msg_ent
 
@@ -243,8 +245,8 @@ class Agents:
                 self.save()
             p_loss_c, v_loss_c, p_loss_g, v_loss_g, msg_ent = self.update()
 
-            print('Epoch: {:4}  Average Reward: {:5}, {:5}  Collector - Policy Loss {:4}  Value Loss {:4}  Message Entropy: {:4}'.format(
-                epoch, np.round(rew[0], 3), np.round(rew[1], 3), np.round(p_loss_c, 3), np.round(v_loss_c, 3), np.round(msg_ent, 3)))
+            print('Epoch: {:4}  Avg Rew: {:5}  Pred Acc: {:3}%  Collector - Pol Loss {:4}  Val Loss {:4}  Msg Entr: {:4}'.format(
+                epoch, np.round(rew[0], 3), np.round(rew[1]*100, 1), np.round(p_loss_c, 3), np.round(v_loss_c, 3), np.round(msg_ent, 3)))
 
     def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
         """ Plots a given series """
@@ -314,7 +316,7 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    agents.load()
+    # agents.load()
     agents.train(200)
 
     import code
