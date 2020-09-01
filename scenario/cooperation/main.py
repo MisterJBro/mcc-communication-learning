@@ -18,7 +18,7 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-6, lr_guide=1e-6, gamma=0.99, max_steps=500,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-4, lr_guide=1e-4, gamma=0.99, max_steps=500,
                  fc_hidden=64, rnn_hidden=128, batch_size=256, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.03,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0, entropy_factor=-0.1):
         # RNG seed
@@ -196,7 +196,7 @@ class Agents:
             torch.nn.utils.clip_grad_norm_(
                 net.parameters(), self.grad_clip)
 
-            if other_net is not None:
+            if other_net is not None and other_obs is not None:
                 other_dist, _,  other_vals = other_net(other_obs)
                 other_loss, _ = self.compute_policy_gradient(
                     other_net, other_dist, other_act, other_adv, other_old_logp)
@@ -227,12 +227,13 @@ class Agents:
         msg_ent = Categorical(
             probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
 
-        # self.guide.set_requires_grad(False)
+        # Training Collector - Collector/Msg/Guide - Guide
         p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 1, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
-        # self.guide.set_requires_grad(True)
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 20, msg=msg)
+        _, _ = self.update_net(
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 5, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         p_loss_g, v_loss_g = self.update_net(
-            self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 40)
+            self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 30)
 
         return p_loss_c, v_loss_c, p_loss_g, v_loss_g, msg_ent
 
