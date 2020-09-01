@@ -28,7 +28,8 @@ class Agents:
 
         # Environment
         self.num_world_blocks = 5
-        self.envs = Envs(batch_size, red_guides=1, blue_collector=0)
+        self.envs = Envs(batch_size, red_guides=1,
+                         blue_collector=0, show_messages=True)
         self.obs_dim = (self.num_world_blocks,) + \
             self.envs.observation_space.shape
         self.act_dim = self.envs.action_space.nvec[0]
@@ -262,7 +263,7 @@ class Agents:
         plt.ylabel(ylabel)
         plt.show()
 
-    def save(self, path='{}/model.pt'.format(PROJECT_PATH)):
+    def save(self, path='{}/stronger_protocol.pt'.format(PROJECT_PATH)):
         """ Saves the networks and optimizers to later continue training """
         torch.save({
             'collector': self.collector.state_dict(),
@@ -271,7 +272,7 @@ class Agents:
             'optim_g': self.optimizer_g.state_dict(),
         }, path)
 
-    def load(self, path='{}/model.pt'.format(PROJECT_PATH)):
+    def load(self, path='{}/stronger_protocol.pt'.format(PROJECT_PATH)):
         """ Loads a training checkpoint """
         checkpoint = torch.load(path)
         self.collector.load_state_dict(checkpoint['collector'])
@@ -285,18 +286,59 @@ class Agents:
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
         episode_rew = 0
         msg_sum = np.zeros(self.symbol_num)
+        test = torch.tensor([
+            [1., 0., 0., 0., 0.],
+            [1., 0., 0., 0., 0.],
+            [1., 0., 0., 0., 0.],
+            [1., 0., 0., 0., 0.],
+            [1., 0., 0., 0., 0.],
+            [0., 0., 1., 0., 0.],
+            [0., 0., 1., 0., 0.],
+            [0., 0., 1., 0., 0.],
+            [0., 0., 1., 0., 0.],
+            [0., 0., 1., 0., 0.],
+            [0., 0., 1., 0., 0.],
+            [0., 0., 0., 0., 1.],
+            [0., 0., 0., 0., 1.],
+            [0., 0., 0., 0., 1.],
+            [0., 0., 0., 0., 1.],
+            [0., 0., 0., 0., 1.],
+            [0., 0., 0., 0., 1.],
+            [1, 0., 0., 0., 0.],
+            [0., 0., 1., 0., 0.],
+            [0., 0., 1., 0., 0.],
+            [0., 0., 1., 0., 0.],
+            [0., 0., 1., 0., 0.],
+            [0., 0., 1., 0., 0.],
+        ]).to(self.device)
+
+        print('******** TREASURE FOUND ********')
+        print('New Treasure Tunnel: ',
+              self.envs.envs[0].world._get_treasure_tunnel_index()+1)
 
         for step in range(self.max_steps):
             import time
-            time.sleep(0.05)
+            time.sleep(0.01)
 
-            msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
+            msg_show = msg[0].detach().cpu().numpy()
+            self.last_message = self.interpret(msg_show)
 
-            self.envs.envs[0].render()
+            self.envs.envs[0].render(msg=self.interpret(msg_show))
+
+            # if step < 22:
+            #    msg[0] = test[step]
+            # else:
+            #    msg[0] = torch.tensor([1., 0., 0., 0., 0.]).to(self.device)
             print(msg[0].detach().cpu().numpy())
             msg_sum += msg[0].detach().cpu().numpy()
             acts, msg = self.get_actions(obs, msg)
             obs, rews, _, _ = self.envs.step(acts)
+            if rews[0][0] == 1:
+                print('******** TREASURE FOUND ********')
+                print('New Treasure Tunnel: ',
+                      self.envs.envs[0].world._get_treasure_tunnel_index()+1)
+            if rews[0][1] < 0.05:
+                print('Still searching treasure')
             obs = self.preprocess(obs)
 
             episode_rew += rews[0][0]
@@ -319,11 +361,22 @@ class Agents:
                         device=self.device),
         )
 
+    def interpret(self, msg):
+        if msg[0]:
+            return 'Two Tunnels left'
+        if msg[1]:
+            return 'Tunnel 3'
+        if msg[2]:
+            return 'Searching..'
+        if msg[3]:
+            return 'Tunnel 2'
+        if msg[4]:
+            return 'Two Tunnels right'
+
 
 if __name__ == "__main__":
     agents = Agents()
     agents.load()
-    # agents.train(2000)
 
     import code
     # code.interact(local=locals())
