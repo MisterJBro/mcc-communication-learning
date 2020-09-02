@@ -48,7 +48,7 @@ class Agents:
         self.optimizer_c = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
         self.optimizer_g = optim.Adam(
-            self.guide.parameters(), lr=lr_guide, betas=(0.01, 0.999))
+            self.guide.parameters(), lr=lr_guide, betas=(0, 0.999))
         self.batch_size = batch_size
         self.iters = iters
         self.val_criterion = nn.MSELoss()
@@ -229,9 +229,9 @@ class Agents:
 
         # Training Collector/Msg/Guide - Collector - Guide
         _, _ = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 5, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg.detach())
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 10, msg=msg.detach())
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
 
@@ -290,7 +290,7 @@ class Agents:
             import time
             time.sleep(0.05)
 
-            msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
+            #msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
 
             self.envs.envs[0].render()
             print(msg[0].detach().cpu().numpy())
