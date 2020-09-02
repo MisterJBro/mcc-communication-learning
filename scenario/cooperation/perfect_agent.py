@@ -6,7 +6,7 @@ max_steps = 500
 total_rew = []
 
 env = gym.make('gym_mcc_treasure_hunt:MCCTreasureHunt-v0',
-               red_guides=1, blue_collector=0, seed=0)
+               red_guides=0, blue_collector=0, seed=0)
 collector = env.world.red_players[0]
 
 
@@ -29,7 +29,7 @@ for _ in range(num_games):
         trs = env.world.treasure_tunnel
         pos = collector.pos
 
-        obs, rew, _, _ = env.step([perfect_behavior(pos, trs), 4])
+        obs, rew, _, _ = env.step([perfect_behavior(pos, trs)])
         game_rew += rew[0]
 
     total_rew.append(game_rew)
