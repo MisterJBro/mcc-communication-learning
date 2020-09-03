@@ -182,6 +182,8 @@ class Agents:
             print('Epoch: {:4}  Average Reward: {:6}'.format(
                 epoch, np.round(mean_rew, 3)))
 
+        print(epoch_rews)
+
     def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
         sns.set()
         plt.plot(arr)
@@ -229,7 +231,7 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    agents.max_rew = 100
+    agents.max_rew = 0
     # agents.load()
     agents.train(200)
 
