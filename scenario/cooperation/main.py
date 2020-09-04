@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.distributions import Categorical
+from torch.optim.lr_scheduler import MultiStepLR
 import matplotlib.pyplot as plt
 import random
 import gym
@@ -18,8 +19,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-11, lr_guide=1e-11, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=256, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.03,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, gamma=0.99, max_steps=500,
+                 fc_hidden=64, rnn_hidden=128, batch_size=256, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.01,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0, entropy_factor=-0.1):
         # RNG seed
         random.seed(seed)
@@ -48,7 +49,12 @@ class Agents:
         self.optimizer_c = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
         self.optimizer_g = optim.Adam(
-            self.guide.parameters(), lr=lr_guide, betas=(0, 0.999))
+            self.guide.parameters(), lr=lr_guide)
+        milestones = [80, 160]
+        self.scheduler_c = MultiStepLR(
+            self.optimizer_c, milestones=milestones, gamma=0.1)
+        self.scheduler_g = MultiStepLR(
+            self.optimizer_g, milestones=milestones, gamma=0.1)
         self.batch_size = batch_size
         self.iters = iters
         self.val_criterion = nn.MSELoss()
@@ -161,6 +167,7 @@ class Agents:
         """ Updates the net """
         policy_loss = 0
         value_loss = 0
+        other_done = False
         with torch.no_grad():
             if msg is not None:
                 old_logp = net.action_only(
@@ -186,7 +193,7 @@ class Agents:
             loss, kl = self.compute_policy_gradient(
                 net, dist, act, adv, old_logp)
             policy_loss += loss.item()
-            if kl > self.target_kl:
+            if kl > 0.05:
                 return policy_loss, value_loss
             loss.backward(retain_graph=True)
 
@@ -198,22 +205,29 @@ class Agents:
 
             if other_net is not None and other_obs is not None:
                 other_dist, _,  other_vals = other_net(other_obs)
-                other_loss, _ = self.compute_policy_gradient(
+                other_loss, other_kl = self.compute_policy_gradient(
                     other_net, other_dist, other_act, other_adv, other_old_logp)
 
-                other_loss.backward(retain_graph=True)
+                if other_kl > 0.01 and not other_done:
+                    other_done = True
+                else:
+                    other_loss.backward(retain_graph=True)
 
-                other_loss = self.val_criterion(
-                    other_vals.reshape(-1), other_ret)
-                other_loss.backward()
-                torch.nn.utils.clip_grad_norm_(
-                    other_net.parameters(), self.grad_clip)
+                    other_loss = self.val_criterion(
+                        other_vals.reshape(-1), other_ret)
+                    other_loss.backward()
+                    torch.nn.utils.clip_grad_norm_(
+                        other_net.parameters(), self.grad_clip)
 
             opt.step()
             if other_opt is not None:
                 other_opt.step()
             if other_net is not None:
                 _, msg, _ = other_net(other_obs[:, :-1])
+
+                if other_done:
+                    msg = msg.detach()
+
                 msg = msg.reshape(self.batch_size, self.max_steps-1, -1)
                 msg = torch.cat(
                     (torch.zeros(self.batch_size, 1, self.symbol_num).to(self.device), msg), 1)
@@ -229,11 +243,14 @@ class Agents:
 
         # Training Collector/Msg/Guide - Collector - Guide
         _, _ = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 60, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 5, msg=msg.detach())
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg.detach())
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
+
+        self.scheduler_c.step()
+        self.scheduler_g.step()
 
         return p_loss_c, v_loss_c, p_loss_g, v_loss_g, msg_ent
 
@@ -250,8 +267,9 @@ class Agents:
                 self.save()
             p_loss_c, v_loss_c, p_loss_g, v_loss_g, msg_ent = self.update()
 
-            print('Epoch: {:4}  Collector Rew: {:4}  Guide Rew: {:4}  Collector - Pol Loss {:4}  Val Loss {:4}  Msg Entr: {:4}'.format(
-                epoch, np.round(rew[0], 3), np.round(rew[1], 1), np.round(p_loss_c, 3), np.round(v_loss_c, 3), np.round(msg_ent, 3)))
+            print('Epoch: {:4}  Collector Rew: {:4}  Guide Rew: {:4}  Msg Ent {:4}'.format(
+                epoch, np.round(rew[0], 3), np.round(rew[1], 1), np.round(msg_ent, 3)))
+        print(epoch_rews)
 
     def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
         """ Plots a given series """
@@ -288,7 +306,7 @@ class Agents:
 
         for step in range(self.max_steps):
             import time
-            time.sleep(0.05)
+            time.sleep(0.01)
 
             #msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
 
@@ -323,7 +341,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     agents.load()
-    #agents.train(2000)
+    # agents.train(200)
 
     import code
     # code.interact(local=locals())

@@ -328,7 +328,7 @@ class Agents:
             # if step < 22:
             #    msg[0] = test[step]
             # else:
-            #    msg[0] = torch.tensor([1., 0., 0., 0., 0.]).to(self.device)
+            #msg[0] = torch.tensor([0., 0., 0., 0., 1.]).to(self.device)
             print(msg[0].detach().cpu().numpy())
             msg_sum += msg[0].detach().cpu().numpy()
             acts, msg = self.get_actions(obs, msg)
@@ -363,15 +363,15 @@ class Agents:
 
     def interpret(self, msg):
         if msg[0]:
-            return 'Two Tunnels left'
+            return 'Tunnel 1 or 2'
         if msg[1]:
-            return 'Tunnel 3'
+            return 'Tunnel 1 or 2'
         if msg[2]:
-            return 'Searching..'
+            return 'Tunnel 3 or 4'
         if msg[3]:
-            return 'Tunnel 2'
+            return 'Last Tunnel'
         if msg[4]:
-            return 'Two Tunnels right'
+            return 'Tunnel 3'
 
 
 if __name__ == "__main__":
