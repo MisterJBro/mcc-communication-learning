@@ -22,7 +22,7 @@ class Buffers:
         self.buffer_e.clear()
         self.backprop_msg = None
 
-    def store(self, obs, acts, rews_c, rews_g,  rews_e, msg):
+    def store(self, obs, acts, rews_c, rews_g, rews_e, msg):
         if self.backprop_msg is None:
             self.backprop_msg = msg.reshape(self.batch_size, 1, -1)
         else:
