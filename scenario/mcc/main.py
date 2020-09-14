@@ -54,11 +54,13 @@ class Agents:
             self.guide.parameters(), lr=lr_guide)
         self.optimizer_e = optim.Adam(
             self.enemy.parameters(), lr=lr_enemy)
-        milestones = [800, 1600]
+        milestones = [200, 400]
         self.scheduler_c = MultiStepLR(
             self.optimizer_c, milestones=milestones, gamma=0.1)
         self.scheduler_g = MultiStepLR(
             self.optimizer_g, milestones=milestones, gamma=0.1)
+        self.scheduler_e = MultiStepLR(
+            self.optimizer_e, milestones=milestones, gamma=0.1)
         self.batch_size = batch_size
         self.iters = iters
         self.val_criterion = nn.MSELoss()
@@ -83,10 +85,18 @@ class Agents:
 
     def single_preprocess(self, obs):
         """ Processes a single observation into one hot encoding """
+        # Both Player overlap each other
+        x, y = np.where(obs == 5)
+        if len(x) > 0:
+            obs[x, y] = 3
         state = np.zeros((obs.size, self.num_world_blocks), dtype=np.uint8)
         state[np.arange(obs.size), obs.reshape(-1)] = 1
         state = state.reshape(obs.shape + (self.num_world_blocks,))
-        return np.moveaxis(state, -1, 0)
+        state = np.moveaxis(state, -1, 0)
+
+        if len(x) > 0:
+            state[4, x, y] = 1
+        return state
 
     def preprocess(self, obs_list):
         """ Processes all observation """
@@ -256,16 +266,17 @@ class Agents:
 
         # Training Collector/Msg/Guide - Collector - Guide
         _, _ = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 60, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         p_loss_c, v_loss_c = self.update_net(
             self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg.detach())
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
         p_loss_e, v_loss_e = self.update_net(
-            self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, 30, enemy=True)
+            self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, 60, enemy=True)
 
         self.scheduler_c.step()
         self.scheduler_g.step()
+        self.scheduler_e.step()
 
         return p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent
 
@@ -366,7 +377,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     # agents.load()
-    agents.train(200)
+    agents.train(1000)
 
     import code
     # code.interact(local=locals())
