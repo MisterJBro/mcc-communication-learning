@@ -19,8 +19,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-4, lr_guide=1e-4, lr_enemy=1e-4, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=256, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.01,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=4e-4, lr_guide=4e-4, lr_enemy=4e-4, gamma=0.99, max_steps=500,
+                 fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, target_kl=0.01,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0, entropy_factor=-0.1):
         # RNG seed
         random.seed(seed)
@@ -42,11 +42,11 @@ class Agents:
         in_dim = self.obs_dim[0]*self.obs_dim[1]*self.obs_dim[2]
         self.device = torch.device(device)
         self.collector = Listener(
-            in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
+            in_dim+2, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
         self.guide = Speaker(
-            in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
+            in_dim+2, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
         self.enemy = Normal(
-            in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
+            in_dim+2, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
 
         self.optimizer_c = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
@@ -54,20 +54,23 @@ class Agents:
             self.guide.parameters(), lr=lr_guide)
         self.optimizer_e = optim.Adam(
             self.enemy.parameters(), lr=lr_enemy)
-        milestones = [200, 400]
+        milestones = [200, 4000, 5000]
         self.scheduler_c = MultiStepLR(
-            self.optimizer_c, milestones=milestones, gamma=0.1)
+            self.optimizer_c, milestones=milestones, gamma=0.5)
         self.scheduler_g = MultiStepLR(
-            self.optimizer_g, milestones=milestones, gamma=0.1)
+            self.optimizer_g, milestones=milestones, gamma=0.5)
         self.scheduler_e = MultiStepLR(
-            self.optimizer_e, milestones=milestones, gamma=0.1)
+            self.optimizer_e, milestones=milestones, gamma=0.5)
         self.batch_size = batch_size
-        self.iters = iters
         self.val_criterion = nn.MSELoss()
         self.pred_criterion = nn.CrossEntropyLoss()
 
-        self.grad_clip = grad_clip
+        self.iters = 40
+        self.red_iters = self.iters
+        self.blue_iters = self.iters
+        self.epochs_per_team = 5
 
+        self.grad_clip = grad_clip
         self.symbol_num = symbol_num
         self.num_layers = num_layers
         self.rnn_hidden = rnn_hidden
@@ -79,11 +82,11 @@ class Agents:
         self.lam = lam
         self.max_steps = max_steps
         self.buffers = Buffers(self.batch_size, self.max_steps,
-                               self.obs_dim, self.gamma, self.lam, self.symbol_num)
+                               (127,), self.gamma, self.lam, self.symbol_num)
         self.clip_ratio = clip_ratio
         self.target_kl = target_kl
 
-    def single_preprocess(self, obs):
+    def single_preprocess(self, obs, score):
         """ Processes a single observation into one hot encoding """
         # Both Player overlap each other
         x, y = np.where(obs == 5)
@@ -96,27 +99,30 @@ class Agents:
 
         if len(x) > 0:
             state[4, x, y] = 1
-        return state
+        return np.concatenate([state.reshape(-1), score])
 
     def preprocess(self, obs_list):
         """ Processes all observation """
         obs_c, obs_g, obs_e = [], [], []
         for x in range(self.batch_size):
-            obs_c.append(self.single_preprocess(obs_list[x][0]))
-            obs_g.append(self.single_preprocess(obs_list[x][1]))
-            obs_e.append(self.single_preprocess(obs_list[x][2]))
+            obs_c.append(self.single_preprocess(
+                obs_list[0][x][0], obs_list[1][x]))
+            obs_g.append(self.single_preprocess(
+                obs_list[0][x][1], obs_list[1][x]))
+            obs_e.append(self.single_preprocess(
+                obs_list[0][x][2], obs_list[1][x]))
         return np.array([obs_c, obs_g, obs_e])
 
     def sample_batch(self):
         """ Samples a batch of trajectories """
         self.buffers.clear()
         batch_rew = np.zeros((3, self.batch_size))
-        obs = self.preprocess(self.envs.reset())
+        obs = self.preprocess(self.envs.reset_with_score())
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
 
         for step in range(self.max_steps):
             acts, next_msg = self.get_actions(obs, msg)
-            next_obs, rews, _, _ = self.envs.step(acts)
+            next_obs, rews, _, _ = self.envs.step_with_score(acts)
             next_obs = self.preprocess(next_obs)
 
             self.buffers.store(
@@ -216,7 +222,7 @@ class Agents:
             loss, kl = self.compute_policy_gradient(
                 net, dist, act, adv, old_logp)
             policy_loss += loss.item()
-            if kl > 0.02:
+            if kl > 0.03:
                 return policy_loss, value_loss
             loss.backward(retain_graph=True)
 
@@ -266,17 +272,19 @@ class Agents:
 
         # Training Collector/Msg/Guide - Collector - Guide
         _, _ = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 60, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, self.red_iters, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         p_loss_c, v_loss_c = self.update_net(
             self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg.detach())
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
         p_loss_e, v_loss_e = self.update_net(
-            self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, 60, enemy=True)
+            self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, self.blue_iters, enemy=True)
 
-        self.scheduler_c.step()
-        self.scheduler_g.step()
-        self.scheduler_e.step()
+        if self.red_iters > 0:
+            self.scheduler_c.step()
+            self.scheduler_g.step()
+        if self.blue_iters > 0:
+            self.scheduler_e.step()
 
         return p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent
 
@@ -284,18 +292,36 @@ class Agents:
         """ Trains the agent for given epochs """
         epoch_rews = []
 
-        for epoch in range(epochs):
+        for epoch in range(1, epochs+1):
             rew = self.sample_batch()
             epoch_rews.append(rew)
 
-            if rew[0] > self.max_rew:
-                self.max_rew = rew[0]
-                self.save()
+            self.save()
+            # if rew[0] > self.max_rew:
+            #    self.max_rew = rew[0]
+            #    self.save()
+
+            # if epoch % self.epochs_per_team == 0:
+            #    self.swap_training()
+
             p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent = self.update()
 
             print('Epoch: {:4}  Collector Rew: {:4}  Enemy Rew: {:4}  Guide Rew: {:4}  Msg Ent {:4}'.format(
                 epoch, np.round(rew[0], 3),  np.round(rew[2], 3), np.round(rew[1], 1), np.round(msg_ent, 3)))
         print(epoch_rews)
+
+    def swap_training(self):
+        """ Swaps the team that trains the next epochs. """
+        if self.red_iters > 0:
+            self.red_iters = 0
+            self.blue_iters = self.iters
+            print('Team Blue trains!')
+        elif self.blue_iters > 0:
+            self.blue_iters = 0
+            self.red_iters = self.iters
+            print('Team Red trains!')
+        else:
+            self.red_iters = self.iters
 
     def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
         """ Plots a given series """
@@ -329,7 +355,7 @@ class Agents:
 
     def test(self):
         """ Tests the agent """
-        obs = self.preprocess(self.envs.reset())
+        obs = self.preprocess(self.envs.reset_with_score())
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
         episode_rew = 0
         msg_sum = np.zeros(self.symbol_num)
@@ -338,13 +364,13 @@ class Agents:
             import time
             time.sleep(0.01)
 
-            #msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
+            # msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
 
             self.envs.envs[0].render()
             print(msg[0].detach().cpu().numpy())
             msg_sum += msg[0].detach().cpu().numpy()
             acts, msg = self.get_actions(obs, msg)
-            obs, rews, _, _ = self.envs.step(acts)
+            obs, rews, _, _ = self.envs.step_with_score(acts)
             obs = self.preprocess(obs)
 
             episode_rew += rews[0][0]
@@ -377,7 +403,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     agents.load()
-    agents.train(200)
+    agents.train(1000)
 
     import code
     # code.interact(local=locals())

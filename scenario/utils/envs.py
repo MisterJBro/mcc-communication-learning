@@ -18,18 +18,46 @@ class Envs():
         self.agents_num = self.envs[0].agents_num
 
     def reset(self):
-        return [self.envs[x].reset() for x in range(self.num)]
+        o_s = []
+        scores = []
+
+        for x in range(self.num):
+            o = self.envs[x].reset()
+            o_s.append(o[0])
+            scores.append(o[1:])
+        return np.array(o_s)
+
+    def reset_with_score(self):
+        o_s = []
+        scores = []
+
+        for x in range(self.num):
+            o = self.envs[x].reset()
+            o_s.append(o[0])
+            scores.append(o[1:])
+        return [np.array(o_s), np.array(scores)]
 
     def step(self, acts):
         o_s, r_s, d_s, i_s = [], [], [], []
 
         for x in range(self.num):
             o, r, d, i = self.envs[x].step(acts[x])
-            o_s.append(o)
+            o_s.append(o[0])
             r_s.append(r)
             d_s.append(d)
             i_s.append(i)
         return np.array(o_s), np.array(r_s), np.array(d_s), np.array(i_s)
+
+    def step_with_score(self, acts):
+        o_s, r_s = [], []
+        scores = []
+
+        for x in range(self.num):
+            o, r, d, i = self.envs[x].step(acts[x])
+            o_s.append(o[0])
+            r_s.append(r)
+            scores.append(o[1:])
+        return [np.array(o_s), np.array(scores)], np.array(r_s), False, {}
 
     def close(self):
         for x in range(self.num):
