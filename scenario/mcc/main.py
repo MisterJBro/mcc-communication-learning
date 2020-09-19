@@ -241,8 +241,12 @@ class Agents:
 
     def update(self):
         """ Updates all nets """
-        obs_c, act_c, ret_c, adv_c, obs_g, act_g, ret_g, adv_g, obs_e, act_e, ret_e, adv_e, msg = self.buffers.get_tensors(
-            self.device)
+        obs_c, act_c, ret_c, adv_c, obs_g, act_g, ret_g, adv_g, obs_e, act_e, ret_e, adv_e, msg = self.buffers.get_tensors()
+        obs_c, act_c, ret_c, adv_c = obs_c.to(self.device), act_c.to(
+            self.device), ret_c.to(self.device), adv_c.to(self.device)
+        obs_g, act_g, ret_g, adv_g = obs_g.to(self.device), act_g.to(
+            self.device), ret_g.to(self.device), adv_g.to(self.device)
+
         msg_ent = Categorical(
             probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
 
@@ -253,6 +257,9 @@ class Agents:
             self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg.detach())
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
+
+        obs_e, act_e, ret_e, adv_e = obs_e.to(self.device), act_e.to(
+            self.device), ret_e.to(self.device), adv_e.to(self.device)
         p_loss_e, v_loss_e = self.update_net(
             self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, self.blue_iters, enemy=True)
 

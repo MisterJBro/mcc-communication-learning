@@ -55,33 +55,33 @@ class Buffers:
         self.buffer_g.standardize_adv()
         self.buffer_e.standardize_adv()
 
-    def get_tensors(self, device):
+    def get_tensors(self):
         obs_c = torch.as_tensor(
-            self.buffer_c.obs_buf, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, -1)
+            self.buffer_c.obs_buf, dtype=torch.float32).reshape(self.batch_size, self.size, -1)
         act_c = torch.as_tensor(
-            self.buffer_c.act_buf, dtype=torch.int32, device=device).reshape(-1)
+            self.buffer_c.act_buf, dtype=torch.int32).reshape(-1)
         ret_c = torch.as_tensor(
-            self.buffer_c.ret_buf, dtype=torch.float32, device=device).reshape(-1)
+            self.buffer_c.ret_buf, dtype=torch.float32).reshape(-1)
         adv_c = torch.as_tensor(
-            self.buffer_c.adv_buf, dtype=torch.float32, device=device).reshape(-1)
+            self.buffer_c.adv_buf, dtype=torch.float32).reshape(-1)
 
         obs_g = torch.as_tensor(
-            self.buffer_g.obs_buf, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, -1)
+            self.buffer_g.obs_buf, dtype=torch.float32).reshape(self.batch_size, self.size, -1)
         act_g = torch.as_tensor(
-            self.buffer_g.act_buf, dtype=torch.int32, device=device).reshape(-1)
+            self.buffer_g.act_buf, dtype=torch.int32).reshape(-1)
         ret_g = torch.as_tensor(
-            self.buffer_g.ret_buf, dtype=torch.float32, device=device).reshape(-1)
+            self.buffer_g.ret_buf, dtype=torch.float32).reshape(-1)
         adv_g = torch.as_tensor(
-            self.buffer_g.adv_buf, dtype=torch.float32, device=device).reshape(-1)
+            self.buffer_g.adv_buf, dtype=torch.float32).reshape(-1)
 
         obs_e = torch.as_tensor(
-            self.buffer_e.obs_buf, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, -1)
+            self.buffer_e.obs_buf, dtype=torch.float32).reshape(self.batch_size, self.size, -1)
         act_e = torch.as_tensor(
-            self.buffer_e.act_buf, dtype=torch.int32, device=device).reshape(-1)
+            self.buffer_e.act_buf, dtype=torch.int32).reshape(-1)
         ret_e = torch.as_tensor(
-            self.buffer_e.ret_buf, dtype=torch.float32, device=device).reshape(-1)
+            self.buffer_e.ret_buf, dtype=torch.float32).reshape(-1)
         adv_e = torch.as_tensor(
-            self.buffer_e.adv_buf, dtype=torch.float32, device=device).reshape(-1)
+            self.buffer_e.adv_buf, dtype=torch.float32).reshape(-1)
 
         msg = self.backprop_msg
 
