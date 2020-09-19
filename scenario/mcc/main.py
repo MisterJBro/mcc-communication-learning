@@ -292,45 +292,16 @@ class Agents:
         """ Trains the agent for given epochs """
         epoch_rews = []
 
-        for epoch in range(1, epochs+1):
+        for epoch in range(epochs):
             rew = self.sample_batch()
             epoch_rews.append(rew)
 
             self.save()
-            # if rew[0] > self.max_rew:
-            #    self.max_rew = rew[0]
-            #    self.save()
-
-            # if epoch % self.epochs_per_team == 0:
-            #    self.swap_training()
-
             p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent = self.update()
 
             print('Epoch: {:4}  Collector Rew: {:4}  Enemy Rew: {:4}  Guide Rew: {:4}  Msg Ent {:4}'.format(
                 epoch, np.round(rew[0], 3),  np.round(rew[2], 3), np.round(rew[1], 1), np.round(msg_ent, 3)))
         print(epoch_rews)
-
-    def swap_training(self):
-        """ Swaps the team that trains the next epochs. """
-        if self.red_iters > 0:
-            self.red_iters = 0
-            self.blue_iters = self.iters
-            print('Team Blue trains!')
-        elif self.blue_iters > 0:
-            self.blue_iters = 0
-            self.red_iters = self.iters
-            print('Team Red trains!')
-        else:
-            self.red_iters = self.iters
-
-    def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
-        """ Plots a given series """
-        sns.set()
-        plt.plot(arr)
-        plt.title(title)
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        plt.show()
 
     def save(self, path='{}/model.pt'.format(PROJECT_PATH)):
         """ Saves the networks and optimizers to later continue training """
@@ -361,9 +332,6 @@ class Agents:
         msg_sum = np.zeros(self.symbol_num)
 
         for step in range(self.max_steps):
-            import time
-            time.sleep(0.01)
-
             # msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
 
             self.envs.envs[0].render()
