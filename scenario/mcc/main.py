@@ -20,8 +20,8 @@ PROJECT_PATH = pathlib.Path(
 
 class Agents:
     def __init__(self, seed=0, device='cuda:0', lr_collector=6e-4, lr_guide=6e-4, lr_enemy=6e-4, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, target_kl=0.01,
-                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0, entropy_factor=-0.1):
+                 fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, iters=40,
+                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
@@ -39,14 +39,14 @@ class Agents:
         print('Agent number:', self.agents_num)
 
         # Networks
-        in_dim = self.obs_dim[0]*self.obs_dim[1]*self.obs_dim[2]
+        in_dim = self.obs_dim[0]*self.obs_dim[1]*self.obs_dim[2]+2
         self.device = torch.device(device)
         self.collector = Listener(
-            in_dim+2, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
+            in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
         self.guide = Speaker(
-            in_dim+2, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
+            in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
         self.enemy = Normal(
-            in_dim+2, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
+            in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
 
         self.optimizer_c = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
@@ -54,7 +54,8 @@ class Agents:
             self.guide.parameters(), lr=lr_guide)
         self.optimizer_e = optim.Adam(
             self.enemy.parameters(), lr=lr_enemy)
-        milestones = [200, 4000, 5000]
+
+        milestones = [2000, 4000, 5000]
         self.scheduler_c = MultiStepLR(
             self.optimizer_c, milestones=milestones, gamma=0.5)
         self.scheduler_g = MultiStepLR(
@@ -65,10 +66,9 @@ class Agents:
         self.val_criterion = nn.MSELoss()
         self.pred_criterion = nn.CrossEntropyLoss()
 
-        self.iters = 40
+        self.iters = iters
         self.red_iters = self.iters
         self.blue_iters = self.iters
-        self.epochs_per_team = 5
 
         self.grad_clip = grad_clip
         self.symbol_num = symbol_num
