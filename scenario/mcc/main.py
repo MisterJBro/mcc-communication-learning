@@ -10,6 +10,7 @@ import gym
 import numpy as np
 from scenario.mcc.buffers import Buffers
 from scenario.mcc.networks import Policy, Listener, Speaker, Normal
+from scenario.mcc.preprocess import preprocess, preprocess_state
 import seaborn as sns
 import pathlib
 from scenario.utils.envs import Envs
@@ -35,7 +36,7 @@ class Agents:
             self.envs.observation_space.shape
         self.act_dim = self.envs.action_space.nvec[0]
         self.agents_num = self.envs.agents_num
-        self.state_dim = self.envs.state_dim
+        self.state_dim = (self.num_world_blocks,) + self.envs.state_dim
         print('Observation shape:', self.obs_dim)
         print('Action number:', self.act_dim)
         print('Agent number:', self.agents_num)
@@ -87,48 +88,21 @@ class Agents:
                                (in_dim,), self.gamma, self.lam, self.symbol_num, self.state_dim)
         self.clip_ratio = clip_ratio
 
-    def single_preprocess(self, obs, score):
-        """ Processes a single observation into one hot encoding """
-        # Both Player overlap each other
-        x, y = np.where(obs == 5)
-        if len(x) > 0:
-            obs[x, y] = 3
-        state = np.zeros((obs.size, self.num_world_blocks), dtype=np.uint8)
-        state[np.arange(obs.size), obs.reshape(-1)] = 1
-        state = state.reshape(obs.shape + (self.num_world_blocks,))
-        state = np.moveaxis(state, -1, 0)
-
-        if len(x) > 0:
-            state[4, x, y] = 1
-
-        return np.concatenate([state.reshape(-1), score])
-
-    def preprocess(self, obs_list):
-        """ Processes all observation """
-        obs_c, obs_g, obs_e = [], [], []
-        for x in range(self.batch_size):
-            obs_c.append(self.single_preprocess(
-                obs_list[x][0][0], obs_list[x][0][1:]))
-            obs_g.append(self.single_preprocess(
-                obs_list[x][1][0], obs_list[x][1][1:]))
-            obs_e.append(self.single_preprocess(
-                obs_list[x][2][0], obs_list[x][2][1:]))
-        return np.array([obs_c, obs_g, obs_e])
-
     def sample_batch(self):
         """ Samples a batch of trajectories """
         self.buffers.clear()
         batch_rew = np.zeros((3, self.batch_size))
-        obs = self.preprocess(self.envs.reset())
+        obs = preprocess(self.envs.reset())
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
 
         for step in range(self.max_steps):
             acts, next_msg = self.get_actions(obs, msg)
-            next_obs, rews, _, _ = self.envs.step(acts)
-            next_obs = self.preprocess(next_obs)
+            next_obs, rews, _, states = self.envs.step(acts)
+            next_obs = preprocess(next_obs)
+            states = np.array(preprocess_state(states))
 
             self.buffers.store(
-                obs, acts, rews[:, 0], rews[:, 1], rews[:, 2], msg)
+                obs, acts, rews[:, 0], rews[:, 1], rews[:, 2], msg, states)
             batch_rew[0] += rews[:, 0]
             batch_rew[1] += rews[:, 1]
             batch_rew[2] += rews[:, 2]
@@ -328,7 +302,7 @@ class Agents:
 
     def test(self):
         """ Tests the agent """
-        obs = self.preprocess(self.envs.reset_with_score())
+        obs = preprocess(self.envs.reset_with_score())
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
         episode_rew = 0
         msg_sum = np.zeros(self.symbol_num)
@@ -341,7 +315,7 @@ class Agents:
             msg_sum += msg[0].detach().cpu().numpy()
             acts, msg = self.get_actions(obs, msg)
             obs, rews, _, _ = self.envs.step_with_score(acts)
-            obs = self.preprocess(obs)
+            obs = preprocess(obs)
 
             episode_rew += rews[0][0]
         print('Result reward: ', episode_rew)

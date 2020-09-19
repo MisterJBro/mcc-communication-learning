@@ -24,12 +24,14 @@ class Buffers:
         self.buffer_e.clear()
         self.backprop_msg = None
 
-    def store(self, obs, acts, rews_c, rews_g, rews_e, msg):
+    def store(self, obs, acts, rews_c, rews_g, rews_e, msg, states):
         if self.backprop_msg is None:
             self.backprop_msg = msg.reshape(self.batch_size, 1, -1)
         else:
             self.backprop_msg = torch.cat(
                 (self.backprop_msg, msg.reshape(self.batch_size, 1, -1)), 1)
+
+        self.states[:, self.buffer_c.ptr] = states
 
         self.buffer_c.store(obs[0], acts[:, 0], rews_c)
         self.buffer_g.store(obs[1], acts[:, 1], rews_g)
