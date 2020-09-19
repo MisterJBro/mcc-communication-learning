@@ -21,10 +21,12 @@ class Envs():
         self.observation_space = self.envs[0].observation_space
         self.action_space = self.envs[0].action_space
         self.agents_num = self.envs[0].agents_num
+        self.state_dim = (self.envs[0].world.dim[0]-2,
+                          self.envs[0].world.dim[1]-2)
 
     def reset(self):
         """ Resets the environments. """
-        return np.array([self.envs[x].reset() for x in range(self.num)])
+        return [self.envs[x].reset() for x in range(self.num)]
 
     def step(self, acts):
         """ Does one environment step. """
@@ -36,7 +38,7 @@ class Envs():
             r_s.append(r)
             d_s.append(d)
             i_s.append(i)
-        return np.array(o_s), np.array(r_s), np.array(d_s), np.array(i_s)
+        return o_s, np.array(r_s), d_s, i_s
 
     def close(self):
         """ Closes all environments. """

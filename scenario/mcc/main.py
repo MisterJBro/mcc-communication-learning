@@ -29,11 +29,13 @@ class Agents:
 
         # Environment
         self.num_world_blocks = 5
-        self.envs = Envs(batch_size, red_guides=1, blue_collector=1)
+        self.envs = Envs(batch_size, red_guides=1,
+                         blue_collector=1, competition=True)
         self.obs_dim = (self.num_world_blocks,) + \
             self.envs.observation_space.shape
         self.act_dim = self.envs.action_space.nvec[0]
         self.agents_num = self.envs.agents_num
+        self.state_dim = self.envs.state_dim
         print('Observation shape:', self.obs_dim)
         print('Action number:', self.act_dim)
         print('Agent number:', self.agents_num)
@@ -82,9 +84,8 @@ class Agents:
         self.lam = lam
         self.max_steps = max_steps
         self.buffers = Buffers(self.batch_size, self.max_steps,
-                               (127,), self.gamma, self.lam, self.symbol_num)
+                               (in_dim,), self.gamma, self.lam, self.symbol_num, self.state_dim)
         self.clip_ratio = clip_ratio
-        self.target_kl = target_kl
 
     def single_preprocess(self, obs, score):
         """ Processes a single observation into one hot encoding """
@@ -99,6 +100,7 @@ class Agents:
 
         if len(x) > 0:
             state[4, x, y] = 1
+
         return np.concatenate([state.reshape(-1), score])
 
     def preprocess(self, obs_list):
@@ -106,23 +108,23 @@ class Agents:
         obs_c, obs_g, obs_e = [], [], []
         for x in range(self.batch_size):
             obs_c.append(self.single_preprocess(
-                obs_list[0][x][0], obs_list[1][x]))
+                obs_list[x][0][0], obs_list[x][0][1:]))
             obs_g.append(self.single_preprocess(
-                obs_list[0][x][1], obs_list[1][x]))
+                obs_list[x][1][0], obs_list[x][1][1:]))
             obs_e.append(self.single_preprocess(
-                obs_list[0][x][2], obs_list[1][x]))
+                obs_list[x][2][0], obs_list[x][2][1:]))
         return np.array([obs_c, obs_g, obs_e])
 
     def sample_batch(self):
         """ Samples a batch of trajectories """
         self.buffers.clear()
         batch_rew = np.zeros((3, self.batch_size))
-        obs = self.preprocess(self.envs.reset_with_score())
+        obs = self.preprocess(self.envs.reset())
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
 
         for step in range(self.max_steps):
             acts, next_msg = self.get_actions(obs, msg)
-            next_obs, rews, _, _ = self.envs.step_with_score(acts)
+            next_obs, rews, _, _ = self.envs.step(acts)
             next_obs = self.preprocess(next_obs)
 
             self.buffers.store(
