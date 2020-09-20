@@ -291,7 +291,6 @@ class Agents:
             all_acts_e = torch.stack(
                 [repeated_act_c, all_acts], dim=1)
 
-
             repeated_states = states.repeat(
                 1, self.act_dim).reshape(samples*5, -1)
 
@@ -300,27 +299,16 @@ class Agents:
             all_vals_e = -self.central_critic(
                 repeated_states, all_acts_e).reshape(-1, self.act_dim)
 
-            print(all_vals_c)
-
-            vals_c2 = all_vals_c.gather(
+            vals_c = all_vals_c.gather(
                 1, act_c.long().reshape(-1, 1)).reshape(-1)
-            vals_e2 = all_vals_e.gather(
+            vals_e = all_vals_e.gather(
                 1, act_e.long().reshape(-1, 1)).reshape(-1)
-
-            acts = torch.stack([act_c, act_e], dim=1)
-
-            print(acts[:2])
-
-            vals_c = self.central_critic(states, acts).reshape(-1)
-            vals_e = -self.central_critic(states, acts).reshape(-1)
-
-            print(vals_c[:10], vals_c2[:10])
 
             adv_c = vals_c - (dst_c*all_vals_c).sum(1)
             adv_e = vals_e - (dst_e*all_vals_e).sum(1)
 
-            adv_c = (vals_c-vals_c.mean())/vals_c.std()
-            adv_e = (vals_e-vals_e.mean())/vals_e.std()
+            adv_c = (adv_c-adv_c.mean())/adv_c.std()
+            adv_e = (adv_e-adv_e.mean())/adv_e.std()
 
         return adv_c, adv_e
 
@@ -345,6 +333,9 @@ class Agents:
         del dst_c
         del dst_e
 
+        print(adv_c[:20])
+        print(adv_c2[:20])
+
         adv_c = adv_c.to(self.device)
 
         obs_c, ret_c = obs_c.to(self.device), ret_c.to(self.device)
@@ -358,7 +349,7 @@ class Agents:
         # _, _ = self.update_net(
         #    self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, self.red_iters, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 40, msg=msg.detach())
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg.detach())
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
 
@@ -460,7 +451,7 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    # agents.load()
+    agents.load()
     agents.train(1000)
 
     import code
