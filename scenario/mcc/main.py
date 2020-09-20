@@ -20,7 +20,7 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=6e-4, lr_guide=6e-4, lr_enemy=6e-4, lr_critic=1e-3, gamma=0.99,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=6e-4, lr_guide=6e-4, lr_enemy=6e-4, lr_critic=5e-4, gamma=0.99,
                  fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500, critic_iters=120,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
@@ -244,34 +244,41 @@ class Agents:
 
         return policy_loss, value_loss
 
-    def update_critic(self, states, act_c, act_e, ret_c):
+    def update_critic(self, states, act_c, act_e, rew_c):
         """ Updates the central critic. """
         total_loss = 0
         acts = torch.stack([act_c, act_e], dim=1)
+
+        frozen_vals = self.central_critic(
+            states, acts).reshape(self.batch_size, -1).detach()
+        targets = rew_c.reshape(self.batch_size, -1).clone()
+        targets[:, :-1] += self.gamma*frozen_vals[:, 1:]
 
         for _ in range(self.critic_iters):
             self.optimizer_cc.zero_grad()
 
             vals = self.central_critic(states, acts)
-            loss_c = self.val_criterion(vals.reshape(-1), ret_c)
 
+            loss_c = self.val_criterion(vals.reshape(-1), targets.reshape(-1))
             total_loss += loss_c.item()
-
             loss_c.backward()
+
             self.optimizer_cc.step()
 
         return total_loss
 
     def update(self):
         """ Updates all nets """
-        obs_c, act_c, ret_c, adv_c, obs_g, act_g, ret_g, adv_g, obs_e, act_e, ret_e, adv_e, msg, states = self.buffers.get_tensors()
+        obs_c, act_c, rew_c, ret_c, adv_c, obs_g, act_g, ret_g, adv_g, obs_e, act_e, ret_e, adv_e, msg, states = self.buffers.get_tensors()
 
         act_c, ret_c, act_e, ret_e = act_c.to(self.device), ret_c.to(
             self.device), act_e.to(self.device), ret_e.to(self.device)
+        rew_c = rew_c.to(self.device)
         states = states.to(self.device)
 
-        cc_loss = self.update_critic(states, act_c, act_e, ret_c)
+        cc_loss = self.update_critic(states, act_c, act_e, rew_c)
         del states
+        del rew_c
 
         obs_c, adv_c = obs_c.to(self.device), adv_c.to(self.device)
         obs_g, act_g, ret_g, adv_g = obs_g.to(self.device), act_g.to(

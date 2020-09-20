@@ -60,6 +60,8 @@ class Buffers:
             self.buffer_c.obs_buf, dtype=torch.float32).reshape(self.batch_size, self.size, -1)
         act_c = torch.as_tensor(
             self.buffer_c.act_buf, dtype=torch.int32).reshape(-1)
+        rew_c = torch.as_tensor(
+            self.buffer_c.rew_buf, dtype=torch.float32).reshape(-1)
         ret_c = torch.as_tensor(
             self.buffer_c.ret_buf, dtype=torch.float32).reshape(-1)
         adv_c = torch.as_tensor(
@@ -87,4 +89,4 @@ class Buffers:
         states = torch.as_tensor(
             self.states, dtype=torch.float32).reshape(self.batch_size * self.size, -1)
 
-        return obs_c, act_c, ret_c, adv_c, obs_g, act_g, ret_g, adv_g, obs_e, act_e, ret_e, adv_e, msg, states
+        return obs_c, act_c, rew_c, ret_c, adv_c, obs_g, act_g, ret_g, adv_g, obs_e, act_e, ret_e, adv_e, msg, states
