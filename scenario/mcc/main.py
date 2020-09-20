@@ -275,36 +275,37 @@ class Agents:
         """ Calculate the advantage using the central critic. """
         samples = self.batch_size*self.max_steps
 
-        all_acts = torch.arange(self.act_dim, dtype=torch.int32).repeat(
-            samples).reshape(-1).to(self.device)
-        repeated_act_e = act_e.repeat(
-            self.act_dim).reshape(self.act_dim, -1).T.reshape(-1)
-        repeated_act_c = act_c.repeat(
-            self.act_dim).reshape(self.act_dim, -1).T.reshape(-1)
+        with torch.no_grad():
+            all_acts = torch.arange(self.act_dim, dtype=torch.int32).repeat(
+                samples).reshape(-1).to(self.device)
+            repeated_act_e = act_e.repeat(
+                self.act_dim).reshape(self.act_dim, -1).T.reshape(-1)
+            repeated_act_c = act_c.repeat(
+                self.act_dim).reshape(self.act_dim, -1).T.reshape(-1)
 
-        all_acts_c = torch.stack(
-            [all_acts, repeated_act_e], dim=1)
-        all_acts_e = torch.stack(
-            [repeated_act_c, all_acts], dim=1)
+            all_acts_c = torch.stack(
+                [all_acts, repeated_act_e], dim=1)
+            all_acts_e = torch.stack(
+                [repeated_act_c, all_acts], dim=1)
 
-        repeated_states = states.repeat(
-            self.act_dim, 1).T.reshape(samples*5, -1)
+            repeated_states = states.repeat(
+                self.act_dim, 1).T.reshape(samples*5, -1)
 
-        all_vals_c = self.central_critic(
-            repeated_states, all_acts_c).reshape(-1, self.act_dim)
-        all_vals_e = self.central_critic(
-            repeated_states, all_acts_e).reshape(-1, self.act_dim)
+            all_vals_c = self.central_critic(
+                repeated_states, all_acts_c).reshape(-1, self.act_dim)
+            all_vals_e = -self.central_critic(
+                repeated_states, all_acts_e).reshape(-1, self.act_dim)
 
-        vals_c = all_vals_c.gather(1, act_c.long().reshape(-1, 1)).reshape(-1)
-        vals_e = all_vals_e.gather(1, act_e.long().reshape(-1, 1)).reshape(-1)
+            vals_c = all_vals_c.gather(
+                1, act_c.long().reshape(-1, 1)).reshape(-1)
+            vals_e = all_vals_e.gather(
+                1, act_e.long().reshape(-1, 1)).reshape(-1)
 
-        adv_c = vals_c + (dst_c*all_vals_c).sum(1)
-        adv_e = vals_e + (dst_e*all_vals_e).sum(1)
+            adv_c = vals_c + (dst_c*all_vals_c).sum(1)
+            adv_e = vals_e + (dst_e*all_vals_e).sum(1)
 
-        adv_c = (adv_c-adv_c.mean())/adv_c.std()
-        adv_e = (adv_e-adv_e.mean())/adv_e.std()
-
-        print(adv_c[:20], adv_e[:20])
+            adv_c = (adv_c-adv_c.mean())/adv_c.std()
+            adv_e = (adv_e-adv_e.mean())/adv_e.std()
 
         return adv_c, adv_e
 
@@ -319,7 +320,8 @@ class Agents:
         dst_c, dst_e = dst_c.to(self.device), dst_e.to(self.device)
 
         cc_loss = self.update_critic(states, act_c, act_e, rew_c)
-        self.calculate_advantage(states, act_c, act_e, dst_c, dst_e)
+        adv_c, adv_e = self.calculate_advantage(
+            states, act_c, act_e, dst_c, dst_e)
         del states
         del rew_c
         del dst_c
