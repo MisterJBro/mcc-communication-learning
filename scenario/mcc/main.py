@@ -246,18 +246,19 @@ class Agents:
     def update_critic(self, states, act_c, act_e, ret_c, ret_e):
         """ Updates the central critic. """
         total_loss = 0
+        acts = torch.stack([act_c, act_e], dim=1)
 
         for _ in range(80):
             self.optimizer_cc.zero_grad()
 
-            vals = self.central_critic(states, [act_c, act_e])
+            vals = self.central_critic(states, acts)
             loss_c = self.val_criterion(vals.reshape(-1), ret_c)
             loss_e = self.val_criterion(vals.reshape(-1), -ret_e)
 
             total_loss += loss_c.item()
             total_loss += loss_e.item()
 
-            loss_c.backward()
+            loss_c.backward(retain_graph=True)
             loss_e.backward()
             self.optimizer_cc.step()
 
@@ -273,7 +274,7 @@ class Agents:
 
         cc_loss = self.update_critic(states, act_c, act_e, ret_c, ret_e)
         print(cc_loss)
-        del states
+        #del states
 
         obs_c, adv_c = obs_c.to(self.device), adv_c.to(self.device)
         obs_g, act_g, ret_g, adv_g = obs_g.to(self.device), act_g.to(
@@ -300,7 +301,7 @@ class Agents:
         if self.blue_iters > 0:
             self.scheduler_e.step()
 
-        return p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent
+        return p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent, cc_loss
 
     def train(self, epochs):
         """ Trains the agent for given epochs """
@@ -311,10 +312,10 @@ class Agents:
             epoch_rews.append(rew)
 
             self.save()
-            p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent = self.update()
+            p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent, cc_loss = self.update()
 
-            print('Epoch: {:4}  Collector Rew: {:4}  Enemy Rew: {:4}  Guide Rew: {:4}  Msg Ent {:4}'.format(
-                epoch, np.round(rew[0], 3),  np.round(rew[2], 3), np.round(rew[1], 1), np.round(msg_ent, 3)))
+            print('Epoch: {:4}  Collector Rew: {:4}  Enemy Rew: {:4}  Guide Rew: {:4}  Msg Ent {:4}  CC Loss: {:4}'.format(
+                epoch, np.round(rew[0], 3),  np.round(rew[2], 3), np.round(rew[1], 1), np.round(msg_ent, 3), np.round(cc_loss, 3)))
         print(epoch_rews)
 
     def save(self, path='{}/model.pt'.format(PROJECT_PATH)):

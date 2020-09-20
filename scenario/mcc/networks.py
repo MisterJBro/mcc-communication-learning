@@ -260,5 +260,5 @@ class ActionValue(nn.Module):
         )
 
     def forward(self, x, a):
-        x = torch.cat((x, a), 2)
+        x = torch.cat([x, a.float()], dim=1)
         return self.mlp(x)
