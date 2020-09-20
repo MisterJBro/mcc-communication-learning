@@ -21,7 +21,7 @@ PROJECT_PATH = pathlib.Path(
 
 class Agents:
     def __init__(self, seed=0, device='cuda:0', lr_collector=6e-4, lr_guide=6e-4, lr_enemy=6e-4, lr_critic=5e-4, gamma=0.99,
-                 fc_hidden=64, rnn_hidden=128, batch_size=16, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500, critic_iters=120,
+                 fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500, critic_iters=120,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -311,7 +311,7 @@ class Agents:
 
     def update(self):
         """ Updates all nets """
-        obs_c, act_c, rew_c, ret_c, adv_c, dst_c, obs_g, act_g, ret_g, adv_g, dst_g, obs_e, act_e, ret_e, adv_e, dst_e, msg, states = self.buffers.get_tensors()
+        obs_c, act_c, rew_c, ret_c, dst_c, obs_g, act_g, ret_g, adv_g, dst_g, obs_e, act_e, ret_e, dst_e, msg, states = self.buffers.get_tensors()
 
         act_c, ret_c, act_e, ret_e = act_c.to(self.device), ret_c.to(
             self.device), act_e.to(self.device), ret_e.to(self.device)

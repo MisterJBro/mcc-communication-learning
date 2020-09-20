@@ -96,4 +96,4 @@ class Buffers:
         states = torch.as_tensor(
             self.states, dtype=torch.float32).reshape(self.batch_size * self.size, -1)
 
-        return obs_c, act_c, rew_c, ret_c, adv_c, dst_c, obs_g, act_g, ret_g, adv_g, dst_g, obs_e, act_e, ret_e, adv_e, dst_e, msg, states
+        return obs_c, act_c, rew_c, ret_c, dst_c, obs_g, act_g, ret_g, adv_g, dst_g, obs_e, act_e, ret_e, dst_e, msg, states
