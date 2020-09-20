@@ -9,7 +9,7 @@ import random
 import gym
 import numpy as np
 from scenario.mcc.buffers import Buffers
-from scenario.mcc.networks import Policy, Listener, Speaker, Normal
+from scenario.mcc.networks import Policy, Listener, Speaker, Normal, ActionValue
 from scenario.mcc.preprocess import preprocess, preprocess_state
 import seaborn as sns
 import pathlib
@@ -20,8 +20,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=6e-4, lr_guide=6e-4, lr_enemy=6e-4, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, iters=40,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=6e-4, lr_guide=6e-4, lr_enemy=6e-4, lr_critic=1e-3, gamma=0.99,
+                 fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -50,6 +50,8 @@ class Agents:
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
         self.enemy = Normal(
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
+        self.central_critic = ActionValue(
+            self.state_dim[0]*self.state_dim[1]*self.state_dim[2], 2).to(self.device)
 
         self.optimizer_c = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
@@ -57,6 +59,8 @@ class Agents:
             self.guide.parameters(), lr=lr_guide)
         self.optimizer_e = optim.Adam(
             self.enemy.parameters(), lr=lr_enemy)
+        self.optimizer_cc = optim.Adam(
+            self.central_critic.parameters(), lr=lr_critic)
 
         milestones = [2000, 4000, 5000]
         self.scheduler_c = MultiStepLR(
@@ -239,11 +243,39 @@ class Agents:
 
         return policy_loss, value_loss
 
+    def update_critic(self, states, act_c, act_e, ret_c, ret_e):
+        """ Updates the central critic. """
+        total_loss = 0
+
+        for _ in range(80):
+            self.optimizer_cc.zero_grad()
+
+            vals = self.central_critic(states, [act_c, act_e])
+            loss_c = self.val_criterion(vals.reshape(-1), ret_c)
+            loss_e = self.val_criterion(vals.reshape(-1), -ret_e)
+
+            total_loss += loss_c.item()
+            total_loss += loss_e.item()
+
+            loss_c.backward()
+            loss_e.backward()
+            self.optimizer_cc.step()
+
+        return total_loss
+
     def update(self):
         """ Updates all nets """
-        obs_c, act_c, ret_c, adv_c, obs_g, act_g, ret_g, adv_g, obs_e, act_e, ret_e, adv_e, msg = self.buffers.get_tensors()
-        obs_c, act_c, ret_c, adv_c = obs_c.to(self.device), act_c.to(
-            self.device), ret_c.to(self.device), adv_c.to(self.device)
+        obs_c, act_c, ret_c, adv_c, obs_g, act_g, ret_g, adv_g, obs_e, act_e, ret_e, adv_e, msg, states = self.buffers.get_tensors()
+
+        act_c, ret_c, act_e, ret_e = act_c.to(self.device), ret_c.to(
+            self.device), act_e.to(self.device), ret_e.to(self.device)
+        states = states.to(self.device)
+
+        cc_loss = self.update_critic(states, act_c, act_e, ret_c, ret_e)
+        print(cc_loss)
+        del states
+
+        obs_c, adv_c = obs_c.to(self.device), adv_c.to(self.device)
         obs_g, act_g, ret_g, adv_g = obs_g.to(self.device), act_g.to(
             self.device), ret_g.to(self.device), adv_g.to(self.device)
 
@@ -258,8 +290,7 @@ class Agents:
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
 
-        obs_e, act_e, ret_e, adv_e = obs_e.to(self.device), act_e.to(
-            self.device), ret_e.to(self.device), adv_e.to(self.device)
+        obs_e, adv_e = obs_e.to(self.device), adv_e.to(self.device)
         p_loss_e, v_loss_e = self.update_net(
             self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, self.blue_iters, enemy=True)
 

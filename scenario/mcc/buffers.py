@@ -84,5 +84,7 @@ class Buffers:
             self.buffer_e.adv_buf, dtype=torch.float32).reshape(-1)
 
         msg = self.backprop_msg
+        states = torch.as_tensor(
+            self.states, dtype=torch.float32).reshape(self.batch_size * self.size, -1)
 
-        return obs_c, act_c, ret_c, adv_c, obs_g, act_g, ret_g, adv_g, obs_e, act_e, ret_e, adv_e, msg
+        return obs_c, act_c, ret_c, adv_c, obs_g, act_g, ret_g, adv_g, obs_e, act_e, ret_e, adv_e, msg, states
