@@ -56,6 +56,22 @@ class Buffers:
         self.buffer_g.standardize_adv()
         self.buffer_e.standardize_adv()
 
+    def get_collector_tensors(self):
+        obs_c = torch.as_tensor(
+            self.buffer_c.obs_buf, dtype=torch.float32).reshape(self.batch_size, self.size, -1)
+        act_c = torch.as_tensor(
+            self.buffer_c.act_buf, dtype=torch.int32).reshape(-1)
+        rew_c = torch.as_tensor(
+            self.buffer_c.rew_buf, dtype=torch.float32).reshape(-1)
+        ret_c = torch.as_tensor(
+            self.buffer_c.ret_buf, dtype=torch.float32).reshape(-1)
+        adv_c = torch.as_tensor(
+            self.buffer_c.adv_buf, dtype=torch.float32).reshape(-1)
+        dst_c = torch.as_tensor(
+            self.buffer_c.dst_buf, dtype=torch.float32).reshape(-1, self.act_num)
+
+        return obs_c, act_c, rew_c, ret_c, adv_c, dst_c
+
     def get_tensors(self):
         obs_c = torch.as_tensor(
             self.buffer_c.obs_buf, dtype=torch.float32).reshape(self.batch_size, self.size, -1)

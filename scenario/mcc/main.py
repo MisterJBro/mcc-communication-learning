@@ -21,7 +21,7 @@ PROJECT_PATH = pathlib.Path(
 
 class Agents:
     def __init__(self, seed=0, device='cuda:0', lr_collector=6e-4, lr_guide=6e-4, lr_enemy=6e-4, lr_critic=5e-4, gamma=0.99,
-                 fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500, critic_iters=120,
+                 fc_hidden=64, rnn_hidden=128, batch_size=64, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500, critic_iters=120,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -71,6 +71,7 @@ class Agents:
             self.optimizer_e, milestones=milestones, gamma=0.5)
         self.batch_size = batch_size
         self.val_criterion = nn.MSELoss()
+        self.act_val_criterion = nn.MSELoss()
         self.pred_criterion = nn.CrossEntropyLoss()
 
         self.iters = iters
@@ -157,7 +158,8 @@ class Agents:
 
         act_c = act_dist_c.sample().cpu().numpy()
         act_g = act_dist_g.sample().cpu().numpy()
-        act_e = act_dist_e.sample().cpu().numpy()
+        # act_dist_e.sample().cpu().numpy()
+        act_e = np.ones(self.batch_size)*4
 
         dst_c = act_dist_c.probs.cpu().detach().numpy()
         dst_g = act_dist_g.probs.cpu().detach().numpy()
@@ -248,7 +250,7 @@ class Agents:
 
         return policy_loss, value_loss
 
-    def update_critic(self, states, act_c, act_e, rew_c):
+    def update_critic(self, states, act_c, act_e, rew_c, ret_c):
         """ Updates the central critic. """
         total_loss = 0
         acts = torch.stack([act_c, act_e], dim=1)
@@ -263,7 +265,8 @@ class Agents:
 
             vals = self.central_critic(states, acts)
 
-            loss_c = self.val_criterion(vals.reshape(-1), targets.reshape(-1))
+            # targets.reshape(-1))
+            loss_c = self.act_val_criterion(vals.reshape(-1), ret_c)
             total_loss += loss_c.item()
             loss_c.backward()
 
@@ -288,24 +291,36 @@ class Agents:
             all_acts_e = torch.stack(
                 [repeated_act_c, all_acts], dim=1)
 
+
             repeated_states = states.repeat(
-                self.act_dim, 1).T.reshape(samples*5, -1)
+                1, self.act_dim).reshape(samples*5, -1)
 
             all_vals_c = self.central_critic(
                 repeated_states, all_acts_c).reshape(-1, self.act_dim)
             all_vals_e = -self.central_critic(
                 repeated_states, all_acts_e).reshape(-1, self.act_dim)
 
-            vals_c = all_vals_c.gather(
+            print(all_vals_c)
+
+            vals_c2 = all_vals_c.gather(
                 1, act_c.long().reshape(-1, 1)).reshape(-1)
-            vals_e = all_vals_e.gather(
+            vals_e2 = all_vals_e.gather(
                 1, act_e.long().reshape(-1, 1)).reshape(-1)
 
-            adv_c = vals_c + (dst_c*all_vals_c).sum(1)
-            adv_e = vals_e + (dst_e*all_vals_e).sum(1)
+            acts = torch.stack([act_c, act_e], dim=1)
 
-            adv_c = (adv_c-adv_c.mean())/adv_c.std()
-            adv_e = (adv_e-adv_e.mean())/adv_e.std()
+            print(acts[:2])
+
+            vals_c = self.central_critic(states, acts).reshape(-1)
+            vals_e = -self.central_critic(states, acts).reshape(-1)
+
+            print(vals_c[:10], vals_c2[:10])
+
+            adv_c = vals_c - (dst_c*all_vals_c).sum(1)
+            adv_e = vals_e - (dst_e*all_vals_e).sum(1)
+
+            adv_c = (vals_c-vals_c.mean())/vals_c.std()
+            adv_e = (vals_e-vals_e.mean())/vals_e.std()
 
         return adv_c, adv_e
 
@@ -313,21 +328,26 @@ class Agents:
         """ Updates all nets """
         obs_c, act_c, rew_c, ret_c, dst_c, obs_g, act_g, ret_g, adv_g, dst_g, obs_e, act_e, ret_e, dst_e, msg, states = self.buffers.get_tensors()
 
-        act_c, ret_c, act_e, ret_e = act_c.to(self.device), ret_c.to(
-            self.device), act_e.to(self.device), ret_e.to(self.device)
+        obs_c, act_c, rew_c, ret_c, adv_c, dst_c = self.buffers.get_collector_tensors()
+
+        act_c, act_e = act_c.to(self.device), act_e.to(self.device)
         rew_c = rew_c.to(self.device)
         states = states.to(self.device)
         dst_c, dst_e = dst_c.to(self.device), dst_e.to(self.device)
 
-        cc_loss = self.update_critic(states, act_c, act_e, rew_c)
-        adv_c, adv_e = self.calculate_advantage(
+        ret_c = ret_c.to(self.device)
+
+        cc_loss = self.update_critic(states, act_c, act_e, rew_c, ret_c)
+        adv_c2, adv_e = self.calculate_advantage(
             states, act_c, act_e, dst_c, dst_e)
         del states
         del rew_c
         del dst_c
         del dst_e
 
-        obs_c, adv_c = obs_c.to(self.device), adv_c.to(self.device)
+        adv_c = adv_c.to(self.device)
+
+        obs_c, ret_c = obs_c.to(self.device), ret_c.to(self.device)
         obs_g, act_g, ret_g, adv_g = obs_g.to(self.device), act_g.to(
             self.device), ret_g.to(self.device), adv_g.to(self.device)
 
@@ -335,22 +355,22 @@ class Agents:
             probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
 
         # Training Collector/Msg/Guide - Collector - Guide
-        _, _ = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, self.red_iters, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
+        # _, _ = self.update_net(
+        #    self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, self.red_iters, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg.detach())
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 40, msg=msg.detach())
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
 
-        obs_e, adv_e = obs_e.to(self.device), adv_e.to(self.device)
-        p_loss_e, v_loss_e = self.update_net(
-            self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, self.blue_iters, enemy=True)
+        obs_e, ret_e = obs_e.to(self.device), ret_e.to(self.device)
+        # p_loss_e, v_loss_e = self.update_net(
+        #     self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, self.blue_iters, enemy=True)
 
-        if self.red_iters > 0:
-            self.scheduler_c.step()
-            self.scheduler_g.step()
-        if self.blue_iters > 0:
-            self.scheduler_e.step()
+        self.scheduler_c.step()
+        self.scheduler_g.step()
+        self.scheduler_e.step()
+
+        p_loss_e, v_loss_e = 0, 0
 
         return p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent, cc_loss
 

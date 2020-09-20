@@ -256,6 +256,8 @@ class ActionValue(nn.Module):
             nn.ELU(),
             nn.Linear(fc_hidden, fc_hidden),
             nn.ELU(),
+            nn.Linear(fc_hidden, fc_hidden),
+            nn.ELU(),
             nn.Linear(fc_hidden, 1)
         )
 
