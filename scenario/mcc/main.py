@@ -298,9 +298,15 @@ class Agents:
         vals_c = all_vals_c.gather(1, act_c.long().reshape(-1, 1)).reshape(-1)
         vals_e = all_vals_e.gather(1, act_e.long().reshape(-1, 1)).reshape(-1)
 
-        print(vals_c.shape)
-        print(all_vals_c.shape)
-        print(dst_c.shape)
+        adv_c = vals_c + (dst_c*all_vals_c).sum(1)
+        adv_e = vals_e + (dst_e*all_vals_e).sum(1)
+
+        adv_c = (adv_c-adv_c.mean())/adv_c.std()
+        adv_e = (adv_e-adv_e.mean())/adv_e.std()
+
+        print(adv_c[:20], adv_e[:20])
+
+        return adv_c, adv_e
 
     def update(self):
         """ Updates all nets """
@@ -310,16 +316,14 @@ class Agents:
             self.device), act_e.to(self.device), ret_e.to(self.device)
         rew_c = rew_c.to(self.device)
         states = states.to(self.device)
-
-        import time
-        start = time.time()
+        dst_c, dst_e = dst_c.to(self.device), dst_e.to(self.device)
 
         cc_loss = self.update_critic(states, act_c, act_e, rew_c)
         self.calculate_advantage(states, act_c, act_e, dst_c, dst_e)
         del states
         del rew_c
-
-        print(time.time()-start)
+        del dst_c
+        del dst_e
 
         obs_c, adv_c = obs_c.to(self.device), adv_c.to(self.device)
         obs_g, act_g, ret_g, adv_g = obs_g.to(self.device), act_g.to(

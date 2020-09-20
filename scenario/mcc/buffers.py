@@ -14,7 +14,7 @@ class Buffers:
         self.buffer_g = Buffer(batch_size, size,
                                obs_dim, act_num, gamma, lam, symbol_num)
         self.buffer_e = Buffer(batch_size, size,
-                               obs_dim, gamma, lam, symbol_num)
+                               obs_dim, act_num, gamma, lam, symbol_num)
         self.backprop_msg = None
         self.states = np.empty((batch_size, size) +
                                state_dim, dtype=np.float32)
