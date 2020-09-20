@@ -20,8 +20,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=6e-4, lr_guide=6e-4, lr_enemy=6e-4, lr_critic=5e-4, gamma=0.99,
-                 fc_hidden=64, rnn_hidden=128, batch_size=64, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500, critic_iters=120,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=6e-4, lr_guide=6e-4, lr_enemy=6e-4, lr_critic=8e-4, gamma=0.99,
+                 fc_hidden=64, rnn_hidden=128, batch_size=64, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500, critic_iters=80,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -102,9 +102,13 @@ class Agents:
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
 
         for step in range(self.max_steps):
+            #import time
+            # time.sleep(0.5)
+            # self.envs.envs[0].render()
             acts, dsts, next_msg = self.get_actions(obs, msg)
             next_obs, rews, _, states = self.envs.step(acts)
             next_obs = preprocess(next_obs)
+
             states = np.array(preprocess_state(states))
 
             self.buffers.store(
@@ -254,19 +258,27 @@ class Agents:
         """ Updates the central critic. """
         total_loss = 0
         acts = torch.stack([act_c, act_e], dim=1)
-
         frozen_vals = self.central_critic(
             states, acts).reshape(self.batch_size, -1).detach()
         targets = rew_c.reshape(self.batch_size, -1).clone()
         targets[:, :-1] += self.gamma*frozen_vals[:, 1:]
 
-        for _ in range(self.critic_iters):
+        for iter in range(self.critic_iters):
             self.optimizer_cc.zero_grad()
+
+            if iter % 5 == 0:
+                frozen_vals = self.central_critic(
+                    states, acts).reshape(self.batch_size, -1).detach()
+                targets = rew_c.reshape(self.batch_size, -1).clone()
+                targets[:, :-1] += self.gamma*frozen_vals[:, 1:]
 
             vals = self.central_critic(states, acts)
 
-            # targets.reshape(-1))
-            loss_c = self.act_val_criterion(vals.reshape(-1), ret_c)
+            loss_c = self.act_val_criterion(
+                vals.reshape(-1), ret_c.reshape(-1))
+            # print(states.shape)
+            # print(states[0].cpu().numpy().reshape(
+            #    5, 16, 22)[1], acts[0], vals[0], ret_c[0])
             total_loss += loss_c.item()
             loss_c.backward()
 
@@ -304,13 +316,18 @@ class Agents:
             vals_e = all_vals_e.gather(
                 1, act_e.long().reshape(-1, 1)).reshape(-1)
 
-            adv_c = vals_c - (dst_c*all_vals_c).sum(1)
-            adv_e = vals_e - (dst_e*all_vals_e).sum(1)
+            adv_c = vals_c  # - (dst_c*all_vals_c).sum(1)
+            adv_e = vals_e  # - (dst_e*all_vals_e).sum(1)
 
-            adv_c = (adv_c-adv_c.mean())/adv_c.std()
-            adv_e = (adv_e-adv_e.mean())/adv_e.std()
+            #adv_c = adv_c.reshape(self.batch_size, self.max_steps)
+            #adv_e = adv_e.reshape(self.batch_size, self.max_steps)
 
-        return adv_c, adv_e
+            # adv_c = (adv_c-adv_c.mean(1).reshape(-1, 1)) / \
+            #    adv_c.std(1).reshape(-1, 1)
+            # adv_e = (adv_e-adv_e.mean(1).reshape(-1, 1)) / \
+            #    adv_e.std(1).reshape(-1, 1)
+
+        return adv_c.reshape(-1), adv_e.reshape(-1)
 
     def update(self):
         """ Updates all nets """
@@ -326,18 +343,14 @@ class Agents:
         ret_c = ret_c.to(self.device)
 
         cc_loss = self.update_critic(states, act_c, act_e, rew_c, ret_c)
-        adv_c2, adv_e = self.calculate_advantage(
+        _, adv_e = self.calculate_advantage(
             states, act_c, act_e, dst_c, dst_e)
         del states
         del rew_c
         del dst_c
         del dst_e
 
-        print(adv_c[:20])
-        print(adv_c2[:20])
-
         adv_c = adv_c.to(self.device)
-
         obs_c, ret_c = obs_c.to(self.device), ret_c.to(self.device)
         obs_g, act_g, ret_g, adv_g = obs_g.to(self.device), act_g.to(
             self.device), ret_g.to(self.device), adv_g.to(self.device)
