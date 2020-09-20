@@ -273,8 +273,7 @@ class Agents:
         states = states.to(self.device)
 
         cc_loss = self.update_critic(states, act_c, act_e, ret_c, ret_e)
-        print(cc_loss)
-        #del states
+        del states
 
         obs_c, adv_c = obs_c.to(self.device), adv_c.to(self.device)
         obs_g, act_g, ret_g, adv_g = obs_g.to(self.device), act_g.to(
@@ -324,9 +323,11 @@ class Agents:
             'collector': self.collector.state_dict(),
             'guide': self.guide.state_dict(),
             'enemy': self.enemy.state_dict(),
+            'critic': self.central_critic.state_dict(),
             'optim_c': self.optimizer_c.state_dict(),
             'optim_g': self.optimizer_g.state_dict(),
             'optim_e': self.optimizer_e.state_dict(),
+            'optim_cc': self.optimizer_cc.state_dict(),
         }, path)
 
     def load(self, path='{}/model.pt'.format(PROJECT_PATH)):
@@ -335,9 +336,11 @@ class Agents:
         self.collector.load_state_dict(checkpoint['collector'])
         self.guide.load_state_dict(checkpoint['guide'])
         self.enemy.load_state_dict(checkpoint['enemy'])
+        self.central_critic.load_state_dict(checkpoint['critic'])
         self.optimizer_c.load_state_dict(checkpoint['optim_c'])
         self.optimizer_g.load_state_dict(checkpoint['optim_g'])
         self.optimizer_e.load_state_dict(checkpoint['optim_e'])
+        self.optimizer_cc.load_state_dict(checkpoint['optim_cc'])
 
     def test(self):
         """ Tests the agent """
