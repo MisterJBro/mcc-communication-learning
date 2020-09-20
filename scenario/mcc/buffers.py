@@ -4,14 +4,15 @@ from scenario.mcc.buffer import Buffer
 
 
 class Buffers:
-    def __init__(self, batch_size, size, obs_dim, gamma, lam, symbol_num, state_dim):
+    def __init__(self, batch_size, size, obs_dim, act_num, gamma, lam, symbol_num, state_dim):
         self.batch_size = batch_size
+        self.act_num = act_num
         self.size = size
 
         self.buffer_c = Buffer(batch_size, size,
-                               obs_dim, gamma, lam, symbol_num)
+                               obs_dim, act_num, gamma, lam, symbol_num)
         self.buffer_g = Buffer(batch_size, size,
-                               obs_dim, gamma, lam, symbol_num)
+                               obs_dim, act_num, gamma, lam, symbol_num)
         self.buffer_e = Buffer(batch_size, size,
                                obs_dim, gamma, lam, symbol_num)
         self.backprop_msg = None
@@ -24,7 +25,7 @@ class Buffers:
         self.buffer_e.clear()
         self.backprop_msg = None
 
-    def store(self, obs, acts, rews_c, rews_g, rews_e, msg, states):
+    def store(self, obs, acts, dsts, rews_c, rews_g, rews_e, msg, states):
         if self.backprop_msg is None:
             self.backprop_msg = msg.reshape(self.batch_size, 1, -1)
         else:
@@ -33,9 +34,9 @@ class Buffers:
 
         self.states[:, self.buffer_c.ptr] = states
 
-        self.buffer_c.store(obs[0], acts[:, 0], rews_c)
-        self.buffer_g.store(obs[1], acts[:, 1], rews_g)
-        self.buffer_e.store(obs[2], acts[:, 2], rews_e)
+        self.buffer_c.store(obs[0], acts[:, 0], dsts[0], rews_c)
+        self.buffer_g.store(obs[1], acts[:, 1], dsts[1], rews_g)
+        self.buffer_e.store(obs[2], acts[:, 2], dsts[2], rews_e)
 
     def expected_returns(self):
         self.buffer_c.expected_returns()
@@ -66,6 +67,8 @@ class Buffers:
             self.buffer_c.ret_buf, dtype=torch.float32).reshape(-1)
         adv_c = torch.as_tensor(
             self.buffer_c.adv_buf, dtype=torch.float32).reshape(-1)
+        dst_c = torch.as_tensor(
+            self.buffer_c.dst_buf, dtype=torch.float32).reshape(-1, self.act_num)
 
         obs_g = torch.as_tensor(
             self.buffer_g.obs_buf, dtype=torch.float32).reshape(self.batch_size, self.size, -1)
@@ -75,6 +78,8 @@ class Buffers:
             self.buffer_g.ret_buf, dtype=torch.float32).reshape(-1)
         adv_g = torch.as_tensor(
             self.buffer_g.adv_buf, dtype=torch.float32).reshape(-1)
+        dst_g = torch.as_tensor(
+            self.buffer_g.dst_buf, dtype=torch.float32).reshape(-1, self.act_num)
 
         obs_e = torch.as_tensor(
             self.buffer_e.obs_buf, dtype=torch.float32).reshape(self.batch_size, self.size, -1)
@@ -84,9 +89,11 @@ class Buffers:
             self.buffer_e.ret_buf, dtype=torch.float32).reshape(-1)
         adv_e = torch.as_tensor(
             self.buffer_e.adv_buf, dtype=torch.float32).reshape(-1)
+        dst_e = torch.as_tensor(
+            self.buffer_e.dst_buf, dtype=torch.float32).reshape(-1, self.act_num)
 
         msg = self.backprop_msg
         states = torch.as_tensor(
             self.states, dtype=torch.float32).reshape(self.batch_size * self.size, -1)
 
-        return obs_c, act_c, rew_c, ret_c, adv_c, obs_g, act_g, ret_g, adv_g, obs_e, act_e, ret_e, adv_e, msg, states
+        return obs_c, act_c, rew_c, ret_c, adv_c, dst_c, obs_g, act_g, ret_g, adv_g, dst_g, obs_e, act_e, ret_e, adv_e, dst_e, msg, states

@@ -21,7 +21,7 @@ PROJECT_PATH = pathlib.Path(
 
 class Agents:
     def __init__(self, seed=0, device='cuda:0', lr_collector=6e-4, lr_guide=6e-4, lr_enemy=6e-4, lr_critic=5e-4, gamma=0.99,
-                 fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500, critic_iters=120,
+                 fc_hidden=64, rnn_hidden=128, batch_size=16, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500, critic_iters=120,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -90,7 +90,7 @@ class Agents:
         self.lam = lam
         self.max_steps = max_steps
         self.buffers = Buffers(self.batch_size, self.max_steps,
-                               (in_dim,), self.gamma, self.lam, self.symbol_num, self.state_dim)
+                               (in_dim,), self.act_dim, self.gamma, self.lam, self.symbol_num, self.state_dim)
         self.clip_ratio = clip_ratio
 
     def sample_batch(self):
@@ -101,13 +101,13 @@ class Agents:
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
 
         for step in range(self.max_steps):
-            acts, next_msg = self.get_actions(obs, msg)
+            acts, dsts, next_msg = self.get_actions(obs, msg)
             next_obs, rews, _, states = self.envs.step(acts)
             next_obs = preprocess(next_obs)
             states = np.array(preprocess_state(states))
 
             self.buffers.store(
-                obs, acts, rews[:, 0], rews[:, 1], rews[:, 2], msg, states)
+                obs, acts, dsts, rews[:, 0], rews[:, 1], rews[:, 2], msg, states)
             batch_rew[0] += rews[:, 0]
             batch_rew[1] += rews[:, 1]
             batch_rew[2] += rews[:, 2]
@@ -159,7 +159,11 @@ class Agents:
         act_g = act_dist_g.sample().cpu().numpy()
         act_e = act_dist_e.sample().cpu().numpy()
 
-        return np.stack([act_c, act_g, act_e]).T, next_msg
+        dst_c = act_dist_c.probs.cpu().detach().numpy()
+        dst_g = act_dist_g.probs.cpu().detach().numpy()
+        dst_e = act_dist_e.probs.cpu().detach().numpy()
+
+        return np.stack([act_c, act_g, act_e]).T, np.stack([dst_c, dst_g, dst_e]), next_msg
 
     def compute_policy_gradient(self, net, dist, act, adv, old_logp):
         """ Computes the policy gradient with PPO """
@@ -267,18 +271,55 @@ class Agents:
 
         return total_loss
 
+    def calculate_advantage(self, states, act_c, act_e, dst_c, dst_e):
+        """ Calculate the advantage using the central critic. """
+        samples = self.batch_size*self.max_steps
+
+        all_acts = torch.arange(self.act_dim, dtype=torch.int32).repeat(
+            samples).reshape(-1).to(self.device)
+        repeated_act_e = act_e.repeat(
+            self.act_dim).reshape(self.act_dim, -1).T.reshape(-1)
+        repeated_act_c = act_c.repeat(
+            self.act_dim).reshape(self.act_dim, -1).T.reshape(-1)
+
+        all_acts_c = torch.stack(
+            [all_acts, repeated_act_e], dim=1)
+        all_acts_e = torch.stack(
+            [repeated_act_c, all_acts], dim=1)
+
+        repeated_states = states.repeat(
+            self.act_dim, 1).T.reshape(samples*5, -1)
+
+        all_vals_c = self.central_critic(
+            repeated_states, all_acts_c).reshape(-1, self.act_dim)
+        all_vals_e = self.central_critic(
+            repeated_states, all_acts_e).reshape(-1, self.act_dim)
+
+        vals_c = all_vals_c.gather(1, act_c.long().reshape(-1, 1)).reshape(-1)
+        vals_e = all_vals_e.gather(1, act_e.long().reshape(-1, 1)).reshape(-1)
+
+        print(vals_c.shape)
+        print(all_vals_c.shape)
+        print(dst_c.shape)
+
     def update(self):
         """ Updates all nets """
-        obs_c, act_c, rew_c, ret_c, adv_c, obs_g, act_g, ret_g, adv_g, obs_e, act_e, ret_e, adv_e, msg, states = self.buffers.get_tensors()
+        obs_c, act_c, rew_c, ret_c, adv_c, dst_c, obs_g, act_g, ret_g, adv_g, dst_g, obs_e, act_e, ret_e, adv_e, dst_e, msg, states = self.buffers.get_tensors()
 
         act_c, ret_c, act_e, ret_e = act_c.to(self.device), ret_c.to(
             self.device), act_e.to(self.device), ret_e.to(self.device)
         rew_c = rew_c.to(self.device)
         states = states.to(self.device)
 
+        import time
+        start = time.time()
+
         cc_loss = self.update_critic(states, act_c, act_e, rew_c)
+        self.calculate_advantage(states, act_c, act_e, dst_c, dst_e)
         del states
         del rew_c
+
+        print(time.time()-start)
 
         obs_c, adv_c = obs_c.to(self.device), adv_c.to(self.device)
         obs_g, act_g, ret_g, adv_g = obs_g.to(self.device), act_g.to(
