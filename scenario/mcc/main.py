@@ -357,6 +357,7 @@ class Agents:
             probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
 
         cc_loss = self.update_critic(states, act_c, act_e, rew_c, ret_c)
+        _, _ = self.calculate_advantage(states, act_c, act_e, dst_c, dst_e)
 
         # Training Collector/Msg/Guide - Collector - Guide
         _, _ = self.update_net(
