@@ -20,8 +20,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=5, device='cuda:0', lr_collector=1e-3, lr_guide=6e-4, lr_enemy=6e-4, lr_critic=3e-4, gamma=0.99,
-                 fc_hidden=64, rnn_hidden=128, batch_size=420, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500, critic_iters=80,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, lr_enemy=1e-3, lr_critic=1e-3, gamma=0.99,
+                 fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500, critic_iters=80,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -178,8 +178,6 @@ class Agents:
         """ Computes the policy gradient with PPO """
         logp = dist.log_prob(act)
 
-        return -(logp*adv).mean(), 0.0
-
         ratio = torch.exp(logp - old_logp)
         clipped = torch.clamp(ratio, 1-self.clip_ratio, 1+self.clip_ratio)*adv
         loss = -(torch.min(ratio*adv, clipped)).mean()
@@ -220,10 +218,10 @@ class Agents:
             policy_loss += loss.item()
             if kl > 0.03:
                 return policy_loss, value_loss
-            # loss.backward(retain_graph=True)
+            loss.backward(retain_graph=True)
 
-            #loss = self.val_criterion(vals.reshape(-1), ret)
-            #value_loss += loss.item()
+            loss = self.val_criterion(vals.reshape(-1), ret)
+            value_loss += loss.item()
             loss.backward()
             torch.nn.utils.clip_grad_norm_(
                 net.parameters(), self.grad_clip)
@@ -338,9 +336,9 @@ class Agents:
         # B: Batch Size, A: Action Num, L: Game Length, S: Symbol Num
 
         # [B, L, 127], [B*L], [B*L], [B*L], [B*L, A]
-        obs_c, act_c, rew_c, ret_c, dst_c = self.buffers.get_collector_tensors()
-        obs_c, act_c, ret_c = obs_c.to(self.device), act_c.to(
-            self.device), ret_c.to(self.device)
+        obs_c, act_c, adv_c, rew_c, ret_c, dst_c = self.buffers.get_collector_tensors()
+        obs_c, act_c, adv_c, ret_c = obs_c.to(self.device), act_c.to(
+            self.device), adv_c.to(self.device), ret_c.to(self.device)
 
         # [B, L, S], [B, L, 3]
         msg, states = self.buffers.get_buffers_tensors()
@@ -360,8 +358,8 @@ class Agents:
         # _, _ = self.update_net(
         #    self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, self.red_iters, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
 
-        # p_loss_c, v_loss_c = self.update_net(
-        #    self.collector, self.optimizer_c, obs_c, act_c, ret_c, ret_c, 1, msg=msg.detach())
+        p_loss_c, v_loss_c = self.update_net(
+            self.collector, self.optimizer_c, obs_c, act_c, ret_c, adv_c, 40, msg=msg.detach())
         # p_loss_g, v_loss_g = self.update_net(
         #    self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
 
@@ -369,12 +367,12 @@ class Agents:
         # p_loss_e, v_loss_e = self.update_net(
         #     self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, self.blue_iters, enemy=True)
 
-        self.optimizer_c.zero_grad()
-        logp = self.collector.action_only(obs_c, msg).log_prob(act_c)
-        loss = -(logp*ret_c).mean()
-        print(loss)
-        loss.backward()
-        self.optimizer_c.step()
+        # self.optimizer_c.zero_grad()
+        #logp = self.collector.action_only(obs_c, msg).log_prob(act_c)
+        #loss = -(logp*ret_c).mean()
+        # print(loss)
+        # loss.backward()
+        # self.optimizer_c.step()
 
         # self.scheduler_c.step()
         # self.scheduler_g.step()

@@ -193,7 +193,7 @@ class Agents:
             loss, kl = self.compute_policy_gradient(
                 net, dist, act, adv, old_logp)
             policy_loss += loss.item()
-            if kl > 0.05:
+            if kl > 0.03:
                 return policy_loss, value_loss
             loss.backward(retain_graph=True)
 
@@ -243,9 +243,9 @@ class Agents:
 
         # Training Collector/Msg/Guide - Collector - Guide
         _, _ = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 60, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg.detach())
+            self.collector, self.optimizer_c, obs_c, act_c, ret_c, ret_c, 40, msg=msg.detach())
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
 
