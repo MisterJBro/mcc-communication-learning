@@ -20,8 +20,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=6e-4, lr_guide=6e-4, lr_enemy=6e-4, lr_critic=3e-4, gamma=0.99,
-                 fc_hidden=64, rnn_hidden=128, batch_size=128, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500, critic_iters=80,
+    def __init__(self, seed=5, device='cuda:0', lr_collector=6e-4, lr_guide=6e-4, lr_enemy=6e-4, lr_critic=3e-4, gamma=0.99,
+                 fc_hidden=64, rnn_hidden=128, batch_size=1, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500, critic_iters=80,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -103,8 +103,9 @@ class Agents:
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
 
         for step in range(self.max_steps):
-            #import time
-            # time.sleep(0.5)
+            import time
+            # time.sleep(2.0)
+            # print(step)
             # self.envs.envs[0].render()
             acts, dsts, next_msg = self.get_actions(obs, msg)
             next_obs, rews, _, states = self.envs.step(acts)
@@ -120,7 +121,7 @@ class Agents:
             batch_rew[2] += rews[:, 2]
 
             obs = next_obs
-            msg = next_msg
+            #msg = next_msg
         self.reward_and_advantage()
         self.reset_states()
 
@@ -334,35 +335,26 @@ class Agents:
 
     def update(self):
         """ Updates all nets """
-        obs_c, act_c, rew_c, ret_c, dst_c, obs_g, act_g, ret_g, adv_g, dst_g, obs_e, act_e, ret_e, dst_e, msg, states = self.buffers.get_tensors()
+        # B: Batch Size, A: Action Num, L: Game Length, S: Symbol Num
 
+        # [B, L, 127], [B*L], [B*L], [B*L], [B*L, A]
         obs_c, act_c, rew_c, ret_c, adv_c, dst_c = self.buffers.get_collector_tensors()
+        obs_c, act_c, rew_c, ret_c, adv_c, dst_c = obs_c.to(self.device), act_c.to(self.device), rew_c.to(
+            self.device), ret_c.to(self.device), adv_c.to(self.device), dst_c.to(self.device)
 
-        act_c, act_e = act_c.to(self.device), act_e.to(self.device)
-        rew_c = rew_c.to(self.device)
-        states = states.to(self.device)
-        dst_c, dst_e = dst_c.to(self.device), dst_e.to(self.device)
+        # [B, L, S], [B, L, 3]
+        msg, states = self.buffers.get_buffers_tensors()
 
-        ret_c = ret_c.to(self.device)
+        #cc_loss = self.update_critic(states, act_c, act_e, rew_c, ret_c)
+        # adv_c, adv_e = self.calculate_advantage(
+        #    states, act_c, act_e, dst_c, dst_e)
+        #del states
+        #del rew_c
+        #del dst_c
+        #del dst_e
 
-        cc_loss = self.update_critic(states, act_c, act_e, rew_c, ret_c)
-        adv_c, adv_e = self.calculate_advantage(
-            states, act_c, act_e, dst_c, dst_e)
-
-        adv_c = ret_c
-
-        del states
-        del rew_c
-        del dst_c
-        del dst_e
-
-        adv_c = adv_c.to(self.device)
-        obs_c, ret_c = obs_c.to(self.device), ret_c.to(self.device)
-        obs_g, act_g, ret_g, adv_g = obs_g.to(self.device), act_g.to(
-            self.device), ret_g.to(self.device), adv_g.to(self.device)
-
-        msg_ent = Categorical(
-            probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
+        # msg_ent = Categorical(
+        #    probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
 
         # Training Collector/Msg/Guide - Collector - Guide
         # _, _ = self.update_net(
