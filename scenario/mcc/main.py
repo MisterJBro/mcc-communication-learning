@@ -29,7 +29,8 @@ class Agents:
 
         # Environment
         self.num_world_blocks = 5
-        self.envs = Envs(batch_size, red_guides=1, blue_collector=1)
+        self.envs = Envs(batch_size, red_guides=1,
+                         blue_collector=1, competition=True)
         self.obs_dim = (self.num_world_blocks,) + \
             self.envs.observation_space.shape
         self.act_dim = self.envs.action_space.nvec[0]
@@ -39,7 +40,7 @@ class Agents:
         print('Agent number:', self.agents_num)
 
         # Networks
-        in_dim = self.obs_dim[0]*self.obs_dim[1]*self.obs_dim[2]
+        in_dim = self.obs_dim[0]*self.obs_dim[1]*self.obs_dim[2]+2
         self.device = torch.device(device)
         self.collector = Listener(
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
@@ -79,7 +80,7 @@ class Agents:
         self.lam = lam
         self.max_steps = max_steps
         self.buffers = Buffers(self.batch_size, self.max_steps,
-                               self.obs_dim, self.gamma, self.lam, self.symbol_num)
+                               (in_dim,), self.gamma, self.lam, self.symbol_num)
         self.clip_ratio = clip_ratio
         self.target_kl = target_kl
 
@@ -98,13 +99,20 @@ class Agents:
             state[4, x, y] = 1
         return state
 
+    def preprocess_with_score(self, obs, score):
+        state = self.single_preprocess(obs)
+        return np.concatenate([state.reshape(-1), score])
+
     def preprocess(self, obs_list):
         """ Processes all observation """
         obs_c, obs_g, obs_e = [], [], []
-        for x in range(self.batch_size):
-            obs_c.append(self.single_preprocess(obs_list[x][0]))
-            obs_g.append(self.single_preprocess(obs_list[x][1]))
-            obs_e.append(self.single_preprocess(obs_list[x][2]))
+        for obs in obs_list:
+            obs_c.append(self.preprocess_with_score(
+                obs[0][0], obs[0][1:]))
+            obs_g.append(self.preprocess_with_score(
+                obs[1][0], obs[1][1:]))
+            obs_e.append(self.preprocess_with_score(
+                obs[2][0], obs[2][1:]))
         return np.array([obs_c, obs_g, obs_e])
 
     def sample_batch(self):
@@ -126,7 +134,7 @@ class Agents:
             batch_rew[2] += rews[:, 2]
 
             obs = next_obs
-            msg = next_msg
+            #msg = next_msg
         self.reward_and_advantage()
         self.reset_states()
 
@@ -170,7 +178,8 @@ class Agents:
 
         act_c = act_dist_c.sample().cpu().numpy()
         act_g = act_dist_g.sample().cpu().numpy()
-        act_e = act_dist_e.sample().cpu().numpy()
+        #act_e = act_dist_e.sample().cpu().numpy()
+        act_e = np.ones(self.batch_size)*4
 
         return np.stack([act_c, act_g, act_e]).T, next_msg
 
@@ -266,13 +275,13 @@ class Agents:
 
         # Training Collector/Msg/Guide - Collector - Guide
         _, _ = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 60, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg.detach())
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 40, msg=msg.detach())
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
         p_loss_e, v_loss_e = self.update_net(
-            self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, 60, enemy=True)
+            self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, 0, enemy=True)
 
         self.scheduler_c.step()
         self.scheduler_g.step()

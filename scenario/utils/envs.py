@@ -29,7 +29,7 @@ class Envs():
             r_s.append(r)
             d_s.append(d)
             i_s.append(i)
-        return np.array(o_s), np.array(r_s), np.array(d_s), np.array(i_s)
+        return o_s, np.array(r_s), np.array(d_s), np.array(i_s)
 
     def close(self):
         for x in range(self.num):
