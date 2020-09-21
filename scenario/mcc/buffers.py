@@ -65,12 +65,10 @@ class Buffers:
             self.buffer_c.rew_buf, dtype=torch.float32).reshape(-1)
         ret_c = torch.as_tensor(
             self.buffer_c.ret_buf, dtype=torch.float32).reshape(-1)
-        adv_c = torch.as_tensor(
-            self.buffer_c.adv_buf, dtype=torch.float32).reshape(-1)
         dst_c = torch.as_tensor(
             self.buffer_c.dst_buf, dtype=torch.float32).reshape(-1, self.act_num)
 
-        return obs_c, act_c, rew_c, ret_c, adv_c, dst_c
+        return obs_c, act_c, rew_c, ret_c, dst_c
 
     def get_buffers_tensors(self):
         msg = self.backprop_msg
