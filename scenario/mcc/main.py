@@ -10,7 +10,6 @@ import gym
 import numpy as np
 from scenario.mcc.buffers import Buffers
 from scenario.mcc.networks import Policy, Listener, Speaker, Normal, ActionValue
-from scenario.mcc.preprocess import preprocess, preprocess_state
 import seaborn as sns
 import pathlib
 from scenario.utils.envs import Envs
@@ -20,9 +19,9 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, lr_enemy=1e-3, lr_critic=1e-3, gamma=0.99,
-                 fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500, critic_iters=80,
-                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, lr_enemy=1e-3, lr_critic=1e-3, gamma=0.99, max_steps=500,
+                 fc_hidden=64, rnn_hidden=128, batch_size=256, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.01,
+                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0, entropy_factor=-0.1):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
@@ -36,7 +35,6 @@ class Agents:
             self.envs.observation_space.shape
         self.act_dim = self.envs.action_space.nvec[0]
         self.agents_num = self.envs.agents_num
-        self.state_dim = (self.num_world_blocks,) + self.envs.state_dim
         print('Observation shape:', self.obs_dim)
         print('Action number:', self.act_dim)
         print('Agent number:', self.agents_num)
@@ -52,7 +50,6 @@ class Agents:
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
         self.central_critic = ActionValue(
             3, 2).to(self.device)
-        # self.state_dim[0]*self.state_dim[1]*self.state_dim[2]
 
         self.optimizer_c = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
@@ -71,16 +68,13 @@ class Agents:
         self.scheduler_e = MultiStepLR(
             self.optimizer_e, milestones=milestones, gamma=0.5)
         self.batch_size = batch_size
+        self.iters = iters
         self.val_criterion = nn.MSELoss()
-        self.act_val_criterion = nn.MSELoss()
         self.pred_criterion = nn.CrossEntropyLoss()
 
-        self.iters = iters
-        self.critic_iters = critic_iters
-        self.red_iters = self.iters
-        self.blue_iters = self.iters
-
         self.grad_clip = grad_clip
+        self.critic_iters = 40
+
         self.symbol_num = symbol_num
         self.num_layers = num_layers
         self.rnn_hidden = rnn_hidden
@@ -92,27 +86,52 @@ class Agents:
         self.lam = lam
         self.max_steps = max_steps
         self.buffers = Buffers(self.batch_size, self.max_steps,
-                               (in_dim,), self.act_dim, self.gamma, self.lam, self.symbol_num, (3,))  # self.state_dim)
+                               (in_dim,), self.act_dim, self.gamma, self.lam, self.symbol_num, (3,))
         self.clip_ratio = clip_ratio
+        self.target_kl = target_kl
+
+    def single_preprocess(self, obs):
+        """ Processes a single observation into one hot encoding """
+        # Both Player overlap each other
+        x, y = np.where(obs == 5)
+        if len(x) > 0:
+            obs[x, y] = 3
+        state = np.zeros((obs.size, self.num_world_blocks), dtype=np.uint8)
+        state[np.arange(obs.size), obs.reshape(-1)] = 1
+        state = state.reshape(obs.shape + (self.num_world_blocks,))
+        state = np.moveaxis(state, -1, 0)
+
+        if len(x) > 0:
+            state[4, x, y] = 1
+        return state
+
+    def preprocess_with_score(self, obs, score):
+        state = self.single_preprocess(obs)
+        return np.concatenate([state.reshape(-1), score])
+
+    def preprocess(self, obs_list):
+        """ Processes all observation """
+        obs_c, obs_g, obs_e = [], [], []
+        for obs in obs_list:
+            obs_c.append(self.preprocess_with_score(
+                obs[0][0], obs[0][1:]))
+            obs_g.append(self.preprocess_with_score(
+                obs[1][0], obs[1][1:]))
+            obs_e.append(self.preprocess_with_score(
+                obs[2][0], obs[2][1:]))
+        return np.array([obs_c, obs_g, obs_e])
 
     def sample_batch(self):
         """ Samples a batch of trajectories """
         self.buffers.clear()
         batch_rew = np.zeros((3, self.batch_size))
-        obs = preprocess(self.envs.reset())
+        obs = self.preprocess(self.envs.reset())
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
 
         for step in range(self.max_steps):
-            import time
-            # time.sleep(2.0)
-            # print(step)
-            # self.envs.envs[0].render()
             acts, dsts, next_msg = self.get_actions(obs, msg)
             next_obs, rews, _, states = self.envs.step(acts)
-            next_obs = preprocess(next_obs)
-
-            #states = np.array(preprocess_state(states))
-            states = np.array(states)
+            next_obs = self.preprocess(next_obs)
 
             self.buffers.store(
                 obs, acts, dsts, rews[:, 0], rews[:, 1], rews[:, 2], msg, states)
@@ -163,14 +182,14 @@ class Agents:
         act_dist_e, self.state_e = self.enemy.next_action(
             obs[2], self.state_e)
 
-        act_c = act_dist_c.sample().cpu().numpy()
-        act_g = act_dist_g.sample().cpu().numpy()
-        # act_dist_e.sample().cpu().numpy()
-        act_e = np.ones(self.batch_size)*4
-
         dst_c = act_dist_c.probs.cpu().detach().numpy()
         dst_g = act_dist_g.probs.cpu().detach().numpy()
         dst_e = act_dist_e.probs.cpu().detach().numpy()
+
+        act_c = act_dist_c.sample().cpu().numpy()
+        act_g = act_dist_g.sample().cpu().numpy()
+        #act_e = act_dist_e.sample().cpu().numpy()
+        act_e = np.ones(self.batch_size)*4
 
         return np.stack([act_c, act_g, act_e]).T, np.stack([dst_c, dst_g, dst_e]), next_msg
 
@@ -214,9 +233,9 @@ class Agents:
                 dist, _, vals = net(obs)
 
             loss, kl = self.compute_policy_gradient(
-                net, dist, act, ret, old_logp)
+                net, dist, act, adv, old_logp)
             policy_loss += loss.item()
-            if kl > 0.03:
+            if kl > 0.05:
                 return policy_loss, value_loss
             loss.backward(retain_graph=True)
 
@@ -277,10 +296,9 @@ class Agents:
 
             vals = self.central_critic(states, acts)
 
-            loss_c = self.act_val_criterion(
+            loss_c = self.val_criterion(
                 vals.reshape(-1), ret_c.reshape(-1))
 
-            #print(acts[0], vals[0], ret_c[0])
             total_loss += loss_c.item()
             loss_c.backward()
 
@@ -333,52 +351,27 @@ class Agents:
 
     def update(self):
         """ Updates all nets """
-        # B: Batch Size, A: Action Num, L: Game Length, S: Symbol Num
+        obs_c, act_c, rew_c, ret_c, adv_c, dst_c, obs_g, act_g, ret_g, adv_g, dst_g, obs_e, act_e, ret_e, adv_e, dst_e, msg, states = self.buffers.get_tensors(
+            self.device)
+        msg_ent = Categorical(
+            probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
 
-        # [B, L, 127], [B*L], [B*L], [B*L], [B*L, A]
-        obs_c, act_c, adv_c, rew_c, ret_c, dst_c = self.buffers.get_collector_tensors()
-        obs_c, act_c, adv_c, ret_c = obs_c.to(self.device), act_c.to(
-            self.device), adv_c.to(self.device), ret_c.to(self.device)
-
-        # [B, L, S], [B, L, 3]
-        msg, states = self.buffers.get_buffers_tensors()
-
-        #cc_loss = self.update_critic(states, act_c, act_e, rew_c, ret_c)
-        # adv_c, adv_e = self.calculate_advantage(
-        #    states, act_c, act_e, dst_c, dst_e)
-        #del states
-        #del rew_c
-        #del dst_c
-        #del dst_e
-
-        # msg_ent = Categorical(
-        #    probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
+        cc_loss = self.update_critic(states, act_c, act_e, rew_c, ret_c)
+        _, _ = self.calculate_advantage(states, act_c, act_e, dst_c, dst_e)
 
         # Training Collector/Msg/Guide - Collector - Guide
-        # _, _ = self.update_net(
-        #    self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, self.red_iters, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
-
+        _, _ = self.update_net(
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, ret_c, adv_c, 40, msg=msg.detach())
-        # p_loss_g, v_loss_g = self.update_net(
-        #    self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 40, msg=msg.detach())
+        p_loss_g, v_loss_g = self.update_net(
+            self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
+        p_loss_e, v_loss_e = self.update_net(
+            self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, 0, enemy=True)
 
-       # obs_e, ret_e = obs_e.to(self.device), ret_e.to(self.device)
-        # p_loss_e, v_loss_e = self.update_net(
-        #     self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, self.blue_iters, enemy=True)
-
-        # self.optimizer_c.zero_grad()
-        #logp = self.collector.action_only(obs_c, msg).log_prob(act_c)
-        #loss = -(logp*ret_c).mean()
-        # print(loss)
-        # loss.backward()
-        # self.optimizer_c.step()
-
-        # self.scheduler_c.step()
-        # self.scheduler_g.step()
-        # self.scheduler_e.step()
-
-        p_loss_c, v_loss_c, p_loss_e, v_loss_e, p_loss_g, v_loss_g, msg_ent, cc_loss = 0, 0, 0, 0, 0, 0, 0, 0
+        self.scheduler_c.step()
+        self.scheduler_g.step()
+        self.scheduler_e.step()
 
         return p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent, cc_loss
 
@@ -390,12 +383,23 @@ class Agents:
             rew = self.sample_batch()
             epoch_rews.append(rew)
 
-            self.save()
+            if rew[0]+rew[2] > self.max_rew:
+                self.max_rew = rew[0]+rew[2]
+                self.save()
             p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent, cc_loss = self.update()
 
             print('Epoch: {:4}  Collector Rew: {:4}  Enemy Rew: {:4}  Guide Rew: {:4}  Msg Ent {:4}  CC Loss: {:4}'.format(
                 epoch, np.round(rew[0], 3),  np.round(rew[2], 3), np.round(rew[1], 1), np.round(msg_ent, 3), np.round(cc_loss, 3)))
         print(epoch_rews)
+
+    def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
+        """ Plots a given series """
+        sns.set()
+        plt.plot(arr)
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.show()
 
     def save(self, path='{}/model.pt'.format(PROJECT_PATH)):
         """ Saves the networks and optimizers to later continue training """
@@ -424,20 +428,23 @@ class Agents:
 
     def test(self):
         """ Tests the agent """
-        obs = preprocess(self.envs.reset_with_score())
+        obs = self.preprocess(self.envs.reset())
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
         episode_rew = 0
         msg_sum = np.zeros(self.symbol_num)
 
         for step in range(self.max_steps):
-            # msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
+            import time
+            time.sleep(0.01)
+
+            #msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
 
             self.envs.envs[0].render()
             print(msg[0].detach().cpu().numpy())
             msg_sum += msg[0].detach().cpu().numpy()
             acts, msg = self.get_actions(obs, msg)
-            obs, rews, _, _ = self.envs.step_with_score(acts)
-            obs = preprocess(obs)
+            obs, rews, _, _ = self.envs.step(acts)
+            obs = self.preprocess(obs)
 
             episode_rew += rews[0][0]
         print('Result reward: ', episode_rew)

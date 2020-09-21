@@ -47,7 +47,7 @@ class Buffer:
             self.adv_buf[:, :self.ptr-t] += b
 
     def standardize_adv(self):
-        adv = self.adv_buf[:, :self.ptr]
+        adv = self.adv_buf[:self.ptr]
         adv_mean = np.mean(adv)
         adv_std = np.std(adv)
-        self.adv_buf[:, :self.ptr] = (adv-adv_mean)/adv_std
+        self.adv_buf[:self.ptr] = (adv-adv_mean)/adv_std
