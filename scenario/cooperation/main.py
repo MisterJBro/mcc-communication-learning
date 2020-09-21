@@ -100,7 +100,7 @@ class Agents:
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
 
         for step in range(self.max_steps):
-            trs = self.envs.get_treasure_tunnels()
+            trs = 0  # self.envs.get_treasure_tunnels()
 
             acts, next_msg = self.get_actions(obs, msg)
             next_obs, rews, _, _ = self.envs.step(acts)
@@ -340,8 +340,8 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    agents.load()
-    # agents.train(200)
+    # agents.load()
+    agents.train(200)
 
     import code
     # code.interact(local=locals())
