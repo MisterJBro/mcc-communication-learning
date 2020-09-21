@@ -9,7 +9,7 @@ import random
 import gym
 import numpy as np
 from scenario.mcc.buffers import Buffers
-from scenario.mcc.networks import Policy, Listener, Speaker, Normal
+from scenario.mcc.networks import Policy, Listener, Speaker, Normal, ActionValue
 import seaborn as sns
 import pathlib
 from scenario.utils.envs import Envs
@@ -19,7 +19,7 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, lr_enemy=1e-3, gamma=0.99, max_steps=500,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, lr_enemy=1e-3, lr_critic=1e-3, gamma=0.99, max_steps=500,
                  fc_hidden=64, rnn_hidden=128, batch_size=256, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.01,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0, entropy_factor=-0.1):
         # RNG seed
@@ -48,6 +48,8 @@ class Agents:
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
         self.enemy = Normal(
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
+        self.central_critic = ActionValue(
+            3, 2).to(self.device)
 
         self.optimizer_c = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
@@ -55,19 +57,23 @@ class Agents:
             self.guide.parameters(), lr=lr_guide)
         self.optimizer_e = optim.Adam(
             self.enemy.parameters(), lr=lr_enemy)
-        milestones = [200, 400]
+        self.optimizer_cc = optim.Adam(
+            self.central_critic.parameters(), lr=lr_critic)
+
+        milestones = [2000, 4000, 5000]
         self.scheduler_c = MultiStepLR(
-            self.optimizer_c, milestones=milestones, gamma=0.1)
+            self.optimizer_c, milestones=milestones, gamma=0.5)
         self.scheduler_g = MultiStepLR(
-            self.optimizer_g, milestones=milestones, gamma=0.1)
+            self.optimizer_g, milestones=milestones, gamma=0.5)
         self.scheduler_e = MultiStepLR(
-            self.optimizer_e, milestones=milestones, gamma=0.1)
+            self.optimizer_e, milestones=milestones, gamma=0.5)
         self.batch_size = batch_size
         self.iters = iters
         self.val_criterion = nn.MSELoss()
         self.pred_criterion = nn.CrossEntropyLoss()
 
         self.grad_clip = grad_clip
+        self.critic_iters = 40
 
         self.symbol_num = symbol_num
         self.num_layers = num_layers
@@ -80,7 +86,7 @@ class Agents:
         self.lam = lam
         self.max_steps = max_steps
         self.buffers = Buffers(self.batch_size, self.max_steps,
-                               (in_dim,), self.gamma, self.lam, self.symbol_num)
+                               (in_dim,), self.act_dim, self.gamma, self.lam, self.symbol_num, (3,))
         self.clip_ratio = clip_ratio
         self.target_kl = target_kl
 
@@ -123,12 +129,12 @@ class Agents:
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
 
         for step in range(self.max_steps):
-            acts, next_msg = self.get_actions(obs, msg)
-            next_obs, rews, _, _ = self.envs.step(acts)
+            acts, dsts, next_msg = self.get_actions(obs, msg)
+            next_obs, rews, _, states = self.envs.step(acts)
             next_obs = self.preprocess(next_obs)
 
             self.buffers.store(
-                obs, acts, rews[:, 0], rews[:, 1], rews[:, 2], msg)
+                obs, acts, dsts, rews[:, 0], rews[:, 1], rews[:, 2], msg, states)
             batch_rew[0] += rews[:, 0]
             batch_rew[1] += rews[:, 1]
             batch_rew[2] += rews[:, 2]
@@ -176,12 +182,16 @@ class Agents:
         act_dist_e, self.state_e = self.enemy.next_action(
             obs[2], self.state_e)
 
+        dst_c = act_dist_c.probs.cpu().detach().numpy()
+        dst_g = act_dist_g.probs.cpu().detach().numpy()
+        dst_e = act_dist_e.probs.cpu().detach().numpy()
+
         act_c = act_dist_c.sample().cpu().numpy()
         act_g = act_dist_g.sample().cpu().numpy()
         #act_e = act_dist_e.sample().cpu().numpy()
         act_e = np.ones(self.batch_size)*4
 
-        return np.stack([act_c, act_g, act_e]).T, next_msg
+        return np.stack([act_c, act_g, act_e]).T, np.stack([dst_c, dst_g, dst_e]), next_msg
 
     def compute_policy_gradient(self, net, dist, act, adv, old_logp):
         """ Computes the policy gradient with PPO """
@@ -266,12 +276,87 @@ class Agents:
 
         return policy_loss, value_loss
 
+    def update_critic(self, states, act_c, act_e, rew_c, ret_c):
+        """ Updates the central critic. """
+        total_loss = 0
+        acts = torch.stack([act_c, act_e], dim=1)
+        frozen_vals = self.central_critic(
+            states, acts).reshape(self.batch_size, -1).detach()
+        targets = rew_c.reshape(self.batch_size, -1).clone()
+        targets[:, :-1] += self.gamma*frozen_vals[:, 1:]
+
+        for iter in range(self.critic_iters):
+            self.optimizer_cc.zero_grad()
+
+            if iter % 5 == 0:
+                frozen_vals = self.central_critic(
+                    states, acts).reshape(self.batch_size, -1).detach()
+                targets = rew_c.reshape(self.batch_size, -1).clone()
+                targets[:, :-1] += self.gamma*frozen_vals[:, 1:]
+
+            vals = self.central_critic(states, acts)
+
+            loss_c = self.val_criterion(
+                vals.reshape(-1), ret_c.reshape(-1))
+
+            total_loss += loss_c.item()
+            loss_c.backward()
+
+            self.optimizer_cc.step()
+
+        return total_loss
+
+    def calculate_advantage(self, states, act_c, act_e, dst_c, dst_e):
+        """ Calculate the advantage using the central critic. """
+        samples = self.batch_size*self.max_steps
+
+        with torch.no_grad():
+            all_acts = torch.arange(self.act_dim, dtype=torch.int32).repeat(
+                samples).reshape(-1).to(self.device)
+            repeated_act_e = act_e.repeat(
+                self.act_dim).reshape(self.act_dim, -1).T.reshape(-1)
+            repeated_act_c = act_c.repeat(
+                self.act_dim).reshape(self.act_dim, -1).T.reshape(-1)
+
+            all_acts_c = torch.stack(
+                [all_acts, repeated_act_e], dim=1)
+            all_acts_e = torch.stack(
+                [repeated_act_c, all_acts], dim=1)
+
+            repeated_states = states.repeat(
+                1, self.act_dim).reshape(samples*5, -1)
+
+            all_vals_c = self.central_critic(
+                repeated_states, all_acts_c).reshape(-1, self.act_dim)
+            all_vals_e = -self.central_critic(
+                repeated_states, all_acts_e).reshape(-1, self.act_dim)
+
+            vals_c = all_vals_c.gather(
+                1, act_c.long().reshape(-1, 1)).reshape(-1)
+            vals_e = all_vals_e.gather(
+                1, act_e.long().reshape(-1, 1)).reshape(-1)
+
+            adv_c = vals_c  # - (dst_c*all_vals_c).sum(1)
+            adv_e = vals_e  # - (dst_e*all_vals_e).sum(1)
+
+            #adv_c = adv_c.reshape(self.batch_size, self.max_steps)
+            #adv_e = adv_e.reshape(self.batch_size, self.max_steps)
+
+            # adv_c = (adv_c-adv_c.mean(1).reshape(-1, 1)) / \
+            #    adv_c.std(1).reshape(-1, 1)
+            # adv_e = (adv_e-adv_e.mean(1).reshape(-1, 1)) / \
+            #    adv_e.std(1).reshape(-1, 1)
+
+        return adv_c.reshape(-1), adv_e.reshape(-1)
+
     def update(self):
         """ Updates all nets """
-        obs_c, act_c, ret_c, adv_c, obs_g, act_g, ret_g, adv_g, obs_e, act_e, ret_e, adv_e, msg = self.buffers.get_tensors(
+        obs_c, act_c, rew_c, ret_c, adv_c, dst_c, obs_g, act_g, ret_g, adv_g, dst_g, obs_e, act_e, ret_e, adv_e, dst_e, msg, states = self.buffers.get_tensors(
             self.device)
         msg_ent = Categorical(
             probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
+
+        cc_loss = self.update_critic(states, act_c, act_e, rew_c, ret_c)
 
         # Training Collector/Msg/Guide - Collector - Guide
         _, _ = self.update_net(
@@ -287,7 +372,7 @@ class Agents:
         self.scheduler_g.step()
         self.scheduler_e.step()
 
-        return p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent
+        return p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent, cc_loss
 
     def train(self, epochs):
         """ Trains the agent for given epochs """
@@ -300,10 +385,10 @@ class Agents:
             if rew[0]+rew[2] > self.max_rew:
                 self.max_rew = rew[0]+rew[2]
                 self.save()
-            p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent = self.update()
+            p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent, cc_loss = self.update()
 
-            print('Epoch: {:4}  Collector Rew: {:4}  Enemy Rew: {:4}  Guide Rew: {:4}  Msg Ent {:4}'.format(
-                epoch, np.round(rew[0], 3),  np.round(rew[2], 3), np.round(rew[1], 1), np.round(msg_ent, 3)))
+            print('Epoch: {:4}  Collector Rew: {:4}  Enemy Rew: {:4}  Guide Rew: {:4}  Msg Ent {:4}  CC Loss: {:4}'.format(
+                epoch, np.round(rew[0], 3),  np.round(rew[2], 3), np.round(rew[1], 1), np.round(msg_ent, 3), np.round(cc_loss, 3)))
         print(epoch_rews)
 
     def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
@@ -321,9 +406,11 @@ class Agents:
             'collector': self.collector.state_dict(),
             'guide': self.guide.state_dict(),
             'enemy': self.enemy.state_dict(),
+            'critic': self.central_critic.state_dict(),
             'optim_c': self.optimizer_c.state_dict(),
             'optim_g': self.optimizer_g.state_dict(),
             'optim_e': self.optimizer_e.state_dict(),
+            'optim_cc': self.optimizer_cc.state_dict(),
         }, path)
 
     def load(self, path='{}/model.pt'.format(PROJECT_PATH)):
@@ -332,9 +419,11 @@ class Agents:
         self.collector.load_state_dict(checkpoint['collector'])
         self.guide.load_state_dict(checkpoint['guide'])
         self.enemy.load_state_dict(checkpoint['enemy'])
+        self.central_critic.load_state_dict(checkpoint['critic'])
         self.optimizer_c.load_state_dict(checkpoint['optim_c'])
         self.optimizer_g.load_state_dict(checkpoint['optim_g'])
         self.optimizer_e.load_state_dict(checkpoint['optim_e'])
+        self.optimizer_cc.load_state_dict(checkpoint['optim_cc'])
 
     def test(self):
         """ Tests the agent """

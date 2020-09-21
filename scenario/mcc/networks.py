@@ -245,3 +245,27 @@ class Normal(nn.Module):
         x = x.reshape(-1, x.size(-1))
 
         return x
+
+
+class ActionValue(nn.Module):
+    def __init__(self, in_dim, agents, fc_hidden=128):
+        super(ActionValue, self).__init__()
+
+        self.mlp = nn.Sequential(
+            nn.Linear(in_dim, 64),
+            nn.ELU(),
+            nn.Linear(64, 32),
+            nn.ELU(),
+        )
+
+        self.out = nn.Sequential(
+            nn.Linear(32, 32),
+            nn.ELU(),
+            nn.Linear(32, 1)
+        )
+
+    def forward(self, x, a):
+        x = self.mlp(x)
+        #x = torch.cat([x, a.float()], dim=1)
+        x = self.out(x)
+        return x

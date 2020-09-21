@@ -3,8 +3,9 @@ import torch
 
 
 class Buffer:
-    def __init__(self, batch_size, size, obs_dim, gamma, lam, symbol_num):
+    def __init__(self, batch_size, size, obs_dim, act_num, gamma, lam, symbol_num):
         self.obs_buf = np.empty((batch_size, size) + obs_dim, dtype=np.float32)
+        self.dst_buf = np.empty((batch_size, size, act_num), dtype=np.float32)
         self.act_buf = np.empty((batch_size, size), dtype=np.float32)
         self.rew_buf = np.empty((batch_size, size), dtype=np.float32)
         self.ret_buf = np.zeros((batch_size, size), dtype=np.float32)
@@ -21,11 +22,12 @@ class Buffer:
         self.ret_buf = np.zeros((self.batch_size, self.size), dtype=np.float32)
         self.adv_buf = np.zeros((self.batch_size, self.size), dtype=np.float32)
 
-    def store(self, obs, act, rew):
+    def store(self, obs, act, dst, rew):
         assert self.ptr < self.size, 'Buffer full!'
 
         self.obs_buf[:, self.ptr] = obs
         self.act_buf[:, self.ptr] = act
+        self.dst_buf[:, self.ptr] = dst
         self.rew_buf[:, self.ptr] = rew
         self.ptr += 1
 
@@ -45,7 +47,7 @@ class Buffer:
             self.adv_buf[:, :self.ptr-t] += b
 
     def standardize_adv(self):
-        adv = self.adv_buf[:, :self.ptr]
+        adv = self.adv_buf[:self.ptr]
         adv_mean = np.mean(adv)
         adv_std = np.std(adv)
-        self.adv_buf[:, :self.ptr] = (adv-adv_mean)/adv_std
+        self.adv_buf[:self.ptr] = (adv-adv_mean)/adv_std
