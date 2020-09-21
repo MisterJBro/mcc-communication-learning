@@ -20,8 +20,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=6e-4, lr_guide=6e-4, lr_enemy=6e-4, lr_critic=8e-4, gamma=0.99,
-                 fc_hidden=64, rnn_hidden=128, batch_size=64, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500, critic_iters=80,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=6e-4, lr_guide=6e-4, lr_enemy=6e-4, lr_critic=3e-4, gamma=0.99,
+                 fc_hidden=64, rnn_hidden=128, batch_size=128, lam=0.97, clip_ratio=0.2, iters=40, max_steps=500, critic_iters=80,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -51,7 +51,8 @@ class Agents:
         self.enemy = Normal(
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
         self.central_critic = ActionValue(
-            self.state_dim[0]*self.state_dim[1]*self.state_dim[2], 2).to(self.device)
+            3, 2).to(self.device)
+        # self.state_dim[0]*self.state_dim[1]*self.state_dim[2]
 
         self.optimizer_c = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
@@ -91,7 +92,7 @@ class Agents:
         self.lam = lam
         self.max_steps = max_steps
         self.buffers = Buffers(self.batch_size, self.max_steps,
-                               (in_dim,), self.act_dim, self.gamma, self.lam, self.symbol_num, self.state_dim)
+                               (in_dim,), self.act_dim, self.gamma, self.lam, self.symbol_num, (3,))  # self.state_dim)
         self.clip_ratio = clip_ratio
 
     def sample_batch(self):
@@ -109,7 +110,8 @@ class Agents:
             next_obs, rews, _, states = self.envs.step(acts)
             next_obs = preprocess(next_obs)
 
-            states = np.array(preprocess_state(states))
+            #states = np.array(preprocess_state(states))
+            states = np.array(states)
 
             self.buffers.store(
                 obs, acts, dsts, rews[:, 0], rews[:, 1], rews[:, 2], msg, states)
@@ -175,6 +177,8 @@ class Agents:
         """ Computes the policy gradient with PPO """
         logp = dist.log_prob(act)
 
+        return -(logp*adv).mean(), 0.0
+
         ratio = torch.exp(logp - old_logp)
         clipped = torch.clamp(ratio, 1-self.clip_ratio, 1+self.clip_ratio)*adv
         loss = -(torch.min(ratio*adv, clipped)).mean()
@@ -215,10 +219,10 @@ class Agents:
             policy_loss += loss.item()
             if kl > 0.03:
                 return policy_loss, value_loss
-            loss.backward(retain_graph=True)
+            # loss.backward(retain_graph=True)
 
-            loss = self.val_criterion(vals.reshape(-1), ret)
-            value_loss += loss.item()
+            #loss = self.val_criterion(vals.reshape(-1), ret)
+            #value_loss += loss.item()
             loss.backward()
             torch.nn.utils.clip_grad_norm_(
                 net.parameters(), self.grad_clip)
@@ -276,9 +280,8 @@ class Agents:
 
             loss_c = self.act_val_criterion(
                 vals.reshape(-1), ret_c.reshape(-1))
-            # print(states.shape)
-            # print(states[0].cpu().numpy().reshape(
-            #    5, 16, 22)[1], acts[0], vals[0], ret_c[0])
+
+            #print(acts[0], vals[0], ret_c[0])
             total_loss += loss_c.item()
             loss_c.backward()
 
@@ -343,8 +346,11 @@ class Agents:
         ret_c = ret_c.to(self.device)
 
         cc_loss = self.update_critic(states, act_c, act_e, rew_c, ret_c)
-        _, adv_e = self.calculate_advantage(
+        adv_c, adv_e = self.calculate_advantage(
             states, act_c, act_e, dst_c, dst_e)
+
+        adv_c = ret_c
+
         del states
         del rew_c
         del dst_c
@@ -362,7 +368,7 @@ class Agents:
         # _, _ = self.update_net(
         #    self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, self.red_iters, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg.detach())
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 20, msg=msg.detach())
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
 
@@ -464,7 +470,7 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    agents.load()
+    # agents.load()
     agents.train(1000)
 
     import code

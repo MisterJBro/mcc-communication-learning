@@ -252,20 +252,20 @@ class ActionValue(nn.Module):
         super(ActionValue, self).__init__()
 
         self.mlp = nn.Sequential(
-            nn.Linear(in_dim, 128),
+            nn.Linear(in_dim, 64),
             nn.ELU(),
-            nn.Linear(128, 64),
+            nn.Linear(64, 32),
             nn.ELU(),
         )
 
         self.out = nn.Sequential(
-            nn.Linear(64+agents, 64),
+            nn.Linear(32, 32),
             nn.ELU(),
-            nn.Linear(64, 1)
+            nn.Linear(32, 1)
         )
 
     def forward(self, x, a):
         x = self.mlp(x)
-        x = torch.cat([x, a.float()], dim=1)
+        #x = torch.cat([x, a.float()], dim=1)
         x = self.out(x)
         return x
