@@ -277,11 +277,29 @@ class ActionValue(nn.Module):
         return x
 
     def all_actions_c(self, x, act_e):
-        """ Calculates all q values for all action of red collector."""
+        """ Calculates all q values for all action of red collector. """
         all = []
         for a in range(self.action_dim):
             act_c = torch.ones(
                 act_e.size(), dtype=torch.int32, device=act_e.device)*a
+            acts = torch.stack([act_c, act_e], dim=1).reshape(
+                self.batch_size, self.steps, -1)
+
+            y = self.mlp(x)
+            y = torch.cat([y, acts.float()], dim=-1)
+            y, _ = self.rnn(y)
+            y = y.reshape(-1, y.size(-1))
+            y = self.out(y)
+            all.append(y)
+
+        return torch.cat(all, dim=-1)
+
+    def all_actions_e(self, x, act_c):
+        """ Calculates all q values for all action of enemy collector. """
+        all = []
+        for a in range(self.action_dim):
+            act_e = torch.ones(
+                act_c.size(), dtype=torch.int32, device=act_c.device)*a
             acts = torch.stack([act_c, act_e], dim=1).reshape(
                 self.batch_size, self.steps, -1)
 

@@ -194,8 +194,7 @@ class Agents:
 
         act_c = act_dist_c.sample().cpu().numpy()
         act_g = act_dist_g.sample().cpu().numpy()
-        # act_e = act_dist_e.sample().cpu().numpy()
-        act_e = np.ones(self.batch_size)*4
+        act_e = act_dist_e.sample().cpu().numpy()
 
         return np.stack([act_c, act_g, act_e]).T, np.stack([dst_c, dst_g, dst_e]), next_msg
 
@@ -292,23 +291,34 @@ class Agents:
             self.optimizer_cc.zero_grad()
 
             with torch.no_grad():
-                all_q = self.central_critic.all_actions_c(
+                all_q_c = self.central_critic.all_actions_c(
                     states, act_e).detach().reshape(self.batch_size, self.max_steps, -1)
+                all_q_e = self.central_critic.all_actions_e(
+                    states, act_c).detach().reshape(self.batch_size, self.max_steps, -1)
 
-                targets = rew_c.reshape(self.batch_size, -1).clone()
-                targets[:, :-1] += self.gamma * \
-                    (dst_c[:, 1:]*all_q[:, 1:]).sum(-1)
+                targets_c = rew_c.reshape(self.batch_size, -1).clone()
+                targets_c[:, :-1] += self.gamma * \
+                    (dst_c[:, 1:]*all_q_c[:, 1:]).sum(-1)
+
+                targets_e = rew_c.reshape(self.batch_size, -1).clone()
+                targets_e[:, :-1] += self.gamma * \
+                    (dst_e[:, 1:]*all_q_e[:, 1:]).sum(-1)
 
             vals = self.central_critic(states, acts)
 
             loss = self.val_criterion(
-                vals.reshape(-1), targets.reshape(-1))
+                vals.reshape(-1), targets_c.reshape(-1))
+            total_loss += loss.item()
+            loss.backward(retain_graph=True)
 
+            loss = self.val_criterion(
+                vals.reshape(-1), targets_e.reshape(-1))
             total_loss += loss.item()
             loss.backward(retain_graph=True)
 
             loss = self.val_criterion(
                 vals.reshape(-1), ret_c.reshape(-1))
+            total_loss += loss.item()
             loss.backward()
 
             torch.nn.utils.clip_grad_norm_(
@@ -326,49 +336,53 @@ class Agents:
         with torch.no_grad():
             q = self.central_critic(
                 states, acts).reshape(self.batch_size, self.max_steps)
-            all_q = self.central_critic.all_actions_c(
+            all_q_c = self.central_critic.all_actions_c(
                 states, act_e).reshape(self.batch_size, self.max_steps, -1)
+            v_c = (dst_c*all_q_c).sum(-1)
 
-            v = (dst_c*all_q).sum(-1)
+            all_q_e = self.central_critic.all_actions_e(
+                states, act_c).reshape(self.batch_size, self.max_steps, -1)
+            v_e = -(dst_e*all_q_e).sum(-1)
 
-            adv_c = q - v
-            adv_c = (adv_c-adv_c.mean())/adv_c.std()
-
-        return adv_c.reshape(-1), v
+        return v_c, v_e
 
     def update(self):
         """ Updates all nets """
-        obs_c, act_c, rew_c, ret_c, adv_c, dst_c, obs_g, act_g, ret_g, adv_g, dst_g, obs_e, act_e, ret_e, adv_e, dst_e, msg, states = self.buffers.get_tensors(
+        obs_c, act_c, rew_c, ret_c, adv_c2, dst_c, obs_g, act_g, ret_g, adv_g, dst_g, obs_e, act_e, rew_e, ret_e, adv_e2, dst_e, msg, states = self.buffers.get_tensors(
             self.device)
         obs_all = torch.cat([obs_c, obs_e], dim=-1)
 
         msg_ent = Categorical(
             probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
 
-        _, v_c = self.calculate_advantage(
+        v_c, v_e = self.calculate_advantage(
             obs_all, act_c, act_e, dst_c, dst_e)
 
         cc_loss = self.update_critic(
             obs_all, act_c, act_e, rew_c, ret_c, dst_c, dst_e)
 
         """!!!!DIMENSIONS wrong!!!!rews[:, :-1] + self.gamma*vals[:, 1:] - vals[:, :-1]"""
-        adv_c2 = rew_c.reshape(self.batch_size, self.max_steps)
-        adv_c2[:, :-1] += self.gamma*v_c[:, 1:] - v_c[:, :-1]
-        adv_c3 = ret_c-v_c.reshape(-1)
-        adv_c2 = (adv_c2.reshape(-1)+adv_c3)/2
-        adv_c2 = (adv_c2-adv_c2.mean())/adv_c2.std()
+        adv_c = rew_c.reshape(self.batch_size, self.max_steps)
+        adv_c[:, :-1] += self.gamma*v_c[:, 1:] - v_c[:, :-1]
+        adv_c = (adv_c.reshape(-1)+ret_c-v_c.reshape(-1))/2
+        adv_c = (adv_c-adv_c.mean())/adv_c.std()
 
-        print(self.val_criterion(adv_c, adv_c2))
+        adv_e = rew_e.reshape(self.batch_size, self.max_steps)
+        adv_e[:, :-1] += self.gamma*v_e[:, 1:] - v_e[:, :-1]
+        adv_e = (adv_e.reshape(-1)+ret_e-v_e.reshape(-1))/2
+        adv_e = (adv_e-adv_c.mean())/adv_e.std()
+
+        print(self.val_criterion(adv_c2, adv_c))
 
         # Training Collector/Msg/Guide - Collector - Guide
         _, _ = self.update_net(
             self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c2, ret_c, 40, msg=msg.detach())
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg.detach())
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
         p_loss_e, v_loss_e = self.update_net(
-            self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, 0, enemy=True)
+            self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, 40, enemy=True)
 
         self.scheduler_c.step()
         self.scheduler_g.step()
