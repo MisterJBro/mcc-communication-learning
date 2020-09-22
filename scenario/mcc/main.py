@@ -51,10 +51,6 @@ class Agents:
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
         self.central_critic = ActionValue(
             in_dim*2, 2, self.act_dim, batch_size, max_steps).to(self.device)
-        self.test = Listener(
-            in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
-        self.optimizer_test = optim.Adam(
-            self.test.parameters(), lr=lr_collector)
 
         self.optimizer_c = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
@@ -378,17 +374,19 @@ class Agents:
         _, _ = self.update_net(
             self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg.detach())
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 40, msg=msg.detach())
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
         p_loss_e, v_loss_e = self.update_net(
             self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, 40, enemy=True)
 
+        trs_found = rew_c.nonzero().size(0)/self.batch_size
+
         self.scheduler_c.step()
         self.scheduler_g.step()
         self.scheduler_e.step()
 
-        return p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent, cc_loss
+        return p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent, cc_loss, trs_found
 
     def train(self, epochs):
         """ Trains the agent for given epochs """
@@ -398,13 +396,13 @@ class Agents:
             rew = self.sample_batch()
             epoch_rews.append(rew)
 
-            if rew[0] > self.max_rew:
-                self.max_rew = rew[0]
-                self.save()
-            p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent, cc_loss = self.update()
+            # if rew[0] > self.max_rew:
+            #    self.max_rew = rew[0]
+            self.save()
+            p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent, cc_loss, trs_found = self.update()
 
-            print('Epoch: {:4}  Collector Rew: {:4}  Enemy Rew: {:4}  Guide Rew: {:4}  Msg Ent {:4}  CC Loss: {:4}'.format(
-                epoch, np.round(rew[0], 3),  np.round(rew[2], 3), np.round(rew[1], 1), np.round(msg_ent, 3), np.round(cc_loss, 3)))
+            print('Epoch: {:4}  Collector Rew: {:4}  Enemy Rew: {:4}  Guide Rew: {:4}  Msg Ent {:4}  CC Loss: {:4}  Trs Found {:3}'.format(
+                epoch, np.round(rew[0], 3),  np.round(rew[2], 3), np.round(rew[1], 1), np.round(msg_ent, 3), np.round(cc_loss, 3), np.round(trs_found, 3)))
         print(epoch_rews)
 
     def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
@@ -450,14 +448,14 @@ class Agents:
 
         for step in range(self.max_steps):
             import time
-            time.sleep(0.01)
+            # time.sleep(0.01)
 
             # msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
 
             self.envs.envs[0].render()
             print(msg[0].detach().cpu().numpy())
             msg_sum += msg[0].detach().cpu().numpy()
-            acts, msg = self.get_actions(obs, msg)
+            acts, _, _ = self.get_actions(obs, msg)
             obs, rews, _, _ = self.envs.step(acts)
             obs = self.preprocess(obs)
 
@@ -490,7 +488,7 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    # agents.load()
+    agents.load()
     agents.train(1000)
 
     import code
