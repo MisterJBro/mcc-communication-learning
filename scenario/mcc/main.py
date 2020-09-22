@@ -19,8 +19,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=5e-4, lr_guide=5e-4, lr_enemy=1e-3, lr_critic=3e-4, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=256, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.01,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=5e-4, lr_guide=5e-4, lr_enemy=1e-3, lr_critic=5e-4, gamma=0.99, max_steps=500,
+                 fc_hidden=64, rnn_hidden=128, batch_size=256, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.01, critic_iters=80,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0, entropy_factor=-0.1):
         # RNG seed
         random.seed(seed)
@@ -78,7 +78,7 @@ class Agents:
         self.pred_criterion = nn.CrossEntropyLoss()
 
         self.grad_clip = grad_clip
-        self.critic_iters = 80
+        self.critic_iters = critic_iters
 
         self.symbol_num = symbol_num
         self.num_layers = num_layers
@@ -169,6 +169,7 @@ class Agents:
             val_e = self.enemy.value_only(obs_e).reshape(
                 self.batch_size, self.max_steps).cpu().numpy()
 
+        self.buffers.t = torch.tensor(val_c, device=self.device)
         self.buffers.expected_returns()
         self.buffers.advantage_estimation([val_c, val_g, val_e])
         self.buffers.standardize_adv()
@@ -293,7 +294,7 @@ class Agents:
         for iter in range(self.critic_iters):
             self.optimizer_cc.zero_grad()
 
-            if iter % 5 == 0:
+            if iter % 2 == 0:
                 frozen_vals = self.central_critic(
                     states, acts).reshape(self.batch_size, -1).detach()
                 targets = rew_c.reshape(self.batch_size, -1).clone()
@@ -302,9 +303,13 @@ class Agents:
             vals = self.central_critic(states, acts)
 
             loss = self.val_criterion(
-                vals.reshape(-1), ret_c.reshape(-1))
+                vals.reshape(-1), targets.reshape(-1))
 
             total_loss += loss.item()
+            loss.backward(retain_graph=True)
+
+            loss = self.val_criterion(
+                vals.reshape(-1), ret_c.reshape(-1))
             loss.backward()
 
             torch.nn.utils.clip_grad_norm_(
@@ -360,19 +365,33 @@ class Agents:
         """ Updates all nets """
         obs_c, act_c, rew_c, ret_c, adv_c, dst_c, obs_g, act_g, ret_g, adv_g, dst_g, obs_e, act_e, ret_e, adv_e, dst_e, msg, states = self.buffers.get_tensors(
             self.device)
+
+        val_c = self.central_critic(
+            obs_c, 1).reshape(
+                self.batch_size, self.max_steps).detach().cpu().numpy()
+        self.buffers.buffer_c.adv_buf = np.zeros(
+            (self.batch_size, 500), dtype=np.float32)
+        self.buffers.buffer_c.advantage_estimation(
+            val_c, np.zeros((self.batch_size, 1)))
+        self.buffers.buffer_c.standardize_adv()
+
+        adv_c = torch.as_tensor(
+            self.buffers.buffer_c.adv_buf, dtype=torch.float32, device=self.device).reshape(-1)
         msg_ent = Categorical(
             probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
 
         #_, _ = self.calculate_advantage(states, act_c, act_e, dst_c, dst_e)
-        val_c = self.central_critic(
-            obs_c, 1).reshape(-1).detach()
+
         cc_loss = self.update_critic(obs_c, act_c, act_e, rew_c, ret_c)
 
-        adv_c2 = rew_c
-        adv_c2[:-1] += self.gamma*val_c[1:] - val_c[:-1]
+        """!!!!DIMENSIONS wrong!!!!rews[:, :-1] + self.gamma*vals[:, 1:] - vals[:, :-1]"""
+        adv_c2 = rew_c.reshape(self.batch_size, self.max_steps)
+        val_c = torch.tensor(val_c, device=self.device).reshape(
+            self.batch_size, self.max_steps)
+        adv_c2[:, :-1] += self.gamma*val_c[:, 1:] - val_c[:, :-1]
         adv_c2 = (adv_c2-adv_c2.mean())/adv_c2.std()
 
-        print(self.val_criterion(adv_c2, adv_c))
+        print(self.val_criterion(self.buffers.t, val_c))
 
         # Training Collector/Msg/Guide - Collector - Guide
         _, _ = self.update_net(

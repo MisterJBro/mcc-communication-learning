@@ -18,6 +18,7 @@ class Buffers:
         self.backprop_msg = None
         self.states = np.empty((batch_size, size) +
                                state_dim, dtype=np.float32)
+        self.t = None
 
     def clear(self):
         self.buffer_c.clear()
