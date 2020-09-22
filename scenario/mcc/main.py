@@ -358,12 +358,12 @@ class Agents:
             obs_all, act_c, act_e, rew_c, ret_c, dst_c, dst_e)
 
         """!!!!DIMENSIONS wrong!!!!rews[:, :-1] + self.gamma*vals[:, 1:] - vals[:, :-1]"""
-        adv_c = rew_c.reshape(self.batch_size, self.max_steps)
+        adv_c = rew_c.clone().reshape(self.batch_size, self.max_steps)
         adv_c[:, :-1] += self.gamma*v_c[:, 1:] - v_c[:, :-1]
         adv_c = (adv_c.reshape(-1)+ret_c-v_c.reshape(-1))/2
         adv_c = (adv_c-adv_c.mean())/adv_c.std()
 
-        adv_e = rew_e.reshape(self.batch_size, self.max_steps)
+        adv_e = rew_e.clone().reshape(self.batch_size, self.max_steps)
         adv_e[:, :-1] += self.gamma*v_e[:, 1:] - v_e[:, :-1]
         adv_e = (adv_e.reshape(-1)+ret_e-v_e.reshape(-1))/2
         adv_e = (adv_e-adv_c.mean())/adv_e.std()
