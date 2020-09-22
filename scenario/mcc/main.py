@@ -389,15 +389,18 @@ class Agents:
         val_c = torch.tensor(val_c, device=self.device).reshape(
             self.batch_size, self.max_steps)
         adv_c2[:, :-1] += self.gamma*val_c[:, 1:] - val_c[:, :-1]
+        adv_c3 = ret_c-val_c.reshape(-1)
+        adv_c2 = (adv_c2.reshape(-1)+adv_c3)/2
         adv_c2 = (adv_c2-adv_c2.mean())/adv_c2.std()
+        adv_c2 = adv_c2
 
-        print(self.val_criterion(self.buffers.t, val_c))
+        print(self.val_criterion(adv_c, adv_c2))
 
         # Training Collector/Msg/Guide - Collector - Guide
         _, _ = self.update_net(
             self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 40, msg=msg.detach())
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c2, ret_c, 40, msg=msg.detach())
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
         p_loss_e, v_loss_e = self.update_net(
