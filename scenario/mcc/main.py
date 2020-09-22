@@ -50,7 +50,7 @@ class Agents:
         self.enemy = Normal(
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
         self.central_critic = ActionValue(
-            127, 2).to(self.device)
+            in_dim*2, 2, self.act_dim, batch_size, max_steps).to(self.device)
         self.test = Listener(
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
         self.optimizer_test = optim.Adam(
@@ -145,7 +145,7 @@ class Agents:
             batch_rew[2] += rews[:, 2]
 
             obs = next_obs
-            #msg = next_msg
+            # msg = next_msg
         self.reward_and_advantage()
         self.reset_states()
 
@@ -194,7 +194,7 @@ class Agents:
 
         act_c = act_dist_c.sample().cpu().numpy()
         act_g = act_dist_g.sample().cpu().numpy()
-        #act_e = act_dist_e.sample().cpu().numpy()
+        # act_e = act_dist_e.sample().cpu().numpy()
         act_e = np.ones(self.batch_size)*4
 
         return np.stack([act_c, act_g, act_e]).T, np.stack([dst_c, dst_g, dst_e]), next_msg
@@ -282,23 +282,22 @@ class Agents:
 
         return policy_loss, value_loss
 
-    def update_critic(self, states, act_c, act_e, rew_c, ret_c):
+    def update_critic(self, states, act_c, act_e, rew_c, ret_c, dst_c, dst_e):
         """ Updates the central critic. """
         total_loss = 0
-        acts = torch.stack([act_c, act_e], dim=1)
-        frozen_vals = self.central_critic(
-            states, acts).reshape(self.batch_size, -1).detach()
-        targets = rew_c.reshape(self.batch_size, -1).clone()
-        targets[:, :-1] += self.gamma*frozen_vals[:, 1:]
+        acts = torch.stack([act_c, act_e], dim=1).reshape(
+            self.batch_size, self.max_steps, -1)
 
         for iter in range(self.critic_iters):
             self.optimizer_cc.zero_grad()
 
-            if iter % 2 == 0:
-                frozen_vals = self.central_critic(
-                    states, acts).reshape(self.batch_size, -1).detach()
+            with torch.no_grad():
+                all_q = self.central_critic.all_actions_c(
+                    states, act_e).detach().reshape(self.batch_size, self.max_steps, -1)
+
                 targets = rew_c.reshape(self.batch_size, -1).clone()
-                targets[:, :-1] += self.gamma*frozen_vals[:, 1:]
+                targets[:, :-1] += self.gamma * \
+                    (dst_c[:, 1:]*all_q[:, 1:]).sum(-1)
 
             vals = self.central_critic(states, acts)
 
@@ -321,78 +320,43 @@ class Agents:
     def calculate_advantage(self, states, act_c, act_e, dst_c, dst_e):
         """ Calculate the advantage using the central critic. """
         samples = self.batch_size*self.max_steps
+        acts = torch.stack([act_c, act_e], dim=1).reshape(
+            self.batch_size, self.max_steps, -1)
 
         with torch.no_grad():
-            all_acts = torch.arange(self.act_dim, dtype=torch.int32).repeat(
-                samples).reshape(-1).to(self.device)
-            repeated_act_e = act_e.repeat(
-                self.act_dim).reshape(self.act_dim, -1).T.reshape(-1)
-            repeated_act_c = act_c.repeat(
-                self.act_dim).reshape(self.act_dim, -1).T.reshape(-1)
+            q = self.central_critic(
+                states, acts).reshape(self.batch_size, self.max_steps)
+            all_q = self.central_critic.all_actions_c(
+                states, act_e).reshape(self.batch_size, self.max_steps, -1)
 
-            all_acts_c = torch.stack(
-                [all_acts, repeated_act_e], dim=1)
-            all_acts_e = torch.stack(
-                [repeated_act_c, all_acts], dim=1)
+            v = (dst_c*all_q).sum(-1)
 
-            repeated_states = states.repeat(
-                1, self.act_dim).reshape(samples*5, -1)
+            adv_c = q - v
+            adv_c = (adv_c-adv_c.mean())/adv_c.std()
 
-            all_vals_c = self.central_critic(
-                repeated_states, all_acts_c).reshape(-1, self.act_dim)
-            all_vals_e = -self.central_critic(
-                repeated_states, all_acts_e).reshape(-1, self.act_dim)
-
-            vals_c = all_vals_c.gather(
-                1, act_c.long().reshape(-1, 1)).reshape(-1)
-            vals_e = all_vals_e.gather(
-                1, act_e.long().reshape(-1, 1)).reshape(-1)
-
-            adv_c = vals_c  # - (dst_c*all_vals_c).sum(1)
-            adv_e = vals_e  # - (dst_e*all_vals_e).sum(1)
-
-            #adv_c = adv_c.reshape(self.batch_size, self.max_steps)
-            #adv_e = adv_e.reshape(self.batch_size, self.max_steps)
-
-            # adv_c = (adv_c-adv_c.mean(1).reshape(-1, 1)) / \
-            #    adv_c.std(1).reshape(-1, 1)
-            # adv_e = (adv_e-adv_e.mean(1).reshape(-1, 1)) / \
-            #    adv_e.std(1).reshape(-1, 1)
-
-        return adv_c.reshape(-1), adv_e.reshape(-1)
+        return adv_c.reshape(-1), v
 
     def update(self):
         """ Updates all nets """
         obs_c, act_c, rew_c, ret_c, adv_c, dst_c, obs_g, act_g, ret_g, adv_g, dst_g, obs_e, act_e, ret_e, adv_e, dst_e, msg, states = self.buffers.get_tensors(
             self.device)
+        obs_all = torch.cat([obs_c, obs_e], dim=-1)
 
-        val_c = self.central_critic(
-            obs_c, 1).reshape(
-                self.batch_size, self.max_steps).detach().cpu().numpy()
-        self.buffers.buffer_c.adv_buf = np.zeros(
-            (self.batch_size, 500), dtype=np.float32)
-        self.buffers.buffer_c.advantage_estimation(
-            val_c, np.zeros((self.batch_size, 1)))
-        self.buffers.buffer_c.standardize_adv()
-
-        adv_c = torch.as_tensor(
-            self.buffers.buffer_c.adv_buf, dtype=torch.float32, device=self.device).reshape(-1)
         msg_ent = Categorical(
             probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
 
-        #_, _ = self.calculate_advantage(states, act_c, act_e, dst_c, dst_e)
+        _, v_c = self.calculate_advantage(
+            obs_all, act_c, act_e, dst_c, dst_e)
 
-        cc_loss = self.update_critic(obs_c, act_c, act_e, rew_c, ret_c)
+        cc_loss = self.update_critic(
+            obs_all, act_c, act_e, rew_c, ret_c, dst_c, dst_e)
 
         """!!!!DIMENSIONS wrong!!!!rews[:, :-1] + self.gamma*vals[:, 1:] - vals[:, :-1]"""
         adv_c2 = rew_c.reshape(self.batch_size, self.max_steps)
-        val_c = torch.tensor(val_c, device=self.device).reshape(
-            self.batch_size, self.max_steps)
-        adv_c2[:, :-1] += self.gamma*val_c[:, 1:] - val_c[:, :-1]
-        adv_c3 = ret_c-val_c.reshape(-1)
+        adv_c2[:, :-1] += self.gamma*v_c[:, 1:] - v_c[:, :-1]
+        adv_c3 = ret_c-v_c.reshape(-1)
         adv_c2 = (adv_c2.reshape(-1)+adv_c3)/2
         adv_c2 = (adv_c2-adv_c2.mean())/adv_c2.std()
-        adv_c2 = adv_c2
 
         print(self.val_criterion(adv_c, adv_c2))
 
@@ -474,7 +438,7 @@ class Agents:
             import time
             time.sleep(0.01)
 
-            #msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
+            # msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
 
             self.envs.envs[0].render()
             print(msg[0].detach().cpu().numpy())

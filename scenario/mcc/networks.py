@@ -248,8 +248,11 @@ class Normal(nn.Module):
 
 
 class ActionValue(nn.Module):
-    def __init__(self, in_dim, agents, fc_hidden=128):
+    def __init__(self, in_dim, agents, action_dim, batch_size, steps, fc_hidden=128):
         super(ActionValue, self).__init__()
+        self.action_dim = action_dim
+        self.batch_size = batch_size
+        self.steps = steps
 
         self.mlp = nn.Sequential(
             nn.Linear(in_dim, 32),
@@ -258,7 +261,7 @@ class ActionValue(nn.Module):
             nn.ELU(),
         )
 
-        self.rnn = nn.LSTM(32, 64,
+        self.rnn = nn.LSTM(32+agents, 64,
                            num_layers=1, batch_first=True)
 
         self.out = nn.Sequential(
@@ -267,8 +270,26 @@ class ActionValue(nn.Module):
 
     def forward(self, x, a):
         x = self.mlp(x)
-        #x = torch.cat([x, a.float()], dim=1)
+        x = torch.cat([x, a.float()], dim=-1)
         x, _ = self.rnn(x)
         x = x.reshape(-1, x.size(-1))
         x = self.out(x)
         return x
+
+    def all_actions_c(self, x, act_e):
+        """ Calculates all q values for all action of red collector."""
+        all = []
+        for a in range(self.action_dim):
+            act_c = torch.ones(
+                act_e.size(), dtype=torch.int32, device=act_e.device)*a
+            acts = torch.stack([act_c, act_e], dim=1).reshape(
+                self.batch_size, self.steps, -1)
+
+            y = self.mlp(x)
+            y = torch.cat([y, acts.float()], dim=-1)
+            y, _ = self.rnn(y)
+            y = y.reshape(-1, y.size(-1))
+            y = self.out(y)
+            all.append(y)
+
+        return torch.cat(all, dim=-1)

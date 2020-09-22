@@ -69,7 +69,7 @@ class Buffers:
         adv_c = torch.as_tensor(
             self.buffer_c.adv_buf, dtype=torch.float32, device=device).reshape(-1)
         dst_c = torch.as_tensor(
-            self.buffer_c.dst_buf, dtype=torch.float32, device=device).reshape(-1, self.act_num)
+            self.buffer_c.dst_buf, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, self.act_num)
 
         obs_g = torch.as_tensor(
             self.buffer_g.obs_buf, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, -1)
@@ -80,7 +80,7 @@ class Buffers:
         adv_g = torch.as_tensor(
             self.buffer_g.adv_buf, dtype=torch.float32, device=device).reshape(-1)
         dst_g = torch.as_tensor(
-            self.buffer_g.dst_buf, dtype=torch.float32, device=device).reshape(-1, self.act_num)
+            self.buffer_g.dst_buf, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, self.act_num)
 
         obs_e = torch.as_tensor(
             self.buffer_e.obs_buf, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, -1)
@@ -91,7 +91,7 @@ class Buffers:
         adv_e = torch.as_tensor(
             self.buffer_e.adv_buf, dtype=torch.float32, device=device).reshape(-1)
         dst_e = torch.as_tensor(
-            self.buffer_e.dst_buf, dtype=torch.float32, device=device).reshape(-1, self.act_num)
+            self.buffer_e.dst_buf, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, self.act_num)
 
         msg = self.backprop_msg
         states = torch.as_tensor(
