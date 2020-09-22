@@ -19,7 +19,7 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, lr_enemy=1e-3, lr_critic=1e-3, gamma=0.99, max_steps=500,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=5e-4, lr_guide=5e-4, lr_enemy=1e-3, lr_critic=3e-4, gamma=0.99, max_steps=500,
                  fc_hidden=64, rnn_hidden=128, batch_size=256, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.01,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0, entropy_factor=-0.1):
         # RNG seed
@@ -38,6 +38,7 @@ class Agents:
         print('Observation shape:', self.obs_dim)
         print('Action number:', self.act_dim)
         print('Agent number:', self.agents_num)
+        state_dim = 9
 
         # Networks
         in_dim = self.obs_dim[0]*self.obs_dim[1]*self.obs_dim[2]+2
@@ -49,7 +50,11 @@ class Agents:
         self.enemy = Normal(
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
         self.central_critic = ActionValue(
-            3, 2).to(self.device)
+            127, 2).to(self.device)
+        self.test = Listener(
+            in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers, tau=tau).to(self.device)
+        self.optimizer_test = optim.Adam(
+            self.test.parameters(), lr=lr_collector)
 
         self.optimizer_c = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
@@ -73,7 +78,7 @@ class Agents:
         self.pred_criterion = nn.CrossEntropyLoss()
 
         self.grad_clip = grad_clip
-        self.critic_iters = 40
+        self.critic_iters = 80
 
         self.symbol_num = symbol_num
         self.num_layers = num_layers
@@ -86,7 +91,7 @@ class Agents:
         self.lam = lam
         self.max_steps = max_steps
         self.buffers = Buffers(self.batch_size, self.max_steps,
-                               (in_dim,), self.act_dim, self.gamma, self.lam, self.symbol_num, (3,))
+                               (in_dim,), self.act_dim, self.gamma, self.lam, self.symbol_num, (state_dim,))
         self.clip_ratio = clip_ratio
         self.target_kl = target_kl
 
@@ -235,7 +240,7 @@ class Agents:
             loss, kl = self.compute_policy_gradient(
                 net, dist, act, adv, old_logp)
             policy_loss += loss.item()
-            if kl > 0.05:
+            if kl > 0.03:
                 return policy_loss, value_loss
             loss.backward(retain_graph=True)
 
@@ -296,12 +301,14 @@ class Agents:
 
             vals = self.central_critic(states, acts)
 
-            loss_c = self.val_criterion(
+            loss = self.val_criterion(
                 vals.reshape(-1), ret_c.reshape(-1))
 
-            total_loss += loss_c.item()
-            loss_c.backward()
+            total_loss += loss.item()
+            loss.backward()
 
+            torch.nn.utils.clip_grad_norm_(
+                self.central_critic.parameters(), self.grad_clip)
             self.optimizer_cc.step()
 
         return total_loss
@@ -356,8 +363,16 @@ class Agents:
         msg_ent = Categorical(
             probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
 
-        cc_loss = self.update_critic(states, act_c, act_e, rew_c, ret_c)
-        _, _ = self.calculate_advantage(states, act_c, act_e, dst_c, dst_e)
+        #_, _ = self.calculate_advantage(states, act_c, act_e, dst_c, dst_e)
+        val_c = self.central_critic(
+            obs_c, 1).reshape(-1).detach()
+        cc_loss = self.update_critic(obs_c, act_c, act_e, rew_c, ret_c)
+
+        adv_c2 = rew_c
+        adv_c2[:-1] += self.gamma*val_c[1:] - val_c[:-1]
+        adv_c2 = (adv_c2-adv_c2.mean())/adv_c2.std()
+
+        print(self.val_criterion(adv_c2, adv_c))
 
         # Training Collector/Msg/Guide - Collector - Guide
         _, _ = self.update_net(
@@ -383,8 +398,8 @@ class Agents:
             rew = self.sample_batch()
             epoch_rews.append(rew)
 
-            if rew[0]+rew[2] > self.max_rew:
-                self.max_rew = rew[0]+rew[2]
+            if rew[0] > self.max_rew:
+                self.max_rew = rew[0]
                 self.save()
             p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent, cc_loss = self.update()
 

@@ -252,20 +252,23 @@ class ActionValue(nn.Module):
         super(ActionValue, self).__init__()
 
         self.mlp = nn.Sequential(
-            nn.Linear(in_dim, 64),
+            nn.Linear(in_dim, 32),
             nn.ELU(),
-            nn.Linear(64, 32),
+            nn.Linear(32, 32),
             nn.ELU(),
         )
 
+        self.rnn = nn.LSTM(32, 64,
+                           num_layers=1, batch_first=True)
+
         self.out = nn.Sequential(
-            nn.Linear(32, 32),
-            nn.ELU(),
-            nn.Linear(32, 1)
+            nn.Linear(64, 1)
         )
 
     def forward(self, x, a):
         x = self.mlp(x)
         #x = torch.cat([x, a.float()], dim=1)
+        x, _ = self.rnn(x)
+        x = x.reshape(-1, x.size(-1))
         x = self.out(x)
         return x
