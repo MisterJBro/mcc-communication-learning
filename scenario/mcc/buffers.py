@@ -57,6 +57,32 @@ class Buffers:
         self.buffer_g.standardize_adv()
         self.buffer_e.standardize_adv()
 
+    def get_central_critic_tensors(self, device):
+        obs_c = torch.as_tensor(
+            self.buffer_c.obs_buf, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, -1)
+        act_c = torch.as_tensor(
+            self.buffer_c.act_buf, dtype=torch.int32, device=device).reshape(-1)
+        dst_c = torch.as_tensor(
+            self.buffer_c.dst_buf, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, self.act_num)
+
+        obs_g = torch.as_tensor(
+            self.buffer_g.obs_buf, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, -1)
+        act_g = torch.as_tensor(
+            self.buffer_g.act_buf, dtype=torch.int32, device=device).reshape(-1)
+        dst_g = torch.as_tensor(
+            self.buffer_g.dst_buf, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, self.act_num)
+
+        obs_e = torch.as_tensor(
+            self.buffer_e.obs_buf, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, -1)
+        act_e = torch.as_tensor(
+            self.buffer_e.act_buf, dtype=torch.int32, device=device).reshape(-1)
+        dst_e = torch.as_tensor(
+            self.buffer_e.dst_buf, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, self.act_num)
+
+        msg = self.backprop_msg
+
+        return obs_c, act_c, dst_c, obs_g, act_g, dst_g, obs_e, act_e, dst_e, msg
+
     def get_tensors(self, device):
         obs_c = torch.as_tensor(
             self.buffer_c.obs_buf, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, -1)
