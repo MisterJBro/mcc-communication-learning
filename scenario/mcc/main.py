@@ -56,7 +56,7 @@ class Agents:
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
 
         self.central_critic = ActionValue(
-            in_dim*2+state_dim+2, self.act_dim, batch_size, max_steps).to(self.device)
+            state_dim+2, self.act_dim, batch_size, max_steps).to(self.device)
 
         self.optimizer_c = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
@@ -158,7 +158,7 @@ class Agents:
         """ Calculates the rewards and General Advantage Estimation """
         obs_c, act_c, dst_c, obs_g, act_g, dst_g, obs_e, act_e, dst_e, msg, states = self.buffers.get_central_critic_tensors(
             self.device)
-        all_c = torch.cat([obs_c, obs_e, states], dim=-1)
+        all_c = torch.cat([states], dim=-1)
 
         with torch.no_grad():
             val_c, val_e = self.calculate_values(
@@ -388,10 +388,12 @@ class Agents:
         """ Updates all nets """
         obs_c, act_c, rew_c, ret_c, adv_c, dst_c, obs_g, act_g, ret_g, adv_g, dst_g, obs_e, act_e, rew_e, ret_e, adv_e, dst_e, msg, states = self.buffers.get_tensors(
             self.device)
-        all_c = torch.cat([obs_c, obs_e, states], dim=-1)
+        all_c = torch.cat([states], dim=-1)
 
-        # adv_c, _ = self.calculate_advantage(
-        #    all_c, act_c, act_g, act_e, dst_c, dst_g, dst_e)
+        adv_c2, _ = self.calculate_advantage(
+            all_c, act_c, act_g, act_e, dst_c, dst_g, dst_e)
+
+        print(self.val_criterion(adv_c, adv_c2))
 
         msg_ent = Categorical(
             probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
