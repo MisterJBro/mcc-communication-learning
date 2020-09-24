@@ -24,9 +24,9 @@ BLUE_COLLECTOR_ID = 2
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=5e-4, lr_guide=5e-4, lr_enemy=5e-4, lr_critic=1e-3, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=256, iters=40, lam=0.97, td_lam=0.99, clip_ratio=0.2, target_kl=0.01, critic_iters=80,
-                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, lr_enemy=1e-3, lr_critic=1e-3, gamma=0.99, max_steps=500,
+                 fc_hidden=64, rnn_hidden=128, batch_size=256, iters=40, lam=0.97, td_lam=0.97, clip_ratio=0.2, target_kl=0.01, critic_iters=1,
+                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0, entropy_factor=-0.1):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
@@ -56,7 +56,7 @@ class Agents:
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
 
         self.central_critic = ActionValue(
-            in_dim*2+state_dim, self.act_dim, batch_size, max_steps).to(self.device)
+            in_dim*2+state_dim+2, self.act_dim, batch_size, max_steps).to(self.device)
 
         self.optimizer_c = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
@@ -148,7 +148,7 @@ class Agents:
             batch_rew[2] += rews[:, 2]
 
             obs = next_obs
-            #msg = next_msg
+            msg = next_msg
         self.reward_and_advantage()
         self.reset_states()
 
@@ -161,7 +161,8 @@ class Agents:
         all_c = torch.cat([obs_c, obs_e, states], dim=-1)
 
         with torch.no_grad():
-            val_c, val_e = self.calculate_values(all_c)
+            val_c, val_e = self.calculate_values(
+                all_c, act_c, act_g, act_e, dst_c, dst_g, dst_e)
             val_c = val_c.cpu().numpy()
             val_g = self.guide.value_only(obs_g).reshape(
                 self.batch_size, self.max_steps).cpu().numpy()
@@ -278,33 +279,73 @@ class Agents:
 
         return policy_loss, value_loss
 
-    def update_critic(self, all_c, targets, ret_c):
+    def update_critic(self, states, act_c, act_g, act_e, rew_c, ret_c, dst_c, dst_g, dst_e, targets):
         """ Updates the central critic. """
         total_loss = 0
+        acts = torch.stack([act_c, act_e], dim=1).reshape(
+            self.batch_size, self.max_steps, -1).float()
+        all_c = torch.cat([states, acts], dim=-1)
 
-        self.optimizer_cc.zero_grad()
+        targets_c, targets_e = None, None
 
-        vals = self.central_critic(all_c).reshape(
-            self.batch_size, self.max_steps)
+        for iter in range(self.critic_iters):
+            self.optimizer_cc.zero_grad()
 
-        loss = self.val_criterion(
-            vals, targets)
-        total_loss += loss.item()
-        loss.backward()
+            vals = self.central_critic(all_c)
 
-        torch.nn.utils.clip_grad_norm_(
-            self.central_critic.parameters(), self.grad_clip)
-        self.optimizer_cc.step()
+            loss = self.val_criterion(
+                vals.reshape(-1), targets.reshape(-1))
+            total_loss += loss.item()
+            loss.backward()
+
+            torch.nn.utils.clip_grad_norm_(
+                self.central_critic.parameters(), self.grad_clip)
+            self.optimizer_cc.step()
 
         return total_loss
 
-    def calculate_values(self, all_c):
+    def calculate_values(self, states, act_c, act_g, act_e, dst_c, dst_g, dst_e):
         """ Calculate the values using the central critic. """
-        with torch.no_grad():
-            v_c = self.central_critic(all_c).reshape(
-                self.batch_size, self.max_steps)
+        samples = self.batch_size*self.max_steps
+        acts = torch.stack([act_c, act_e], dim=1).reshape(
+            self.batch_size, self.max_steps, -1).float()
+        all_c = torch.cat([states, acts], dim=-1)
 
-        return v_c, -v_c
+        with torch.no_grad():
+            q = self.central_critic(
+                all_c).reshape(self.batch_size, self.max_steps)
+            all_q_c = self.central_critic.all_actions_c(
+                states, act_e).reshape(self.batch_size, self.max_steps, -1)
+            v_c = (dst_c*all_q_c).sum(-1)
+
+            all_q_e = self.central_critic.all_actions_e(
+                states, act_c).reshape(self.batch_size, self.max_steps, -1)
+            v_e = -(dst_e*all_q_e).sum(-1)
+
+        return v_c, v_e
+
+    def calculate_advantage(self, states, act_c, act_g, act_e, dst_c, dst_g, dst_e):
+        """ Calculate the values using the central critic. """
+        samples = self.batch_size*self.max_steps
+        acts = torch.stack([act_c, act_e], dim=1).reshape(
+            self.batch_size, self.max_steps, -1).float()
+        all_c = torch.cat([states, acts], dim=-1)
+
+        with torch.no_grad():
+            q = self.central_critic(
+                all_c).reshape(self.batch_size, self.max_steps)
+            all_q_c = self.central_critic.all_actions_c(
+                states, act_e).reshape(self.batch_size, self.max_steps, -1)
+            v_c = (dst_c*all_q_c).sum(-1)
+
+            all_q_e = self.central_critic.all_actions_e(
+                states, act_c).reshape(self.batch_size, self.max_steps, -1)
+            v_e = -(dst_e*all_q_e).sum(-1)
+
+        adv_c = (q-v_c).reshape(-1)
+        adv_c = (adv_c-adv_c.mean())/adv_c.std()
+
+        return adv_c, -q-v_e
 
     def multi_step_return(self, rew_c):
         """ Returns the multi step return """
@@ -320,12 +361,13 @@ class Agents:
 
         return ms_return
 
-    def bootstrapping(self, ms_return, all_c):
+    def bootstrapping(self, ms_return, states, act_e, dst_c):
         """ Bootstraps other values. """
         bms_return = ms_return.clone()
         with torch.no_grad():
-            v_c = self.central_critic(all_c).reshape(
-                self.batch_size, self.max_steps)
+            all_q_c = self.central_critic.all_actions_c(
+                states, act_e).reshape(self.batch_size, self.max_steps, -1)
+            v_c = (dst_c*all_q_c).sum(-1)
 
         for step in range(1, self.max_steps):
             bms_return[step, :, :-(step+1)] += (self.gamma **
@@ -348,17 +390,20 @@ class Agents:
             self.device)
         all_c = torch.cat([obs_c, obs_e, states], dim=-1)
 
+        # adv_c, _ = self.calculate_advantage(
+        #    all_c, act_c, act_g, act_e, dst_c, dst_g, dst_e)
+
         msg_ent = Categorical(
             probs=msg.reshape(-1, self.symbol_num).detach().cpu().mean(0)).entropy().item()
 
-        # for _ in range(1):
         ms_return = self.multi_step_return(rew_c)
 
         for _ in range(40):
-            bms_return = self.bootstrapping(ms_return, all_c)
+            bms_return = self.bootstrapping(ms_return, all_c, act_e, dst_c)
             targets = self.td_lambda(bms_return)
 
-            cc_loss = self.update_critic(all_c, targets, ret_c)
+            cc_loss = self.update_critic(
+                all_c, act_c, act_g, act_e, rew_c, ret_c, dst_c, dst_g, dst_e, targets)
 
         # Training Collector/Msg/Guide - Collector - Guide
         _, _ = self.update_net(

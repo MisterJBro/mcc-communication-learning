@@ -257,20 +257,59 @@ class ActionValue(nn.Module):
         self.mlp = nn.Sequential(
             nn.Linear(in_dim, 64),
             nn.ELU(),
-            nn.Linear(64, 128),
+            nn.Linear(64, 64),
             nn.ELU(),
         )
 
-        # self.rnn = nn.LSTM(64, 128,
+        # self.rnn = nn.LSTM(32, 64,
         #                   num_layers=1, batch_first=True)
 
         self.out = nn.Sequential(
-            nn.Linear(128, 1)
+            nn.Linear(64, 1)
         )
 
     def forward(self, x):
-        x = x.reshape(-1, x.size(-1))
         x = self.mlp(x)
+        x = x.reshape(-1, x.size(-1))
+        #x = torch.cat([x, a.float()], dim=-1)
         #x, _ = self.rnn(x)
         x = self.out(x)
         return x
+
+    def all_actions_c(self, x, act_e):
+        """ Calculates all q values for all action of red collector. """
+        all = []
+        for a in range(self.action_dim):
+            act_c = torch.ones(
+                act_e.size(), dtype=torch.int32, device=act_e.device)*a
+            acts = torch.stack([act_c, act_e], dim=1).reshape(
+                self.batch_size, self.steps, -1).float()
+            all_c = torch.cat([x, acts], dim=-1)
+
+            y = self.mlp(all_c)
+            y = y.reshape(-1, y.size(-1))
+            #y = torch.cat([y, acts.float()], dim=-1)
+            #y, _ = self.rnn(y)
+            y = self.out(y)
+            all.append(y)
+
+        return torch.cat(all, dim=-1)
+
+    def all_actions_e(self, x, act_c):
+        """ Calculates all q values for all action of enemy collector. """
+        all = []
+        for a in range(self.action_dim):
+            act_e = torch.ones(
+                act_c.size(), dtype=torch.int32, device=act_c.device)*a
+            acts = torch.stack([act_c, act_e], dim=1).reshape(
+                self.batch_size, self.steps, -1).float()
+            all_c = torch.cat([x, acts], dim=-1)
+
+            y = self.mlp(all_c)
+            y = y.reshape(-1, y.size(-1))
+            #y = torch.cat([y, acts.float()], dim=-1)
+            #y, _ = self.rnn(y)
+            y = self.out(y)
+            all.append(y)
+
+        return torch.cat(all, dim=-1)
