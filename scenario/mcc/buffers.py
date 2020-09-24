@@ -80,8 +80,10 @@ class Buffers:
             self.buffer_e.dst_buf, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, self.act_num)
 
         msg = self.backprop_msg
+        states = torch.as_tensor(
+            self.states, dtype=torch.float32, device=device).reshape(self.batch_size, self.size, -1)
 
-        return obs_c, act_c, dst_c, obs_g, act_g, dst_g, obs_e, act_e, dst_e, msg
+        return obs_c, act_c, dst_c, obs_g, act_g, dst_g, obs_e, act_e, dst_e, msg, states
 
     def get_tensors(self, device):
         obs_c = torch.as_tensor(
