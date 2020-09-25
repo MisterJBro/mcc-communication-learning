@@ -454,13 +454,14 @@ class Agents:
             rew = self.sample_batch()
             epoch_rews.append(rew)
 
-            # if rew[0] > self.max_rew:
-            #    self.max_rew = rew[0]
-            self.save()
             p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent, cc_loss, trs_found = self.update()
 
             print('Epoch: {:4}  Collector Rew: {:4}  Enemy Rew: {:4}  Guide Rew: {:4}  Msg Ent {:4}  CC Loss: {:4}  Trs Found {:3}'.format(
                 epoch, np.round(rew[0], 3),  np.round(rew[2], 3), np.round(rew[1], 1), np.round(msg_ent, 3), np.round(cc_loss, 3), np.round(trs_found, 3)))
+
+            if rew[0]+trs_found > self.max_rew:
+                self.max_rew = rew[0]+trs_found
+                self.save()
         print(epoch_rews)
 
     def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
@@ -551,7 +552,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     agents.load()
-    agents.train(1000)
+    # agents.train(1000)
 
     import code
     # code.interact(local=locals())
