@@ -53,7 +53,7 @@ class Agents:
 
         self.optimizer = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
-        milestones = [100, 200, 400]
+        milestones = [200]
         self.scheduler = MultiStepLR(
             self.optimizer, milestones=milestones, gamma=0.5)
         self.batch_size = batch_size
@@ -81,23 +81,30 @@ class Agents:
         self.clip_ratio = clip_ratio
         self.target_kl = target_kl
 
-    def single_preprocess(self, obs):
+    def single_preprocess(self, obs, swap):
         """ Processes a single observation into one hot encoding """
-        # Both Player overlap each other
-        x, y = np.where(obs == 5)
-        if len(x) > 0:
-            obs[x, y] = 3
+        x3, y3 = np.where(obs == 3)
+        x4, y4 = np.where(obs == 4)
+        x5, y5 = np.where(obs == 5)
+        if len(x5) > 0:
+            obs[x5, y5] = 3
+        if swap:
+            if len(x3) > 0:
+                obs[x3, y3] = 4
+            if len(x4) > 0:
+                obs[x4, y4] = 3
+
         state = np.zeros((obs.size, self.num_world_blocks), dtype=np.uint8)
         state[np.arange(obs.size), obs.reshape(-1)] = 1
         state = state.reshape(obs.shape + (self.num_world_blocks,))
         state = np.moveaxis(state, -1, 0)
 
-        if len(x) > 0:
-            state[4, x, y] = 1
+        if len(x5) > 0:
+            state[4, x5, y5] = 1
         return state
 
-    def preprocess_with_score(self, obs, score):
-        state = self.single_preprocess(obs)
+    def preprocess_with_score(self, obs, score, swap):
+        state = self.single_preprocess(obs, swap)
         return np.concatenate([state.reshape(-1), score])
 
     def preprocess(self, obs_list):
@@ -106,14 +113,14 @@ class Agents:
         for obs in obs_list:
             if self.competition:
                 obs_c.append(self.preprocess_with_score(
-                    obs[0][0], obs[0][1:]))
+                    obs[0][0], obs[0][1:], False))
                 obs_e.append(self.preprocess_with_score(
-                    obs[1][0], obs[1][1:]))
+                    obs[1][0], obs[1][1:], True))
             else:
                 obs_c.append(self.single_preprocess(
-                    obs[0]).reshape(-1))
+                    obs[0], False).reshape(-1))
                 obs_e.append(self.single_preprocess(
-                    obs[1]).reshape(-1))
+                    obs[1], True).reshape(-1))
         return np.array([obs_c, obs_e])
 
     def sample_batch(self):
@@ -217,16 +224,16 @@ class Agents:
 
         # Training
         p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, self.red_iters)
-        p_loss_e, v_loss_e = self.update_net(
-            self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, self.blue_iters)
+            self.collector, self.optimizer, obs_c, act_c, adv_c, ret_c, self.red_iters)
+        # p_loss_e, v_loss_e = self.update_net(
+        #    self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, self.blue_iters)
 
-        self.scheduler_c.step()
-        self.scheduler_e.step()
+        self.scheduler.step()
+        self.enemy.load_state_dict(self.collector.state_dict())
 
         trs_found = rew_c.nonzero().size(0)/self.batch_size
 
-        return p_loss_c, v_loss_c, p_loss_e, v_loss_e, trs_found
+        return p_loss_c, v_loss_c, trs_found
 
     def train(self, epochs):
         """ Trains the agent for given epochs """
@@ -236,8 +243,10 @@ class Agents:
             rew = self.sample_batch()
             epoch_rews.append(rew)
 
-            self.save()
-            p_loss_c, v_loss_c, p_loss_e, v_loss_e, trs_found = self.update()
+            if rew[0] > self.max_rew:
+                self.max_rew = rew[0]
+                self.save()
+            p_loss_c, v_loss_c, trs_found = self.update()
 
             print('Epoch: {:4}  Collector Rew: {:4}  Enemy Rew: {:4}  Trs Found: {:3}'.format(
                 epoch, np.round(rew[0], 3), np.round(rew[1], 3), np.round(trs_found, 1)))
@@ -247,9 +256,8 @@ class Agents:
         """ Saves the networks and optimizers to later continue training """
         torch.save({
             'collector': self.collector.state_dict(),
-            'enemy': self.enemy.state_dict(),
-            'optim_c': self.optimizer_c.state_dict(),
-            'optim_e': self.optimizer_e.state_dict(),
+            'enemy': self.collector.state_dict(),
+            'optim': self.optimizer.state_dict(),
         }, path)
 
     def load(self, path='{}/IAC.pt'.format(PROJECT_PATH)):
@@ -257,8 +265,7 @@ class Agents:
         checkpoint = torch.load(path)
         self.collector.load_state_dict(checkpoint['collector'])
         self.enemy.load_state_dict(checkpoint['enemy'])
-        self.optimizer_c.load_state_dict(checkpoint['optim_c'])
-        self.optimizer_e.load_state_dict(checkpoint['optim_e'])
+        self.optimizer.load_state_dict(checkpoint['optim'])
 
     def test(self):
         """ Tests the agent """
@@ -298,8 +305,8 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    agents.load()
-    # agents.train(200)
+    # agents.load()
+    agents.train(400)
 
     import code
     # code.interact(local=locals())
