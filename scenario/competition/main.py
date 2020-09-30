@@ -19,7 +19,7 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_enemy=1e-3, gamma=0.99, max_steps=500,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=5e-4, lr_enemy=5e-4, gamma=0.99, max_steps=500,
                  fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, target_kl=0.01,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0, entropy_factor=-0.1):
         # RNG seed
@@ -28,7 +28,7 @@ class Agents:
         torch.manual_seed(seed)
 
         # Environment
-        self.competition = False
+        self.competition = True
         self.num_world_blocks = 5
         self.envs = Envs(batch_size, red_guides=0,
                          blue_collector=1, competition=self.competition)
@@ -255,7 +255,7 @@ class Agents:
             'optim_e': self.optimizer_e.state_dict(),
         }, path)
 
-    def load(self, path='{}/IAC.pt'.format(PROJECT_PATH)):
+    def load(self, path='{}/model.pt'.format(PROJECT_PATH)):
         """ Loads a training checkpoint """
         checkpoint = torch.load(path)
         self.collector.load_state_dict(checkpoint['collector'])
@@ -302,7 +302,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     agents.load()
-    # agents.train(200)
+    agents.train(200)
 
     import code
     # code.interact(local=locals())

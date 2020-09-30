@@ -49,14 +49,13 @@ class Agents:
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
         self.enemy = Normal(
             in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
-         self.optimizer_e.load_state_dict(checkpoint['optim_e'])
+        self.enemy.load_state_dict(self.collector.state_dict())
 
-
-        self.optimizer_c = optim.Adam(
+        self.optimizer = optim.Adam(
             self.collector.parameters(), lr=lr_collector)
         milestones = [100, 200, 400]
-        self.scheduler_c = MultiStepLR(
-            self.optimizer_c, milestones=milestones, gamma=0.5)
+        self.scheduler = MultiStepLR(
+            self.optimizer, milestones=milestones, gamma=0.5)
         self.batch_size = batch_size
         self.val_criterion = nn.MSELoss()
         self.pred_criterion = nn.CrossEntropyLoss()
