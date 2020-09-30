@@ -28,7 +28,7 @@ class Agents:
         torch.manual_seed(seed)
 
         # Environment
-        self.competition = False
+        self.competition = True
         self.num_world_blocks = 5
         self.envs = Envs(batch_size, red_guides=0,
                          blue_collector=1, competition=self.competition)
@@ -215,7 +215,7 @@ class Agents:
 
     def update(self):
         """ Updates all nets """
-        obs_c, act_c, ret_c, adv_c, obs_e, act_e, ret_e, adv_e = self.buffers.get_tensors(
+        obs_c, act_c, rew_c, ret_c, adv_c, obs_e, act_e, ret_e, adv_e = self.buffers.get_tensors(
             self.device)
 
         # Training
@@ -227,7 +227,9 @@ class Agents:
         self.scheduler_c.step()
         self.scheduler_e.step()
 
-        return p_loss_c, v_loss_c, p_loss_e, v_loss_e
+        trs_found = rew_c.nonzero().size(0)/self.batch_size
+
+        return p_loss_c, v_loss_c, p_loss_e, v_loss_e, trs_found
 
     def train(self, epochs):
         """ Trains the agent for given epochs """
@@ -238,10 +240,10 @@ class Agents:
             epoch_rews.append(rew)
 
             self.save()
-            p_loss_c, v_loss_c, p_loss_e, v_loss_e = self.update()
+            p_loss_c, v_loss_c, p_loss_e, v_loss_e, trs_found = self.update()
 
-            print('Epoch: {:4}  Collector Rew: {:4}  Enemy Rew: {:4}'.format(
-                epoch, np.round(rew[0], 3),  np.round(rew[1], 3)))
+            print('Epoch: {:4}  Collector Rew: {:4}  Enemy Rew: {:4}  Trs Found: {:"}'.format(
+                epoch, np.round(rew[0], 3), np.round(rew[1], 3), trs_found))
         print(epoch_rews)
 
     def save(self, path='{}/model.pt'.format(PROJECT_PATH)):
@@ -298,7 +300,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     # agents.load()
-    agents.train(500)
+    agents.train(300)
 
     import code
     # code.interact(local=locals())
