@@ -3,269 +3,305 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.distributions import Categorical
+from torch.optim.lr_scheduler import MultiStepLR
 import matplotlib.pyplot as plt
 import random
 import gym
 import numpy as np
-from scenario.utils.buffer import Buffer
-from scenario.utils.networks import Policy, ValueFunction
+from scenario.competition.buffers import Buffers
+from scenario.competition.networks import Normal
 import seaborn as sns
 import pathlib
+from scenario.utils.envs import Envs
 
 PROJECT_PATH = pathlib.Path(
     __file__).parent.absolute().as_posix()
 
 
 class Agents:
-    def __init__(self, env, seed=0, device='cpu', lr_policy=2e-3, lr_value=2e-3, gamma=0.99, max_steps=500,
-                 hidden_size=128, batch_size=64, iters_policy=40, iters_value=40, lam=0.97, clip_ratio=0.2,
-                 target_kl=0.03, num_layers=1, grad_clip=1.0, entropy_factor=0.0):
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_enemy=1e-3, gamma=0.99, max_steps=500,
+                 fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, target_kl=0.01,
+                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0, entropy_factor=-0.1):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
 
         # Environment
+        self.competition = False
         self.num_world_blocks = 5
-        self.width = 5
-        self.height = 5
-        self.env = env
-        self.obs_dim = (self.num_world_blocks,) + env.observation_space.shape
-        self.act_dim = env.action_space.nvec[0]
-        self.agents_num = env.agents_num
+        self.envs = Envs(batch_size, red_guides=0,
+                         blue_collector=1, competition=self.competition)
+        self.obs_dim = (self.num_world_blocks,) + \
+            self.envs.observation_space.shape
+        self.act_dim = self.envs.action_space.nvec[0]
+        self.agents_num = self.envs.agents_num
         print('Observation shape:', self.obs_dim)
         print('Action number:', self.act_dim)
         print('Agent number:', self.agents_num)
 
-        # Network
+        # Networks
         in_dim = self.obs_dim[0]*self.obs_dim[1]*self.obs_dim[2]
+        if self.competition:
+            in_dim = in_dim+2
         self.device = torch.device(device)
-        self.policy = Policy(
-            in_dim, self.act_dim, rnn_hidden=hidden_size,  num_layers=num_layers).to(self.device)
-        self.value = ValueFunction(
-            in_dim, rnn_hidden=hidden_size,  num_layers=num_layers).to(self.device)
+        self.collector = Normal(
+            in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
+        self.enemy = Normal(
+            in_dim, self.act_dim, symbol_num, fc_hidden=fc_hidden, rnn_hidden=rnn_hidden, num_layers=num_layers).to(self.device)
 
-        self.optimizer_policy = optim.Adam(
-            self.policy.parameters(), lr=lr_policy)
-        self.optimizer_value = optim.Adam(
-            self.value.parameters(), lr=lr_value)
+        self.optimizer_c = optim.Adam(
+            self.collector.parameters(), lr=lr_collector)
+        self.optimizer_e = optim.Adam(
+            self.enemy.parameters(), lr=lr_enemy)
+        milestones = [200, 4000, 5000]
+        self.scheduler_c = MultiStepLR(
+            self.optimizer_c, milestones=milestones, gamma=0.5)
+        self.scheduler_e = MultiStepLR(
+            self.optimizer_e, milestones=milestones, gamma=0.5)
         self.batch_size = batch_size
-        self.iters_policy = iters_policy
-        self.iters_value = iters_value
-        self.criterion = nn.MSELoss()
-        self.grad_clip = grad_clip
+        self.val_criterion = nn.MSELoss()
+        self.pred_criterion = nn.CrossEntropyLoss()
 
+        self.iters = 40
+        self.red_iters = self.iters
+        self.blue_iters = self.iters
+        self.epochs_per_team = 5
+
+        self.grad_clip = grad_clip
+        self.symbol_num = symbol_num
         self.num_layers = num_layers
-        self.hidden_size = hidden_size
-        self.reset_state()
+        self.rnn_hidden = rnn_hidden
+        self.reset_states()
 
         # RL
         self.max_rew = 0
         self.gamma = gamma
         self.lam = lam
         self.max_steps = max_steps
-        self.buffer_r = Buffer(self.max_steps*self.batch_size,
-                               self.obs_dim, self.gamma, self.lam)
-        self.buffer_b = Buffer(self.max_steps*self.batch_size,
-                               self.obs_dim, self.gamma, self.lam)
+        self.buffers = Buffers(self.batch_size, self.max_steps,
+                               (in_dim,), self.gamma, self.lam, self.symbol_num)
         self.clip_ratio = clip_ratio
         self.target_kl = target_kl
-        self.entropy_factor = entropy_factor
 
     def single_preprocess(self, obs):
+        """ Processes a single observation into one hot encoding """
+        # Both Player overlap each other
+        x, y = np.where(obs == 5)
+        if len(x) > 0:
+            obs[x, y] = 3
         state = np.zeros((obs.size, self.num_world_blocks), dtype=np.uint8)
         state[np.arange(obs.size), obs.reshape(-1)] = 1
         state = state.reshape(obs.shape + (self.num_world_blocks,))
-        return np.moveaxis(state, -1, 0)
+        state = np.moveaxis(state, -1, 0)
+
+        if len(x) > 0:
+            state[4, x, y] = 1
+        return state
+
+    def preprocess_with_score(self, obs, score):
+        state = self.single_preprocess(obs)
+        return np.concatenate([state.reshape(-1), score])
 
     def preprocess(self, obs_list):
-        processed = [self.single_preprocess(obs) for obs in obs_list]
-        tmp = np.copy(processed[1][4])
-        processed[1][4] = np.copy(processed[1][3])
-        processed[1][3] = tmp
-        return np.stack(processed)
+        """ Processes all observation """
+        obs_c, obs_e = [], []
+        for obs in obs_list:
+            if self.competition:
+                obs_c.append(self.preprocess_with_score(
+                    obs[0][0], obs[0][1:]))
+                obs_e.append(self.preprocess_with_score(
+                    obs[1][0], obs[1][1:]))
+            else:
+                obs_c.append(self.single_preprocess(
+                    obs[0]).reshape(-1))
+                obs_e.append(self.single_preprocess(
+                    obs[1]).reshape(-1))
+        return np.array([obs_c, obs_e])
 
     def sample_batch(self):
-        self.buffer_r.clear()
-        self.buffer_b.clear()
-        rews = []
+        """ Samples a batch of trajectories """
+        self.buffers.clear()
+        batch_rew = np.zeros((2, self.batch_size))
+        obs = self.preprocess(self.envs.reset())
 
-        while True:
-            obs = self.preprocess(self.env.reset())
-            episode_rew = [0, 0]
+        for step in range(self.max_steps):
+            acts = self.get_actions(obs)
+            next_obs, rews, _, _ = self.envs.step(acts)
+            next_obs = self.preprocess(next_obs)
 
-            for step in range(self.max_steps):
-                act = self.get_actions(obs)
-                next_obs, rew, done, _ = self.env.step(act)
-                next_obs = self.preprocess(next_obs)
+            self.buffers.store(
+                obs, acts, rews[:, 0], rews[:, 1])
+            batch_rew[0] += rews[:, 0]
+            batch_rew[1] += rews[:, 1]
 
-                self.buffer_r.store(obs[0], act[0], rew[0])
-                self.buffer_b.store(obs[1], act[1], rew[1])
-                obs = next_obs
-                episode_rew[0] += rew[0]
-                episode_rew[1] += rew[1]
+            obs = next_obs
+        self.reward_and_advantage()
+        self.reset_states()
 
-                if done:
-                    break
-            rews.append(episode_rew)
-            self.reward_and_advantage()
-            self.reset_state()
-            if self.buffer_r.ptr >= self.batch_size*self.max_steps:
-                break
-
-        return rews
+        return np.mean(batch_rew, 1)
 
     def reward_and_advantage(self):
-        for buffer in [self.buffer_r, self.buffer_b]:
-            obs = torch.as_tensor(
-                buffer.obs_buf[buffer.last_ptr:buffer.ptr], dtype=torch.float32).reshape(1, buffer.ptr-buffer.last_ptr, -1).to(self.device)
-            with torch.no_grad():
-                values = self.value(obs).cpu().numpy()
-            buffer.expected_returns()
-            buffer.advantage_estimation(values, 0.0)
-            buffer.next_episode()
+        """ Calculates the rewards and General Advantage Estimation """
+        obs_c = torch.as_tensor(self.buffers.buffer_c.obs_buf, dtype=torch.float32).reshape(
+            self.batch_size, self.max_steps, -1).to(self.device)
+        obs_e = torch.as_tensor(self.buffers.buffer_e.obs_buf, dtype=torch.float32).reshape(
+            self.batch_size, self.max_steps, -1).to(self.device)
+
+        with torch.no_grad():
+            val_c = self.collector.value_only(obs_c).reshape(
+                self.batch_size, self.max_steps).cpu().numpy()
+            val_e = self.enemy.value_only(obs_e).reshape(
+                self.batch_size, self.max_steps).cpu().numpy()
+
+        self.buffers.expected_returns()
+        self.buffers.advantage_estimation([val_c, val_e])
+        self.buffers.standardize_adv()
 
     def get_actions(self, obs):
-        obs = torch.as_tensor(
-            obs, dtype=torch.float32).reshape(self.agents_num, 1, -1).to(self.device)
-        with torch.no_grad():
-            dist, self.policy_state = self.policy.with_state(
-                obs, self.policy_state)
+        """ Gets action according the agents networks """
+        obs = torch.as_tensor(obs, dtype=torch.float32).reshape(
+            self.agents_num, self.batch_size, 1, -1).to(self.device)
 
-        return dist.sample().cpu().numpy()
+        act_dist_c, self.state_c = self.collector.next_action(
+            obs[0], self.state_c)
+        act_dist_e, self.state_e = self.enemy.next_action(
+            obs[1], self.state_e)
 
-    def compute_policy_gradient(self, obs, act, adv, old_logp):
-        dist = self.policy(obs)
+        act_c = act_dist_c.sample().cpu().numpy()
+        act_e = act_dist_e.sample().cpu().numpy()
+
+        return np.stack([act_c, act_e]).T
+
+    def compute_policy_gradient(self, net, dist, act, adv, old_logp):
+        """ Computes the policy gradient with PPO """
         logp = dist.log_prob(act)
 
         ratio = torch.exp(logp - old_logp)
         clipped = torch.clamp(ratio, 1-self.clip_ratio, 1+self.clip_ratio)*adv
-        loss = -torch.min(ratio*adv, clipped).mean() - \
-            self.entropy_factor*dist.entropy().mean()
+        loss = -(torch.min(ratio*adv, clipped)).mean()
         kl_approx = (old_logp - logp).mean().item()
         return loss, kl_approx
 
-    def update_policy(self, obs, act, adv):
-        full_loss = 0
+    def update_net(self, net, opt, obs, act, adv, ret, iters):
+        """ Updates the net """
+        policy_loss = 0
+        value_loss = 0
+        other_done = False
         with torch.no_grad():
-            old_logp = self.policy(obs).log_prob(act).to(self.device)
-        for i in range(self.iters_policy):
-            self.optimizer_policy.zero_grad()
-            loss, kl = self.compute_policy_gradient(obs, act, adv, old_logp)
-            full_loss += loss.item()
-            loss.backward()
-            if kl > self.target_kl:
-                return full_loss
-            torch.nn.utils.clip_grad_norm_(
-                self.policy.parameters(), self.grad_clip)
-            self.optimizer_policy.step()
-        return full_loss
+            old_logp = net.action_only(
+                obs).log_prob(act).to(self.device)
 
-    def update_value(self, obs, ret):
-        full_loss = 0
-        for i in range(self.iters_value):
-            self.optimizer_value.zero_grad()
-            input = self.value(obs)
-            loss = self.criterion(input, ret)
-            full_loss += loss.item()
+        for i in range(iters):
+            opt.zero_grad()
+
+            dist, vals = net(obs)
+
+            loss, kl = self.compute_policy_gradient(
+                net, dist, act, adv, old_logp)
+            policy_loss += loss.item()
+            if kl > 0.03:
+                return policy_loss, value_loss
+            loss.backward(retain_graph=True)
+
+            loss = self.val_criterion(vals.reshape(-1), ret)
+            value_loss += loss.item()
             loss.backward()
             torch.nn.utils.clip_grad_norm_(
-                self.value.parameters(), self.grad_clip)
-            self.optimizer_value.step()
-        return full_loss
+                net.parameters(), self.grad_clip)
+
+            opt.step()
+        return policy_loss, value_loss
 
     def update(self):
-        pol_losses = []
-        val_losses = []
-        for index, buffer in enumerate([self.buffer_r, self.buffer_b]):
-            obs = torch.as_tensor(
-                buffer.obs_buf[:buffer.ptr], dtype=torch.float32, device=self.device)
-            obs = obs.reshape(self.batch_size, self.max_steps,
-                              self.num_world_blocks, self.height, self.width)
-            act = torch.as_tensor(
-                buffer.act_buf[:buffer.ptr], dtype=torch.int32, device=self.device)
-            ret = torch.as_tensor(
-                buffer.ret_buf[:buffer.ptr], dtype=torch.float32, device=self.device)
-            buffer.standardize_adv()
-            adv = torch.as_tensor(
-                buffer.adv_buf[:buffer.ptr], dtype=torch.float32, device=self.device)
+        """ Updates all nets """
+        obs_c, act_c, ret_c, adv_c, obs_e, act_e, ret_e, adv_e = self.buffers.get_tensors(
+            self.device)
 
-            pol_losses.append(self.update_policy(obs, act, adv))
-            val_losses.append(self.update_value(obs, ret))
-        return pol_losses, val_losses
+        # Training
+        p_loss_c, v_loss_c = self.update_net(
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, self.red_iters)
+        p_loss_e, v_loss_e = self.update_net(
+            self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, self.blue_iters)
 
-    def train(self, epochs, prev_rews=[]):
+        self.scheduler_c.step()
+        self.scheduler_e.step()
+
+        return p_loss_c, v_loss_c, p_loss_e, v_loss_e
+
+    def train(self, epochs):
+        """ Trains the agent for given epochs """
         epoch_rews = []
 
         for epoch in range(epochs):
-            rews = self.sample_batch()
-            mean_rew = np.array(rews).mean(0)
-            epoch_rews.append(mean_rew)
-            if mean_rew.mean() > self.max_rew:
-                self.max_rew = mean_rew.mean()
-                self.save(epoch_rews)
-            pol_losses, val_losses = self.update()
+            rew = self.sample_batch()
+            epoch_rews.append(rew)
 
-            print('Epoch: {:4}  Red Rew: {:6}  Blue Rew: {:6}  Average Reward: {:6}'.format(
-                epoch, np.round(mean_rew[0], 3), np.round(mean_rew[1], 3), np.round(mean_rew.mean(), 3)))
+            self.save()
+            p_loss_c, v_loss_c, p_loss_e, v_loss_e = self.update()
 
-    def plot(self, arr, title='', xlabel='Epochs', ylabel='Average Reward'):
-        sns.set()
-        plt.plot(arr)
-        plt.title(title)
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        plt.show()
+            print('Epoch: {:4}  Collector Rew: {:4}  Enemy Rew: {:4}'.format(
+                epoch, np.round(rew[0], 3),  np.round(rew[1], 3)))
+        print(epoch_rews)
 
-    def save(self, rews=[], path='{}/model.pt'.format(PROJECT_PATH)):
+    def save(self, path='{}/model.pt'.format(PROJECT_PATH)):
+        """ Saves the networks and optimizers to later continue training """
         torch.save({
-            'policy': self.policy.state_dict(),
-            'value': self.value.state_dict(),
-            'optim_p': self.optimizer_policy.state_dict(),
-            'optim_v': self.optimizer_value.state_dict(),
-            'rews': rews
+            'collector': self.collector.state_dict(),
+            'enemy': self.enemy.state_dict(),
+            'optim_c': self.optimizer_c.state_dict(),
+            'optim_e': self.optimizer_e.state_dict(),
         }, path)
 
     def load(self, path='{}/model.pt'.format(PROJECT_PATH)):
+        """ Loads a training checkpoint """
         checkpoint = torch.load(path)
-        self.policy.load_state_dict(checkpoint['policy'])
-        self.value.load_state_dict(checkpoint['value'])
-        self.optimizer_policy.load_state_dict(checkpoint['optim_p'])
-        self.optimizer_value.load_state_dict(checkpoint['optim_v'])
-        return checkpoint['rews']
+        self.collector.load_state_dict(checkpoint['collector'])
+        self.enemy.load_state_dict(checkpoint['enemy'])
+        self.optimizer_c.load_state_dict(checkpoint['optim_c'])
+        self.optimizer_e.load_state_dict(checkpoint['optim_e'])
 
     def test(self):
-        obs = self.preprocess(self.env.reset())
-        episode_rew = [0, 0]
+        """ Tests the agent """
+        obs = self.preprocess(self.envs.reset())
+        episode_rew = 0
+        msg_sum = np.zeros(self.symbol_num)
 
-        while True:
-            self.env.render()
-            act = self.get_actions(obs)
-            obs, rew, done, _ = self.env.step(act)
+        for step in range(self.max_steps):
+            self.envs.envs[0].render()
+
+            acts = self.get_actions(obs)
+            obs, rews, _, _ = self.envs.step(acts)
             obs = self.preprocess(obs)
 
-            episode_rew[0] += rew[0]
-            episode_rew[1] += rew[1]
+            episode_rew += rews[0][0]
+        print('Result reward: ', episode_rew)
+        print(msg_sum)
+        self.reset_states()
 
-            if done:
-                break
-        self.reset_state()
-
-    def reset_state(self):
-        self.policy_state = (
-            torch.zeros(self.num_layers, self.agents_num, self.hidden_size,
+    def reset_states(self):
+        """ Reset cell and hidden rnn states """
+        self.state_c = (
+            torch.zeros(self.num_layers, self.batch_size, self.rnn_hidden,
                         device=self.device),
-            torch.zeros(self.num_layers, self.agents_num, self.hidden_size,
+            torch.zeros(self.num_layers, self.batch_size, self.rnn_hidden,
+                        device=self.device),
+        )
+        self.state_e = (
+            torch.zeros(self.num_layers, self.batch_size, self.rnn_hidden,
+                        device=self.device),
+            torch.zeros(self.num_layers, self.batch_size, self.rnn_hidden,
                         device=self.device),
         )
 
 
 if __name__ == "__main__":
-    env = gym.make('gym_mcc_treasure_hunt:MCCTreasureHunt-v0',
-                   red_guides=0, blue_collector=1)
-    agents = Agents(env)
-    agents.load()
+    agents = Agents()
+    # agents.load()
+    agents.train(1000)
 
+    import code
+    # code.interact(local=locals())
     while True:
         input('Press enter to continue')
         agents.test()
