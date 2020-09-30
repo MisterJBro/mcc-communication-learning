@@ -19,7 +19,7 @@ PROJECT_PATH = pathlib.Path(
 
 class Agents:
     def __init__(self, seed=0, device='cuda:0', lr_collector=2e-6, lr_guide=2e-6, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=1024, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.03,
+                 fc_hidden=64, rnn_hidden=128, batch_size=1, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.03,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -207,7 +207,10 @@ class Agents:
 
     def test(self):
         obs = self.preprocess(self.envs.reset())
-        episode_rew = 0
+        episode_rew = np.zeros(self.batch_size)
+        null_acts = 0
+        pos13 = 0
+        pos14 = 0
 
         for step in range(self.max_steps):
             import time
@@ -218,8 +221,20 @@ class Agents:
             rew = np.array(rew)
             obs = self.preprocess(obs)
 
-            episode_rew += rew[0][0]
-        print('Result reward: ', episode_rew)
+            for b in range(self.batch_size):
+                pos = self.envs.envs[b].world.red_players[0].pos[0]
+                if pos == 13:
+                    pos13 += 1
+                if pos == 14:
+                    pos14 += 1
+
+            null_acts += len(np.where(act.reshape(-1) == 4)[0])
+            episode_rew += rew.reshape(-1)
+        print(episode_rew)
+        print(null_acts)
+        pos14 = pos14-(episode_rew.sum())
+        print(pos14)
+        print(pos13-(episode_rew.sum()*2))
         self.reset_states()
 
     def reset_states(self):
@@ -234,7 +249,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     agents.load()
-    #agents.train(200)
+    # agents.train(200)
 
     while True:
         input('Press enter to continue')
