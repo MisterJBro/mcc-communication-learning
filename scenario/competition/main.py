@@ -19,8 +19,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=5e-4, lr_enemy=5e-4, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, target_kl=0.01,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-4, lr_enemy=1e-4, gamma=0.99, max_steps=500,
+                 fc_hidden=64, rnn_hidden=128, batch_size=460, lam=0.97, clip_ratio=0.2, target_kl=0.01,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0, entropy_factor=-0.1):
         # RNG seed
         random.seed(seed)
@@ -234,19 +234,23 @@ class Agents:
     def train(self, epochs):
         """ Trains the agent for given epochs """
         epoch_rews = []
+        max = 0
 
         for epoch in range(epochs):
             rew = self.sample_batch()
             epoch_rews.append(rew)
 
-            self.save()
             p_loss_c, v_loss_c, p_loss_e, v_loss_e, trs_found = self.update()
+
+            if trs_found > max:
+                max = trs_found
+                self.save()
 
             print('Epoch: {:4}  Collector Rew: {:4}  Enemy Rew: {:4}  Trs Found: {:3}'.format(
                 epoch, np.round(rew[0], 3), np.round(rew[1], 3), np.round(trs_found, 1)))
         print(epoch_rews)
 
-    def save(self, path='{}/model.pt'.format(PROJECT_PATH)):
+    def save(self, path='{}/IACPenalty.pt'.format(PROJECT_PATH)):
         """ Saves the networks and optimizers to later continue training """
         torch.save({
             'collector': self.collector.state_dict(),
@@ -255,7 +259,7 @@ class Agents:
             'optim_e': self.optimizer_e.state_dict(),
         }, path)
 
-    def load(self, path='{}/model.pt'.format(PROJECT_PATH)):
+    def load(self, path='{}/IACPenalty.pt'.format(PROJECT_PATH)):
         """ Loads a training checkpoint """
         checkpoint = torch.load(path)
         self.collector.load_state_dict(checkpoint['collector'])
