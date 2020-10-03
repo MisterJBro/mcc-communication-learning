@@ -19,9 +19,9 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, gamma=0.99, max_steps=500,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=3e-3, gamma=0.99, max_steps=500,
                  fc_hidden=64, rnn_hidden=128, batch_size=256, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.01,
-                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0, entropy_factor=-0.1):
+                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
@@ -50,7 +50,7 @@ class Agents:
             self.collector.parameters(), lr=lr_collector)
         self.optimizer_g = optim.Adam(
             self.guide.parameters(), lr=lr_guide)
-        milestones = [80, 160]
+        milestones = [50]
         self.scheduler_c = MultiStepLR(
             self.optimizer_c, milestones=milestones, gamma=0.1)
         self.scheduler_g = MultiStepLR(
@@ -107,7 +107,7 @@ class Agents:
             next_obs = self.preprocess(next_obs)
 
             self.buffers.store(
-                obs, acts, rews[:, 0], rews[:, 1], msg, trs)
+                obs, acts, rews[:, 0], rews[:, 0], msg, trs)
             batch_rew[0] += rews[:, 0]
             batch_rew[1] += rews[:, 1]
 
@@ -208,7 +208,7 @@ class Agents:
                 other_loss, other_kl = self.compute_policy_gradient(
                     other_net, other_dist, other_act, other_adv, other_old_logp)
 
-                if other_kl > 0.01 and not other_done:
+                if other_kl > 0.02 and not other_done:
                     other_done = True
                 else:
                     other_loss.backward(retain_graph=True)
@@ -243,9 +243,9 @@ class Agents:
 
         # Training Collector/Msg/Guide - Collector - Guide
         _, _ = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 60, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         p_loss_c, v_loss_c = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, ret_c, ret_c, 40, msg=msg.detach())
+            self.collector, self.optimizer_c, obs_c, act_c, ret_c, ret_c, 0, msg=msg.detach())
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
 
@@ -258,13 +258,14 @@ class Agents:
         """ Trains the agent for given epochs """
         epoch_rews = []
 
-        for epoch in range(epochs):
+        for epoch in range(1, epochs):
             rew = self.sample_batch()
             epoch_rews.append(rew)
 
             if rew[0] > self.max_rew:
                 self.max_rew = rew[0]
                 self.save()
+
             p_loss_c, v_loss_c, p_loss_g, v_loss_g, msg_ent = self.update()
 
             print('Epoch: {:4}  Collector Rew: {:4}  Guide Rew: {:4}  Msg Ent {:4}'.format(
@@ -341,7 +342,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     # agents.load()
-    agents.train(200)
+    agents.train(400)
 
     import code
     # code.interact(local=locals())
