@@ -21,7 +21,7 @@ PROJECT_PATH = pathlib.Path(
 class Agents:
     def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=3e-3, gamma=0.99, max_steps=500,
                  fc_hidden=64, rnn_hidden=128, batch_size=256, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.01,
-                 num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
+                 num_layers=1, grad_clip=1.0, symbol_num=1, tau=1.0):
         # RNG seed
         random.seed(seed)
         np.random.seed(seed)
@@ -107,7 +107,7 @@ class Agents:
             next_obs = self.preprocess(next_obs)
 
             self.buffers.store(
-                obs, acts, rews[:, 0], rews[:, 0], msg, trs)
+                obs, acts, rews[:, 0], rews[:, 1], msg, trs)
             batch_rew[0] += rews[:, 0]
             batch_rew[1] += rews[:, 1]
 
@@ -342,7 +342,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     # agents.load()
-    agents.train(400)
+    agents.train(200)
 
     import code
     # code.interact(local=locals())
