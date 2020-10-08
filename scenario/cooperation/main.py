@@ -19,7 +19,7 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=3e-3, gamma=0.99, max_steps=500,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, gamma=0.99, max_steps=500,
                  fc_hidden=64, rnn_hidden=128, batch_size=256, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.01,
                  num_layers=1, grad_clip=1.0, symbol_num=1, tau=1.0):
         # RNG seed
@@ -50,11 +50,11 @@ class Agents:
             self.collector.parameters(), lr=lr_collector)
         self.optimizer_g = optim.Adam(
             self.guide.parameters(), lr=lr_guide)
-        milestones = [50]
+        milestones = [1, 2, 3, 4, 80, 900]
         self.scheduler_c = MultiStepLR(
-            self.optimizer_c, milestones=milestones, gamma=0.1)
+            self.optimizer_c, milestones=milestones, gamma=0.3)
         self.scheduler_g = MultiStepLR(
-            self.optimizer_g, milestones=milestones, gamma=0.1)
+            self.optimizer_g, milestones=milestones, gamma=0.3)
         self.batch_size = batch_size
         self.iters = iters
         self.val_criterion = nn.MSELoss()
@@ -342,7 +342,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     # agents.load()
-    agents.train(200)
+    agents.train(500)
 
     import code
     # code.interact(local=locals())
