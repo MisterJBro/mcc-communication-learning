@@ -341,7 +341,7 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    # agents.load()
+    agents.load()
     agents.train(500)
 
     import code
