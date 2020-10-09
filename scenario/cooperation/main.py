@@ -20,7 +20,7 @@ PROJECT_PATH = pathlib.Path(
 
 class Agents:
     def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=1e-3, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=256, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.01,
+                 fc_hidden=64, rnn_hidden=128, batch_size=1024, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.01,
                  num_layers=1, grad_clip=1.0, symbol_num=1, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -304,23 +304,41 @@ class Agents:
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
         episode_rew = 0
         msg_sum = np.zeros(self.symbol_num)
+        values = [[], [], [], []]
+        rest = []
 
         for step in range(self.max_steps):
             import time
-            time.sleep(0.01)
+            # time.sleep(0.01)
 
-            #msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
+            #msg[0] = torch.tensor([0.55]).to(self.device)
 
-            self.envs.envs[0].render()
-            print(msg[0].detach().cpu().numpy())
+            # self.envs.envs[0].render()
+            # print(msg[0].detach().cpu().numpy())
             msg_sum += msg[0].detach().cpu().numpy()
             acts, msg = self.get_actions(obs, msg)
             obs, rews, _, _ = self.envs.step(acts)
             obs = self.preprocess(obs)
 
+            for x in range(self.batch_size):
+                if rews[x][1] == 0.05:
+                    values[self.envs.envs[x].world._get_treasure_tunnel_index()
+                           ].append(msg[x].detach().cpu().numpy()[0])
+                else:
+                    rest.append(msg[x].detach().cpu().numpy()[0])
+
             episode_rew += rews[0][0]
         print('Result reward: ', episode_rew)
         print(msg_sum)
+        values = np.array(values)
+        mean_vals = np.zeros(4)
+        for i in range(4):
+            mean_vals[i] = np.mean(values[i])
+            print('Tunnel ', i, ' Mean and std',
+                  np.mean(values[i]), np.std(values[i]))
+        print(mean_vals)
+        print(np.mean(np.array(rest)), np.std(np.array(rest)))
+
         self.reset_states()
 
     def reset_states(self):
@@ -342,7 +360,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     agents.load()
-    agents.train(500)
+    # agents.train(500)
 
     import code
     # code.interact(local=locals())

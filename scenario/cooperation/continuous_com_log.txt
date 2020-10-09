@@ -1,979 +1,976 @@
-[array([0.1015625 , 8.15027344]), array([0.23828125, 9.54054688]), array([0.23046875, 9.12046484]), array([0.24609375, 9.48628125]), array([ 0.25      , 11.27077734]), array([ 0.27734375, 10.87371875]), array([ 0.28125   , 11.59545703]), array([0.47265625, 8.95105469]), array([ 0.640625  , 10.57635156]), array([ 0.71484375, 12.64589063]), array([0.76171875, 8.9696875 ]), array([0.60546875, 8.84712891]), array([0.78125   , 9.74597656]), array([ 0.77734375, 10.90489453]), array([ 0.9375    , 12.16810938]), array([ 1.        , 13.72045313]), array([ 1.1015625 , 13.09340234]), array([ 1.1640625 , 12.35601563]), array([ 1.33203125, 12.50680859]), array([ 1.21875   , 10.54148828]), array([ 1.48046875, 10.34982031]), array([ 1.62890625, 13.00069531]), array([ 1.95703125, 15.68104297]), array([ 2.1328125 , 16.88849219]), array([ 2.52734375, 17.23237109]), array([ 2.9296875 , 17.32992578]), array([ 3.        , 18.19038672]), array([ 3.484375  , 19.12084766]), array([ 3.796875  , 19.51718359]), array([ 4.03515625, 20.39220313]), array([ 4.296875  , 21.13693359]), array([ 4.6484375 , 20.94133984]), array([ 4.890625  , 21.62815234]), array([ 4.88671875, 22.25086719]), array([ 5.06640625, 22.24656641]), array([ 5.05859375, 22.85916016]), array([ 5.41796875, 22.69889063]), array([ 5.4375    , 23.18054688]), array([ 5.5546875 , 23.34724219]), array([ 5.55859375, 23.52910156]), array([ 5.69140625, 23.46450781]), array([ 5.66796875, 23.55952734]), array([ 5.921875 , 23.5309375]), array([ 5.875     , 23.54360938]), array([ 5.72265625, 23.80773828]), array([ 6.20703125, 23.41179297]), array([ 6.1875    , 23.50090234]), array([ 6.37890625, 23.40462891]), array([ 6.33203125, 23.57289453]), array([ 6.4375    , 23.63205859]), array([ 6.33203125, 23.76534375]), array([ 6.31640625, 23.84089453]), array([ 6.453125  , 23.70674609]), array([ 6.40234375, 23.80220703]), array([ 6.703125 
- , 23.43029688]), array([ 6.51171875, 23.719375  ]), array([ 6.73046875, 23.64094531]), array([ 6.45703125, 23.48944922]), array([ 6.50390625, 23.39174609]), array([ 6.5234375 , 23.93948047]), array([ 6.453125 
- , 23.91712109]), array([ 6.6015625 , 23.77151563]), array([ 6.83203125, 23.75988672]), array([ 6.80078125, 23.80959766]), array([ 7.04296875, 23.48434375]), array([ 7.3984375 , 23.48658594]), array([ 7.4765625, 23.2530625]), array([ 7.51953125, 23.33478125]), array([ 7.79296875, 23.26689063]), array([ 7.78125   , 23.25018359]), array([ 7.94921875, 23.31535547]), array([ 8.140625  , 23.05105859]), array([ 8.30859375, 22.99279688]), array([ 8.203125  , 23.08701953]), array([ 8.05078125, 23.13897656]), array([ 8.1640625 , 23.18270313]), array([ 8.203125  , 23.13062109]), array([ 6.96484375, 23.94061328]), array([ 7.41796875, 23.47789063]), array([ 7.2890625 , 23.64120703]), array([ 7.7890625 , 23.10417188]), array([ 8.28515625, 22.84071875]), array([ 8.4453125 , 23.00726563]), array([ 8.7265625 , 22.59648438]), array([ 8.671875  , 23.01234375]), array([ 8.68359375, 22.94263281]), array([ 8.89453125, 22.944375  ]), array([ 8.80078125, 22.93932422]), array([ 9.09375   , 22.87912109]), array([ 8.953125  , 22.96986719]), array([ 9.109375  , 22.95328906]), array([ 9.296875  , 22.83954297]), array([ 9.17578125, 22.73922266]), array([ 9.20703125, 22.73085156]), array([ 9.25390625, 22.90102734]), array([ 9.2890625 , 22.67833203]), array([ 9.2890625 , 22.87108984]), array([ 9.44921875, 22.83471484]), array([ 9.421875  , 22.91040234]), array([ 9.421875  , 22.89123438]), array([ 9.25      , 23.09257422]), array([ 9.24609375, 22.91144141]), array([ 9.421875  , 22.97228125]), array([ 9.44921875, 22.93849219]), array([ 9.51171875, 23.01003906]), array([ 9.484375  , 22.92629297]), array([ 9.48828125, 23.00723828]), array([ 9.4921875 , 22.89146484]), array([ 9.41015625, 22.84230859]), array([ 9.328125  , 22.89233203]), array([ 9.390625  , 23.12707422]), array([ 9.3828125 , 23.03533203]), array([ 9.48046875, 23.05969531]), array([ 9.44921875, 23.01873828]), array([ 9.5390625 , 22.93346875]), array([ 9.67578125, 22.98282422]), array([ 9.36328125, 23.09532813]), array([ 9.64453125, 22.89149609]), array([ 9.6015625 , 23.24470703]), array([ 9.76953125, 23.26055859]), array([ 9.6953125 , 23.19375781]), array([ 9.7265625 , 23.30619922]), array([ 9.64453125, 23.26907031]), array([ 9.6796875 , 23.11557813]), array([ 9.62109375, 23.26339453]), array([ 9.6171875 , 23.32447266]), array([ 9.640625  , 23.31229688]), array([ 9.7890625 , 23.36507422]), array([ 9.67578125, 23.43891016]), array([ 9.90625   , 23.29802734]), array([ 9.75390625, 23.32303125]), array([ 9.73828125, 23.08746094]), array([ 9.8203125 , 23.43821484]), array([ 9.890625  , 23.43978125]), array([ 9.984375  , 23.36587109]), array([10.03125   , 23.31901563]), array([ 9.93359375, 23.44280859]), array([ 9.80078125, 23.40875781]), array([ 9.94921875, 23.48497266]), array([ 9.921875  , 23.57667188]), array([ 9.85546875, 23.66814453]), array([10.01953125, 23.6200625 ]), array([ 9.8515625 , 23.71960938]), array([ 9.8203125 , 23.57385547]), array([ 9.80859375, 23.51096094]), array([ 9.6796875 , 23.50533594]), array([10.01953125, 23.60533203]), array([ 9.88671875, 23.62024609]), array([ 9.69921875, 23.47215625]), array([ 9.97265625, 23.61820703]), array([10.02734375, 23.59047656]), array([10.03125   , 23.70635937]), array([ 9.80859375, 23.56861328]), array([ 9.87890625, 23.62426563]), array([10.08203125, 23.74961719]), array([ 9.875     , 23.80185156]), array([ 9.98828125, 23.77514453]), array([10.12109375, 23.42063672]), array([10.00390625, 23.70166797]), array([10.05078125, 23.59511719]), array([ 9.87890625, 23.62548438]), array([ 9.83203125, 23.85253906]), array([ 9.2734375 , 24.12334766]), array([ 9.859375  , 23.93158984]), array([ 9.34375   , 24.05739063]), array([ 8.46875   , 24.38589063]), array([ 9.5625    , 23.74015625]), array([ 9.875     , 23.63936719]), array([10.17578125, 23.51866797]), array([10.0625    , 23.54170703]), array([10.12890625, 23.71682422]), array([10.1953125 , 23.51438281]), array([10.04296875, 23.70725781]), array([10.        , 23.50109766]), array([10.04296875, 23.61146875]), array([10.078125  , 23.62228906]), array([10.11328125, 23.52817578]), array([10.046875  , 23.39893359]), array([10.1875    , 23.51462891]), array([10.0625    , 23.62177734]), array([10.0234375 , 23.67708594]), array([ 9.4921875 , 23.86989453]), array([ 8.34375   , 24.25539844]), array([ 6.75390625, 25.03272266]), array([ 6.2265625 , 25.37380859]), array([ 6.45703125, 25.45451953]), array([ 7.05078125, 25.04676563]), array([ 7.34375   , 24.73267188]), array([ 7.640625  , 24.76151172]), array([ 8.19140625, 24.53907422]), array([ 8.72265625, 24.11944922]), array([ 9.203125  , 23.55442969]), array([ 8.78515625, 23.74814453]), array([ 8.34375   , 22.51601953]), array([ 8.71484375, 22.95102344]), array([ 9.296875 , 23.6829375]), array([ 9.48046875, 23.74633594]), array([ 9.80859375, 23.48555078]), array([10.00390625, 23.64608984]), array([ 9.6484375 , 23.69669922]), array([ 9.74609375, 23.84846484]), array([ 9.9609375 , 23.61772266]), array([ 9.87109375, 23.73708203]), array([10.12890625, 23.59937109]), array([ 9.984375  , 23.59210938]), array([10.1015625 , 23.61716797]), array([10.0546875 , 23.57959766]), array([10.1328125 , 23.49683203]), array([10.21875   , 23.49017578]), array([10.26171875, 23.55427734]), array([10.15625   , 23.45644922]), array([10.1484375 , 23.41782813]), array([ 9.95703125, 23.62597656]), array([10.1484375 , 23.53537891]), array([10.2109375 , 23.68162109]), array([ 9.9453125 , 23.62309766]), array([10.        , 23.70501172]), array([10.37109375, 23.55551563]), array([10.10546875, 23.55125391]), array([10.12890625, 23.82041797]), array([10.3515625 , 23.49017188]), array([10.18359375, 23.52861328]), array([10.36328125, 23.48267969]), array([10.3203125 , 23.78188672]), array([10.265625  , 23.60095703]), array([10.06640625, 23.60053516]), array([ 9.9921875 , 23.74868359]), array([10.265625  , 23.51098438]), array([10.1484375, 23.6138125]), array([10.24609375, 23.77327734]), array([10.20703125, 23.53125   ]), array([10.28515625, 23.72213672]), array([10.015625  , 23.56471094]), array([10.28125   , 23.53912891]), array([10.0390625 , 23.68892969]), array([10.34765625, 23.72202344]), array([10.31640625, 23.60483203]), array([10.2578125 , 23.67848828]), array([10.10546875, 23.61860156]), array([10.19921875, 23.60908203]), array([10.2578125 , 23.62685547]), array([ 9.76953125, 23.75861328]), array([10.05859375, 23.85723438]), array([10.43359375, 23.55526562]), array([10.41796875, 23.638625  ]), array([10.20703125, 23.82197656]), array([10.01953125, 23.88308594]), array([10.27734375, 23.58284375]), array([10.2890625 , 23.63253125]), array([10.234375  , 23.72166406]), array([10.31640625, 23.79542578]), array([10.140625  , 23.67912891]), array([10.05078125, 23.61142578]), array([10.1484375 , 23.84410547]), array([10.140625  , 23.76530078]), array([10.30078125, 23.79998828]), array([10.29296875, 23.68178125]), array([10.1640625 , 23.60676172]), array([10.28125   , 23.73977734]), array([10.48046875, 23.64307813]), array([10.42578125, 23.78283203]), array([10.390625  , 23.66500391]), array([10.09765625, 23.73618359]), array([10.3125    , 23.67542578]), array([10.4140625 , 23.65009375]), array([10.296875  , 23.65853906]), array([10.390625  , 23.67726172]), array([10.22265625, 23.83841016]), array([10.07421875, 23.620875  ]), array([10.125     , 23.99366406]), array([10.41796875, 23.62053125]), array([10.29296875, 23.69628516]), array([10.43359375, 23.66771875]), array([10.25390625, 23.79174219]), array([10.15625   , 23.66371094]), array([10.2890625 , 23.64172266]), array([10.0703125 , 23.80698047]), array([10.17578125, 23.66335156]), array([10.09375   , 23.77907813]), array([ 9.609375  , 23.73372266]), array([ 8.48828125, 24.27220703]), array([ 7.875     , 24.79830859]), array([ 7.75      , 24.74570703]), array([ 8.14453125, 24.65138281]), array([ 8.6015625 , 24.32191406]), array([ 9.57421875, 23.99591797]), array([ 9.33203125, 23.930125  ]), array([ 8.4609375 , 24.44662891]), array([ 7.46484375, 24.71250391]), array([ 8.69921875, 23.89686328]), array([ 9.84375   , 23.75521484]), array([ 9.65234375, 23.84508594]), array([10.09765625, 23.72169531]), array([10.25      , 23.64098438]), array([10.4453125 , 23.61689453]), array([10.30859375, 23.7536875 ]), array([10.23828125, 23.60516406]), array([10.171875  , 23.69125781]), array([10.28515625, 23.61935937]), array([10.46484375, 23.722     ]), array([10.1328125, 23.6149375]), array([10.515625  , 23.68054688]), array([10.35546875, 23.67494141]), array([10.515625  , 23.52635937]), array([10.4453125 , 23.66210938]), array([10.38671875, 23.61716797]), array([10.34765625, 23.74401563]), array([10.28125   , 23.65953125]), array([10.34765625, 23.67369922]), array([10.32421875, 23.68913672]), array([10.2265625 , 23.73103906]), array([10.18359375, 23.95640234]), array([10.203125  , 23.74124219]), array([10.15234375, 23.72241797]), array([10.08984375, 23.67016016]), array([ 9.83984375, 23.81560547]), array([ 9.67578125, 23.88397266]), array([ 9.8984375 , 24.00117969]), array([ 9.17578125, 24.15352344]), array([ 9.55859375, 23.78907812]), array([ 9.6171875 , 23.87522656]), array([ 9.96875   , 23.63601563]), array([10.4296875 , 23.68272656]), array([10.34765625, 23.52632422]), array([10.453125  , 23.83986719]), array([10.35546875, 23.51775391]), array([10.3203125 , 23.58722266]), array([10.5703125 , 23.72739062]), array([10.43359375, 23.64761719]), array([10.21484375, 23.66080078]), array([ 8.9375    , 24.25443359]), array([ 7.30859375, 25.10229687]), array([ 6.68359375, 25.27045703]), array([ 7.46875   , 25.03867969]), array([ 7.67578125, 24.80808203]), array([ 8.4765625 , 24.62438281]), array([ 9.06640625, 24.066125  ]), array([ 9.70703125, 23.97106641]), array([ 9.73828125, 23.78252344]), array([10.09765625, 23.69613281]), array([10.2734375, 23.448125 ]), array([10.3828125 , 23.51533203]), array([10.359375  , 23.60377344]), array([10.4921875 , 23.39195703]), array([10.56640625, 23.49897266]), array([10.5703125 , 23.54630859]), array([10.3984375 , 23.62782031]), array([10.390625  , 23.63538672]), array([10.37890625, 23.63347266]), array([ 9.8984375 , 23.90305469]), array([10.19921875, 23.67591016]), array([10.265625  , 23.84764844]), array([10.27734375, 23.71479687]), array([10.37109375, 23.75050781]), array([10.1484375 , 23.78457031]), array([10.3515625 , 23.72855469]), array([10.109375  , 23.74639844]), array([10.05859375, 23.90542578]), array([10.21484375, 23.69371094]), array([10.21484375, 23.73606641]), array([10.23046875, 23.69401172]), array([ 9.8359375 , 23.89742187]), array([10.07421875, 23.76506641]), array([10.0703125, 23.7476875]), array([ 9.7734375 , 23.78869141]), array([10.33203125, 23.6741875 ]), array([10.2734375 , 23.77816797]), array([10.0625    , 23.84014844]), array([ 9.9296875 , 23.88582812]), array([10.23828125, 23.73482812]), array([10.47265625, 23.69530859]), array([10.33203125, 23.67793359]), array([10.375     , 23.69331641]), array([10.4609375 , 23.68567578]), array([10.59765625, 23.54098047]), array([10.359375  , 23.73904687]), array([ 9.51171875, 23.80953516]), array([ 9.91796875, 23.59263281]), array([10.12890625, 23.81722656]), array([ 9.98828125, 23.7113125 ]), array([ 9.07421875, 23.99251563]), array([ 8.71484375, 24.26871094]), array([ 7.50390625, 24.32804297]), array([ 7.4609375, 24.579625 ]), array([ 7.453125  , 24.95398047]), array([ 8.28125   , 24.67235156]), array([ 8.8984375 , 24.37810547]), array([ 9.46875   , 24.16489453]), array([10.2109375 , 23.97321484]), array([10.5234375 , 23.65942188]), array([10.6796875 , 23.60436328]), array([10.63671875, 23.56976953]), array([10.4765625 , 23.70289453]), array([10.421875  , 23.68667187]), array([10.71484375, 23.64117578]), array([10.6171875 , 23.47380078]), array([10.5234375 , 23.68685547]), array([10.67578125, 23.43044531]), array([10.64453125, 23.68407812]), array([10.6875    , 23.43015234]), array([10.57421875, 23.75238281]), array([10.46875   , 23.71636719]), array([10.58984375, 23.66923047]), array([10.64453125, 23.82363672]), array([10.5859375 , 23.70423047]), array([10.3203125 , 23.62092969]), array([10.65625   , 23.45939453]), array([10.54296875, 23.7339375 ]), array([10.69921875, 23.67823047]), array([ 9.875     , 24.05864062]), array([ 9.6953125 , 24.18626562]), array([ 8.953125  , 24.18764063]), array([ 9.7265625 , 23.98885937]), array([ 9.5625    , 23.81849219]), array([ 9.59765625, 24.00085547]), array([ 9.15625   , 24.22732422]), array([ 9.8046875 , 23.85229297]), array([10.28515625, 23.74641406]), array([10.03125   , 23.82332422]), array([10.37890625, 23.71591406]), array([10.4765625 , 23.60965625]), array([10.54296875, 23.84920312]), array([10.671875  , 23.59873828]), array([10.5       , 23.55089453]), array([ 9.84765625, 23.82841797]), array([ 9.78125   , 23.75530859]), array([ 9.8359375, 23.59625  ]), array([10.43359375, 23.57130469]), array([10.25      , 23.62515625]), array([10.37109375, 23.75010937]), array([10.2109375 , 23.67106641]), array([10.52734375, 23.60288672]), array([10.46484375, 23.54614844]), array([10.46875   , 23.54022656]), array([10.38671875, 23.78710156]), array([10.484375  , 23.82611328]), array([10.39453125, 23.65824219]), array([ 9.48828125, 24.09222656]), array([ 9.578125  , 24.24016406]), array([10.26171875, 23.89921875]), array([10.2265625 , 23.85483984]), array([10.3125    , 23.74673047]), array([10.26953125, 23.73338672]), array([10.6015625 , 23.83863281]), array([10.48046875, 23.78259766]), array([10.32421875, 23.77281641]), array([10.54296875, 23.74067969]), array([10.5078125 , 23.80739453]), array([10.2734375 , 23.68126953]), array([10.3984375 , 23.79248437]), array([10.5859375 , 23.66446094]), array([10.44921875, 23.87020703]), array([10.671875  , 23.78742187]), array([10.7109375 , 23.61584766]), array([10.671875, 23.63575 ]), array([10.76953125, 23.64050391]), array([10.53515625, 23.75282812]), array([10.671875  , 23.58723437]), array([10.375     , 23.67031641]), array([10.51171875, 23.61104688]), array([10.6875    , 23.68577344]), array([10.578125  , 23.89578906]), array([10.1640625, 23.8403125]), array([10.67578125, 23.72753906]), array([10.7890625 , 23.64382031]), array([10.7109375 , 23.83412109]), array([10.78125   , 23.54082813]), array([10.640625  , 23.86150781]), array([10.67578125, 23.68979297]), array([10.61328125, 23.80785156]), array([10.39453125, 23.58363672]), array([10.6640625 , 23.56223047]), array([10.44140625, 23.65420312]), array([10.375     , 23.79436328]), array([10.71875   , 23.58966797]), array([10.546875  , 23.76428516]), array([10.65625   , 23.58367187]), array([10.625     , 23.68038281]), array([10.28515625, 23.66373437]), array([10.31640625, 23.93210937]), array([ 9.85546875, 23.88297266]), array([10.40625   , 23.95158203]), array([10.546875  , 23.76109766]), array([10.5625    , 23.63973047]), array([10.41796875, 23.83051563]), array([10.29296875, 23.86421484]), array([10.6875    , 23.93577734]), array([10.80859375, 23.67100391]), array([10.60546875, 23.86463281]), array([10.640625  , 23.48338281]), array([10.703125  , 23.83792578]), array([10.34765625, 23.83906641]), array([ 9.94921875, 24.03479297])] 
-Epoch:    1  Collector Rew: 0.102  Guide Rew:  8.2  Msg Ent  0.0
-Epoch:    2  Collector Rew: 0.238  Guide Rew:  9.5  Msg Ent  0.0
-Epoch:    3  Collector Rew: 0.23  Guide Rew:  9.1  Msg Ent  0.0
-Epoch:    4  Collector Rew: 0.246  Guide Rew:  9.5  Msg Ent  0.0
-Epoch:    5  Collector Rew: 0.25  Guide Rew: 11.3  Msg Ent  0.0
-Epoch:    6  Collector Rew: 0.277  Guide Rew: 10.9  Msg Ent  0.0
-Epoch:    7  Collector Rew: 0.281  Guide Rew: 11.6  Msg Ent  0.0
-Epoch:    8  Collector Rew: 0.473  Guide Rew:  9.0  Msg Ent  0.0
-Epoch:    9  Collector Rew: 0.641  Guide Rew: 10.6  Msg Ent  0.0
-Epoch:   10  Collector Rew: 0.715  Guide Rew: 12.6  Msg Ent  0.0
-Epoch:   11  Collector Rew: 0.762  Guide Rew:  9.0  Msg Ent  0.0
-Epoch:   12  Collector Rew: 0.605  Guide Rew:  8.8  Msg Ent  0.0
-Epoch:   13  Collector Rew: 0.781  Guide Rew:  9.7  Msg Ent  0.0
-Epoch:   14  Collector Rew: 0.777  Guide Rew: 10.9  Msg Ent  0.0
-Epoch:   15  Collector Rew: 0.938  Guide Rew: 12.2  Msg Ent  0.0
-Epoch:   16  Collector Rew:  1.0  Guide Rew: 13.7  Msg Ent  0.0
-Epoch:   17  Collector Rew: 1.102  Guide Rew: 13.1  Msg Ent  0.0
-Epoch:   18  Collector Rew: 1.164  Guide Rew: 12.4  Msg Ent  0.0
-Epoch:   19  Collector Rew: 1.332  Guide Rew: 12.5  Msg Ent  0.0
-Epoch:   20  Collector Rew: 1.219  Guide Rew: 10.5  Msg Ent  0.0
-Epoch:   21  Collector Rew: 1.48  Guide Rew: 10.3  Msg Ent  0.0
-Epoch:   22  Collector Rew: 1.629  Guide Rew: 13.0  Msg Ent  0.0
-Epoch:   23  Collector Rew: 1.957  Guide Rew: 15.7  Msg Ent  0.0
-Epoch:   24  Collector Rew: 2.133  Guide Rew: 16.9  Msg Ent  0.0
-Epoch:   25  Collector Rew: 2.527  Guide Rew: 17.2  Msg Ent  0.0
-Epoch:   26  Collector Rew: 2.93  Guide Rew: 17.3  Msg Ent  0.0
-Epoch:   27  Collector Rew:  3.0  Guide Rew: 18.2  Msg Ent  0.0
-Epoch:   28  Collector Rew: 3.484  Guide Rew: 19.1  Msg Ent  0.0
-Epoch:   29  Collector Rew: 3.797  Guide Rew: 19.5  Msg Ent  0.0
-Epoch:   30  Collector Rew: 4.035  Guide Rew: 20.4  Msg Ent  0.0
-Epoch:   31  Collector Rew: 4.297  Guide Rew: 21.1  Msg Ent  0.0
-Epoch:   32  Collector Rew: 4.648  Guide Rew: 20.9  Msg Ent  0.0
-Epoch:   33  Collector Rew: 4.891  Guide Rew: 21.6  Msg Ent  0.0
-Epoch:   34  Collector Rew: 4.887  Guide Rew: 22.3  Msg Ent  0.0
-Epoch:   35  Collector Rew: 5.066  Guide Rew: 22.2  Msg Ent  0.0
-Epoch:   36  Collector Rew: 5.059  Guide Rew: 22.9  Msg Ent  0.0
-Epoch:   37  Collector Rew: 5.418  Guide Rew: 22.7  Msg Ent  0.0
-Epoch:   38  Collector Rew: 5.438  Guide Rew: 23.2  Msg Ent  0.0
-Epoch:   39  Collector Rew: 5.555  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:   40  Collector Rew: 5.559  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   41  Collector Rew: 5.691  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   42  Collector Rew: 5.668  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   43  Collector Rew: 5.922  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   44  Collector Rew: 5.875  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   45  Collector Rew: 5.723  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:   46  Collector Rew: 6.207  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:   47  Collector Rew: 6.188  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   48  Collector Rew: 6.379  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:   49  Collector Rew: 6.332  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   50  Collector Rew: 6.438  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   51  Collector Rew: 6.332  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:   52  Collector Rew: 6.316  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:   53  Collector Rew: 6.453  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   54  Collector Rew: 6.402  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:   55  Collector Rew: 6.703  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:   56  Collector Rew: 6.512  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   57  Collector Rew: 6.73  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   58  Collector Rew: 6.457  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   59  Collector Rew: 6.504  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:   60  Collector Rew: 6.523  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:   61  Collector Rew: 6.453  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:   62  Collector Rew: 6.602  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:   63  Collector Rew: 6.832  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:   64  Collector Rew: 6.801  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:   65  Collector Rew: 7.043  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   66  Collector Rew: 7.398  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   67  Collector Rew: 7.477  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:   68  Collector Rew: 7.52  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:   69  Collector Rew: 7.793  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:   70  Collector Rew: 7.781  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:   71  Collector Rew: 7.949  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:   72  Collector Rew: 8.141  Guide Rew: 23.1  Msg Ent  0.0
-Epoch:   73  Collector Rew: 8.309  Guide Rew: 23.0  Msg Ent  0.0
-Epoch:   74  Collector Rew: 8.203  Guide Rew: 23.1  Msg Ent  0.0
-Epoch:   75  Collector Rew: 8.051  Guide Rew: 23.1  Msg Ent  0.0
-Epoch:   76  Collector Rew: 8.164  Guide Rew: 23.2  Msg Ent  0.0
-Epoch:   77  Collector Rew: 8.203  Guide Rew: 23.1  Msg Ent  0.0
-Epoch:   78  Collector Rew: 6.965  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:   79  Collector Rew: 7.418  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   80  Collector Rew: 7.289  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   81  Collector Rew: 7.789  Guide Rew: 23.1  Msg Ent  0.0
-Epoch:   82  Collector Rew: 8.285  Guide Rew: 22.8  Msg Ent  0.0
-Epoch:   83  Collector Rew: 8.445  Guide Rew: 23.0  Msg Ent  0.0
-Epoch:   84  Collector Rew: 8.727  Guide Rew: 22.6  Msg Ent  0.0
-Epoch:   85  Collector Rew: 8.672  Guide Rew: 23.0  Msg Ent  0.0
-Epoch:   86  Collector Rew: 8.684  Guide Rew: 22.9  Msg Ent  0.0
-Epoch:   87  Collector Rew: 8.895  Guide Rew: 22.9  Msg Ent  0.0
-Epoch:   88  Collector Rew: 8.801  Guide Rew: 22.9  Msg Ent  0.0
-Epoch:   89  Collector Rew: 9.094  Guide Rew: 22.9  Msg Ent  0.0
-Epoch:   90  Collector Rew: 8.953  Guide Rew: 23.0  Msg Ent  0.0
-Epoch:   91  Collector Rew: 9.109  Guide Rew: 23.0  Msg Ent  0.0
-Epoch:   92  Collector Rew: 9.297  Guide Rew: 22.8  Msg Ent  0.0
-Epoch:   93  Collector Rew: 9.176  Guide Rew: 22.7  Msg Ent  0.0
-Epoch:   94  Collector Rew: 9.207  Guide Rew: 22.7  Msg Ent  0.0
-Epoch:   95  Collector Rew: 9.254  Guide Rew: 22.9  Msg Ent  0.0
-Epoch:   96  Collector Rew: 9.289  Guide Rew: 22.7  Msg Ent  0.0
-Epoch:   97  Collector Rew: 9.289  Guide Rew: 22.9  Msg Ent  0.0
-Epoch:   98  Collector Rew: 9.449  Guide Rew: 22.8  Msg Ent  0.0
-Epoch:   99  Collector Rew: 9.422  Guide Rew: 22.9  Msg Ent  0.0
-Epoch:  100  Collector Rew: 9.422  Guide Rew: 22.9  Msg Ent  0.0
-Epoch:  101  Collector Rew: 9.25  Guide Rew: 23.1  Msg Ent  0.0
-Epoch:  102  Collector Rew: 9.246  Guide Rew: 22.9  Msg Ent  0.0
-Epoch:  103  Collector Rew: 9.422  Guide Rew: 23.0  Msg Ent  0.0
-Epoch:  104  Collector Rew: 9.449  Guide Rew: 22.9  Msg Ent  0.0
-Epoch:  105  Collector Rew: 9.512  Guide Rew: 23.0  Msg Ent  0.0
-Epoch:  106  Collector Rew: 9.484  Guide Rew: 22.9  Msg Ent  0.0
-Epoch:  107  Collector Rew: 9.488  Guide Rew: 23.0  Msg Ent  0.0
-Epoch:  108  Collector Rew: 9.492  Guide Rew: 22.9  Msg Ent  0.0
-Epoch:  109  Collector Rew: 9.41  Guide Rew: 22.8  Msg Ent  0.0
-Epoch:  110  Collector Rew: 9.328  Guide Rew: 22.9  Msg Ent  0.0
-Epoch:  111  Collector Rew: 9.391  Guide Rew: 23.1  Msg Ent  0.0
-Epoch:  112  Collector Rew: 9.383  Guide Rew: 23.0  Msg Ent  0.0
-Epoch:  113  Collector Rew: 9.48  Guide Rew: 23.1  Msg Ent  0.0
-Epoch:  114  Collector Rew: 9.449  Guide Rew: 23.0  Msg Ent  0.0
-Epoch:  115  Collector Rew: 9.539  Guide Rew: 22.9  Msg Ent  0.0
-Epoch:  116  Collector Rew: 9.676  Guide Rew: 23.0  Msg Ent  0.0
-Epoch:  117  Collector Rew: 9.363  Guide Rew: 23.1  Msg Ent  0.0
-Epoch:  118  Collector Rew: 9.645  Guide Rew: 22.9  Msg Ent  0.0
-Epoch:  119  Collector Rew: 9.602  Guide Rew: 23.2  Msg Ent  0.0
-Epoch:  120  Collector Rew: 9.77  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  121  Collector Rew: 9.695  Guide Rew: 23.2  Msg Ent  0.0
-Epoch:  122  Collector Rew: 9.727  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  123  Collector Rew: 9.645  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  124  Collector Rew: 9.68  Guide Rew: 23.1  Msg Ent  0.0
-Epoch:  125  Collector Rew: 9.621  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  126  Collector Rew: 9.617  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  127  Collector Rew: 9.641  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  128  Collector Rew: 9.789  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  129  Collector Rew: 9.676  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  130  Collector Rew: 9.906  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  131  Collector Rew: 9.754  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  132  Collector Rew: 9.738  Guide Rew: 23.1  Msg Ent  0.0
-Epoch:  133  Collector Rew: 9.82  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  134  Collector Rew: 9.891  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  135  Collector Rew: 9.984  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  136  Collector Rew: 10.031  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  137  Collector Rew: 9.934  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  138  Collector Rew: 9.801  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  139  Collector Rew: 9.949  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  140  Collector Rew: 9.922  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  141  Collector Rew: 9.855  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  142  Collector Rew: 10.02  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  143  Collector Rew: 9.852  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  144  Collector Rew: 9.82  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  145  Collector Rew: 9.809  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  146  Collector Rew: 9.68  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  147  Collector Rew: 10.02  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  148  Collector Rew: 9.887  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  149  Collector Rew: 9.699  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  150  Collector Rew: 9.973  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  151  Collector Rew: 10.027  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  152  Collector Rew: 10.031  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  153  Collector Rew: 9.809  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  154  Collector Rew: 9.879  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  155  Collector Rew: 10.082  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  156  Collector Rew: 9.875  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  157  Collector Rew: 9.988  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  158  Collector Rew: 10.121  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  159  Collector Rew: 10.004  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  160  Collector Rew: 10.051  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  161  Collector Rew: 9.879  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  162  Collector Rew: 9.832  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  163  Collector Rew: 9.273  Guide Rew: 24.1  Msg Ent  0.0
-Epoch:  164  Collector Rew: 9.859  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  165  Collector Rew: 9.344  Guide Rew: 24.1  Msg Ent  0.0
-Epoch:  166  Collector Rew: 8.469  Guide Rew: 24.4  Msg Ent  0.0
-Epoch:  167  Collector Rew: 9.562  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  168  Collector Rew: 9.875  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  169  Collector Rew: 10.176  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  170  Collector Rew: 10.062  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  171  Collector Rew: 10.129  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  172  Collector Rew: 10.195  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  173  Collector Rew: 10.043  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  174  Collector Rew: 10.0  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  175  Collector Rew: 10.043  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  176  Collector Rew: 10.078  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  177  Collector Rew: 10.113  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  178  Collector Rew: 10.047  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  179  Collector Rew: 10.188  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  180  Collector Rew: 10.062  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  181  Collector Rew: 10.023  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  182  Collector Rew: 9.492  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  183  Collector Rew: 8.344  Guide Rew: 24.3  Msg Ent  0.0
-Epoch:  184  Collector Rew: 6.754  Guide Rew: 25.0  Msg Ent  0.0
-Epoch:  185  Collector Rew: 6.227  Guide Rew: 25.4  Msg Ent  0.0
-Epoch:  186  Collector Rew: 6.457  Guide Rew: 25.5  Msg Ent  0.0
-Epoch:  187  Collector Rew: 7.051  Guide Rew: 25.0  Msg Ent  0.0
-Epoch:  188  Collector Rew: 7.344  Guide Rew: 24.7  Msg Ent  0.0
-Epoch:  189  Collector Rew: 7.641  Guide Rew: 24.8  Msg Ent  0.0
-Epoch:  190  Collector Rew: 8.191  Guide Rew: 24.5  Msg Ent  0.0
-Epoch:  191  Collector Rew: 8.723  Guide Rew: 24.1  Msg Ent  0.0
-Epoch:  192  Collector Rew: 9.203  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  193  Collector Rew: 8.785  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  194  Collector Rew: 8.344  Guide Rew: 22.5  Msg Ent  0.0
-Epoch:  195  Collector Rew: 8.715  Guide Rew: 23.0  Msg Ent  0.0
-Epoch:  196  Collector Rew: 9.297  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  197  Collector Rew: 9.48  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  198  Collector Rew: 9.809  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  199  Collector Rew: 10.004  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  200  Collector Rew: 9.648  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  201  Collector Rew: 9.746  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  202  Collector Rew: 9.961  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  203  Collector Rew: 9.871  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  204  Collector Rew: 10.129  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  205  Collector Rew: 9.984  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  206  Collector Rew: 10.102  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  207  Collector Rew: 10.055  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  208  Collector Rew: 10.133  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  209  Collector Rew: 10.219  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  210  Collector Rew: 10.262  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  211  Collector Rew: 10.156  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  212  Collector Rew: 10.148  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  213  Collector Rew: 9.957  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  214  Collector Rew: 10.148  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  215  Collector Rew: 10.211  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  216  Collector Rew: 9.945  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  217  Collector Rew: 10.0  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  218  Collector Rew: 10.371  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  219  Collector Rew: 10.105  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  220  Collector Rew: 10.129  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  221  Collector Rew: 10.352  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  222  Collector Rew: 10.184  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  223  Collector Rew: 10.363  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  224  Collector Rew: 10.32  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  225  Collector Rew: 10.266  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  226  Collector Rew: 10.066  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  227  Collector Rew: 9.992  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  228  Collector Rew: 10.266  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  229  Collector Rew: 10.148  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  230  Collector Rew: 10.246  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  231  Collector Rew: 10.207  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  232  Collector Rew: 10.285  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  233  Collector Rew: 10.016  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  234  Collector Rew: 10.281  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  235  Collector Rew: 10.039  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  236  Collector Rew: 10.348  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  237  Collector Rew: 10.316  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  238  Collector Rew: 10.258  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  239  Collector Rew: 10.105  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  240  Collector Rew: 10.199  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  241  Collector Rew: 10.258  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  242  Collector Rew: 9.77  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  243  Collector Rew: 10.059  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  244  Collector Rew: 10.434  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  245  Collector Rew: 10.418  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  246  Collector Rew: 10.207  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  247  Collector Rew: 10.02  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  248  Collector Rew: 10.277  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  249  Collector Rew: 10.289  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  250  Collector Rew: 10.234  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  251  Collector Rew: 10.316  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  252  Collector Rew: 10.141  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  253  Collector Rew: 10.051  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  254  Collector Rew: 10.148  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  255  Collector Rew: 10.141  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  256  Collector Rew: 10.301  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  257  Collector Rew: 10.293  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  258  Collector Rew: 10.164  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  259  Collector Rew: 10.281  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  260  Collector Rew: 10.48  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  261  Collector Rew: 10.426  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  262  Collector Rew: 10.391  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  263  Collector Rew: 10.098  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  264  Collector Rew: 10.312  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  265  Collector Rew: 10.414  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  266  Collector Rew: 10.297  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  267  Collector Rew: 10.391  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  268  Collector Rew: 10.223  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  269  Collector Rew: 10.074  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  270  Collector Rew: 10.125  Guide Rew: 24.0  Msg Ent  0.0
-Epoch:  271  Collector Rew: 10.418  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  272  Collector Rew: 10.293  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  273  Collector Rew: 10.434  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  274  Collector Rew: 10.254  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  275  Collector Rew: 10.156  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  276  Collector Rew: 10.289  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  277  Collector Rew: 10.07  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  278  Collector Rew: 10.176  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  279  Collector Rew: 10.094  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  280  Collector Rew: 9.609  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  281  Collector Rew: 8.488  Guide Rew: 24.3  Msg Ent  0.0
-Epoch:  282  Collector Rew: 7.875  Guide Rew: 24.8  Msg Ent  0.0
-Epoch:  283  Collector Rew: 7.75  Guide Rew: 24.7  Msg Ent  0.0
-Epoch:  284  Collector Rew: 8.145  Guide Rew: 24.7  Msg Ent  0.0
-Epoch:  285  Collector Rew: 8.602  Guide Rew: 24.3  Msg Ent  0.0
-Epoch:  286  Collector Rew: 9.574  Guide Rew: 24.0  Msg Ent  0.0
-Epoch:  287  Collector Rew: 9.332  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  288  Collector Rew: 8.461  Guide Rew: 24.4  Msg Ent  0.0
-Epoch:  289  Collector Rew: 7.465  Guide Rew: 24.7  Msg Ent  0.0
-Epoch:  290  Collector Rew: 8.699  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  291  Collector Rew: 9.844  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  292  Collector Rew: 9.652  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  293  Collector Rew: 10.098  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  294  Collector Rew: 10.25  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  295  Collector Rew: 10.445  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  296  Collector Rew: 10.309  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  297  Collector Rew: 10.238  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  298  Collector Rew: 10.172  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  299  Collector Rew: 10.285  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  300  Collector Rew: 10.465  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  301  Collector Rew: 10.133  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  302  Collector Rew: 10.516  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  303  Collector Rew: 10.355  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  304  Collector Rew: 10.516  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  305  Collector Rew: 10.445  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  306  Collector Rew: 10.387  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  307  Collector Rew: 10.348  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  308  Collector Rew: 10.281  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  309  Collector Rew: 10.348  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  310  Collector Rew: 10.324  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  311  Collector Rew: 10.227  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  312  Collector Rew: 10.184  Guide Rew: 24.0  Msg Ent  0.0
-Epoch:  313  Collector Rew: 10.203  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  314  Collector Rew: 10.152  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  315  Collector Rew: 10.09  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  316  Collector Rew: 9.84  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  317  Collector Rew: 9.676  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  318  Collector Rew: 9.898  Guide Rew: 24.0  Msg Ent  0.0
-Epoch:  319  Collector Rew: 9.176  Guide Rew: 24.2  Msg Ent  0.0
-Epoch:  320  Collector Rew: 9.559  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  321  Collector Rew: 9.617  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  322  Collector Rew: 9.969  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  323  Collector Rew: 10.43  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  324  Collector Rew: 10.348  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  325  Collector Rew: 10.453  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  326  Collector Rew: 10.355  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  327  Collector Rew: 10.32  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  328  Collector Rew: 10.57  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  329  Collector Rew: 10.434  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  330  Collector Rew: 10.215  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  331  Collector Rew: 8.938  Guide Rew: 24.3  Msg Ent  0.0
-Epoch:  332  Collector Rew: 7.309  Guide Rew: 25.1  Msg Ent  0.0
-Epoch:  333  Collector Rew: 6.684  Guide Rew: 25.3  Msg Ent  0.0
-Epoch:  334  Collector Rew: 7.469  Guide Rew: 25.0  Msg Ent  0.0
-Epoch:  335  Collector Rew: 7.676  Guide Rew: 24.8  Msg Ent  0.0
-Epoch:  336  Collector Rew: 8.477  Guide Rew: 24.6  Msg Ent  0.0
-Epoch:  337  Collector Rew: 9.066  Guide Rew: 24.1  Msg Ent  0.0
-Epoch:  338  Collector Rew: 9.707  Guide Rew: 24.0  Msg Ent  0.0
-Epoch:  339  Collector Rew: 9.738  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  340  Collector Rew: 10.098  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  341  Collector Rew: 10.273  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  342  Collector Rew: 10.383  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  343  Collector Rew: 10.359  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  344  Collector Rew: 10.492  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  345  Collector Rew: 10.566  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  346  Collector Rew: 10.57  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  347  Collector Rew: 10.398  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  348  Collector Rew: 10.391  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  349  Collector Rew: 10.379  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  350  Collector Rew: 9.898  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  351  Collector Rew: 10.199  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  352  Collector Rew: 10.266  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  353  Collector Rew: 10.277  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  354  Collector Rew: 10.371  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  355  Collector Rew: 10.148  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  356  Collector Rew: 10.352  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  357  Collector Rew: 10.109  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  358  Collector Rew: 10.059  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  359  Collector Rew: 10.215  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  360  Collector Rew: 10.215  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  361  Collector Rew: 10.23  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  362  Collector Rew: 9.836  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  363  Collector Rew: 10.074  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  364  Collector Rew: 10.07  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  365  Collector Rew: 9.773  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  366  Collector Rew: 10.332  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  367  Collector Rew: 10.273  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  368  Collector Rew: 10.062  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  369  Collector Rew: 9.93  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  370  Collector Rew: 10.238  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  371  Collector Rew: 10.473  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  372  Collector Rew: 10.332  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  373  Collector Rew: 10.375  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  374  Collector Rew: 10.461  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  375  Collector Rew: 10.598  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  376  Collector Rew: 10.359  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  377  Collector Rew: 9.512  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  378  Collector Rew: 9.918  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  379  Collector Rew: 10.129  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  380  Collector Rew: 9.988  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  381  Collector Rew: 9.074  Guide Rew: 24.0  Msg Ent  0.0
-Epoch:  382  Collector Rew: 8.715  Guide Rew: 24.3  Msg Ent  0.0
-Epoch:  383  Collector Rew: 7.504  Guide Rew: 24.3  Msg Ent  0.0
-Epoch:  384  Collector Rew: 7.461  Guide Rew: 24.6  Msg Ent  0.0
-Epoch:  385  Collector Rew: 7.453  Guide Rew: 25.0  Msg Ent  0.0
-Epoch:  386  Collector Rew: 8.281  Guide Rew: 24.7  Msg Ent  0.0
-Epoch:  387  Collector Rew: 8.898  Guide Rew: 24.4  Msg Ent  0.0
-Epoch:  388  Collector Rew: 9.469  Guide Rew: 24.2  Msg Ent  0.0
-Epoch:  389  Collector Rew: 10.211  Guide Rew: 24.0  Msg Ent  0.0
-Epoch:  390  Collector Rew: 10.523  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  391  Collector Rew: 10.68  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  392  Collector Rew: 10.637  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  393  Collector Rew: 10.477  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  394  Collector Rew: 10.422  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  395  Collector Rew: 10.715  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  396  Collector Rew: 10.617  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  397  Collector Rew: 10.523  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  398  Collector Rew: 10.676  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  399  Collector Rew: 10.645  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  400  Collector Rew: 10.688  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  401  Collector Rew: 10.574  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  402  Collector Rew: 10.469  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  403  Collector Rew: 10.59  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  404  Collector Rew: 10.645  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  405  Collector Rew: 10.586  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  406  Collector Rew: 10.32  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  407  Collector Rew: 10.656  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  408  Collector Rew: 10.543  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  409  Collector Rew: 10.699  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  410  Collector Rew: 9.875  Guide Rew: 24.1  Msg Ent  0.0
-Epoch:  411  Collector Rew: 9.695  Guide Rew: 24.2  Msg Ent  0.0
-Epoch:  412  Collector Rew: 8.953  Guide Rew: 24.2  Msg Ent  0.0
-Epoch:  413  Collector Rew: 9.727  Guide Rew: 24.0  Msg Ent  0.0
-Epoch:  414  Collector Rew: 9.562  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  415  Collector Rew: 9.598  Guide Rew: 24.0  Msg Ent  0.0
-Epoch:  416  Collector Rew: 9.156  Guide Rew: 24.2  Msg Ent  0.0
-Epoch:  417  Collector Rew: 9.805  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  418  Collector Rew: 10.285  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  419  Collector Rew: 10.031  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  420  Collector Rew: 10.379  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  421  Collector Rew: 10.477  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  422  Collector Rew: 10.543  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  423  Collector Rew: 10.672  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  424  Collector Rew: 10.5  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  425  Collector Rew: 9.848  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  426  Collector Rew: 9.781  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  427  Collector Rew: 9.836  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  428  Collector Rew: 10.434  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  429  Collector Rew: 10.25  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  430  Collector Rew: 10.371  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  431  Collector Rew: 10.211  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  432  Collector Rew: 10.527  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  433  Collector Rew: 10.465  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  434  Collector Rew: 10.469  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  435  Collector Rew: 10.387  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  436  Collector Rew: 10.484  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  437  Collector Rew: 10.395  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  438  Collector Rew: 9.488  Guide Rew: 24.1  Msg Ent  0.0
-Epoch:  439  Collector Rew: 9.578  Guide Rew: 24.2  Msg Ent  0.0
-Epoch:  440  Collector Rew: 10.262  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  441  Collector Rew: 10.227  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  442  Collector Rew: 10.312  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  443  Collector Rew: 10.27  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  444  Collector Rew: 10.602  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  445  Collector Rew: 10.48  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  446  Collector Rew: 10.324  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  447  Collector Rew: 10.543  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  448  Collector Rew: 10.508  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  449  Collector Rew: 10.273  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  450  Collector Rew: 10.398  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  451  Collector Rew: 10.586  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  452  Collector Rew: 10.449  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  453  Collector Rew: 10.672  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  454  Collector Rew: 10.711  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  455  Collector Rew: 10.672  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  456  Collector Rew: 10.77  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  457  Collector Rew: 10.535  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  458  Collector Rew: 10.672  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  459  Collector Rew: 10.375  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  460  Collector Rew: 10.512  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  461  Collector Rew: 10.688  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  462  Collector Rew: 10.578  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  463  Collector Rew: 10.164  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  464  Collector Rew: 10.027  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  465  Collector Rew: 10.281  Guide Rew: 24.0  Msg Ent  0.0
-Epoch:  466  Collector Rew: 9.715  Guide Rew: 24.1  Msg Ent  0.0
-Epoch:  467  Collector Rew: 10.617  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  468  Collector Rew: 10.578  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  469  Collector Rew: 10.566  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  470  Collector Rew: 10.676  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  471  Collector Rew: 10.789  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  472  Collector Rew: 10.711  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  473  Collector Rew: 10.781  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  474  Collector Rew: 10.641  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  475  Collector Rew: 10.676  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  476  Collector Rew: 10.613  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  477  Collector Rew: 10.395  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  478  Collector Rew: 10.664  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  479  Collector Rew: 10.441  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  480  Collector Rew: 10.375  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  481  Collector Rew: 10.719  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  482  Collector Rew: 10.547  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  483  Collector Rew: 10.656  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  484  Collector Rew: 10.625  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  485  Collector Rew: 10.285  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  486  Collector Rew: 10.316  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  487  Collector Rew: 9.855  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  488  Collector Rew: 10.406  Guide Rew: 24.0  Msg Ent  0.0
-Epoch:  489  Collector Rew: 10.547  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  490  Collector Rew: 10.562  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  491  Collector Rew: 10.418  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  492  Collector Rew: 10.293  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  493  Collector Rew: 10.688  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  494  Collector Rew: 10.809  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  495  Collector Rew: 10.605  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  496  Collector Rew: 10.641  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  497  Collector Rew: 10.703  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  498  Collector Rew: 10.348  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  499  Collector Rew: 9.949  Guide Rew: 24.0  Msg Ent  0.0
-Epoch:    1  Collector Rew: 10.398  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:    2  Collector Rew: 10.547  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:    3  Collector Rew: 10.629  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:    4  Collector Rew: 10.723  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:    5  Collector Rew: 10.547  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:    6  Collector Rew: 10.547  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:    7  Collector Rew: 10.648  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:    8  Collector Rew: 10.922  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:    9  Collector Rew: 11.18  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   10  Collector Rew: 10.914  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   11  Collector Rew: 10.691  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   12  Collector Rew: 10.844  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:   13  Collector Rew: 11.078  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   14  Collector Rew: 11.023  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:   15  Collector Rew: 11.047  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   16  Collector Rew: 10.777  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   17  Collector Rew: 10.668  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:   18  Collector Rew: 10.934  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   19  Collector Rew: 10.852  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   20  Collector Rew: 11.023  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   21  Collector Rew: 10.598  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:   22  Collector Rew: 10.801  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:   23  Collector Rew: 10.953  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   24  Collector Rew: 10.863  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   25  Collector Rew: 10.492  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:   26  Collector Rew: 10.727  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:   27  Collector Rew: 11.016  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   28  Collector Rew: 10.84  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   29  Collector Rew: 10.68  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   30  Collector Rew: 10.699  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   31  Collector Rew: 11.176  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   32  Collector Rew: 11.074  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   33  Collector Rew: 10.832  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:   34  Collector Rew: 10.719  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:   35  Collector Rew: 11.004  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   36  Collector Rew: 10.824  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   37  Collector Rew: 10.883  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   38  Collector Rew: 11.07  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   39  Collector Rew: 10.918  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   40  Collector Rew: 11.02  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   41  Collector Rew: 11.027  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   42  Collector Rew: 10.93  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   43  Collector Rew: 10.824  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   44  Collector Rew: 10.863  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   45  Collector Rew: 11.062  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:   46  Collector Rew: 10.867  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   47  Collector Rew: 10.895  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   48  Collector Rew: 10.914  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   49  Collector Rew: 11.156  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   50  Collector Rew: 10.664  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   51  Collector Rew: 10.703  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   52  Collector Rew: 10.961  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   53  Collector Rew: 11.164  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:   54  Collector Rew: 11.129  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   55  Collector Rew: 11.129  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   56  Collector Rew: 11.023  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   57  Collector Rew: 11.16  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   58  Collector Rew: 10.992  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   59  Collector Rew: 10.832  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   60  Collector Rew: 11.301  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:   61  Collector Rew: 11.23  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:   62  Collector Rew: 11.246  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   63  Collector Rew: 10.953  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:   64  Collector Rew: 11.062  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:   65  Collector Rew: 11.012  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   66  Collector Rew: 11.035  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   67  Collector Rew: 11.242  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   68  Collector Rew: 11.18  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   69  Collector Rew: 11.094  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:   70  Collector Rew: 11.223  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   71  Collector Rew: 10.969  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:   72  Collector Rew: 10.863  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   73  Collector Rew: 11.023  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   74  Collector Rew: 11.082  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   75  Collector Rew: 11.152  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   76  Collector Rew: 11.086  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   77  Collector Rew: 11.102  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   78  Collector Rew: 11.078  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   79  Collector Rew: 11.09  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   80  Collector Rew: 10.875  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   81  Collector Rew: 10.891  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   82  Collector Rew: 10.852  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   83  Collector Rew: 11.27  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   84  Collector Rew: 10.973  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   85  Collector Rew: 11.121  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   86  Collector Rew: 11.117  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   87  Collector Rew: 11.27  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:   88  Collector Rew: 11.219  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   89  Collector Rew: 11.203  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   90  Collector Rew: 10.988  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   91  Collector Rew: 11.117  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   92  Collector Rew: 10.973  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   93  Collector Rew: 11.152  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   94  Collector Rew: 11.109  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   95  Collector Rew: 11.059  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:   96  Collector Rew: 11.059  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   97  Collector Rew: 11.012  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:   98  Collector Rew: 11.273  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:   99  Collector Rew: 11.043  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  100  Collector Rew: 11.254  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  101  Collector Rew: 11.109  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  102  Collector Rew: 11.055  Guide Rew: 23.9  Msg Ent  0.0
-Epoch:  103  Collector Rew: 11.164  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  104  Collector Rew: 11.027  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  105  Collector Rew: 11.098  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  106  Collector Rew: 11.074  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  107  Collector Rew: 11.266  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  108  Collector Rew: 11.105  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  109  Collector Rew: 11.074  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  110  Collector Rew: 11.117  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  111  Collector Rew: 11.145  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  112  Collector Rew: 11.297  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  113  Collector Rew: 11.062  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  114  Collector Rew: 11.09  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  115  Collector Rew: 11.277  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  116  Collector Rew: 11.066  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  117  Collector Rew: 11.082  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  118  Collector Rew: 11.215  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  119  Collector Rew: 11.164  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  120  Collector Rew: 11.219  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  121  Collector Rew: 11.238  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  122  Collector Rew: 11.125  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  123  Collector Rew: 11.273  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  124  Collector Rew: 11.051  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  125  Collector Rew: 11.023  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  126  Collector Rew: 10.988  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  127  Collector Rew: 11.055  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  128  Collector Rew: 10.953  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  129  Collector Rew: 11.199  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  130  Collector Rew: 10.98  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  131  Collector Rew: 10.965  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  132  Collector Rew: 11.207  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  133  Collector Rew: 11.27  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  134  Collector Rew: 11.023  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  135  Collector Rew: 11.113  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  136  Collector Rew: 11.273  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  137  Collector Rew: 11.371  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  138  Collector Rew: 11.102  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  139  Collector Rew: 11.02  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  140  Collector Rew: 11.242  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  141  Collector Rew: 11.316  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  142  Collector Rew: 11.277  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  143  Collector Rew: 11.277  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  144  Collector Rew: 11.293  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  145  Collector Rew: 11.074  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  146  Collector Rew: 11.172  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  147  Collector Rew: 11.23  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  148  Collector Rew: 11.367  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  149  Collector Rew: 11.188  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  150  Collector Rew: 11.211  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  151  Collector Rew: 11.219  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  152  Collector Rew: 11.281  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  153  Collector Rew: 11.184  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  154  Collector Rew: 11.25  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  155  Collector Rew: 11.402  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  156  Collector Rew: 11.074  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  157  Collector Rew: 11.246  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  158  Collector Rew: 11.039  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  159  Collector Rew: 11.039  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  160  Collector Rew: 10.977  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  161  Collector Rew: 11.234  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  162  Collector Rew: 11.133  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  163  Collector Rew: 11.223  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  164  Collector Rew: 11.402  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  165  Collector Rew: 11.191  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  166  Collector Rew: 11.277  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  167  Collector Rew: 11.375  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  168  Collector Rew: 11.398  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  169  Collector Rew: 11.285  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  170  Collector Rew: 11.375  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  171  Collector Rew: 11.32  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  172  Collector Rew: 11.395  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  173  Collector Rew: 11.258  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  174  Collector Rew: 11.215  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  175  Collector Rew: 11.395  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  176  Collector Rew: 11.25  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  177  Collector Rew: 11.305  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  178  Collector Rew: 11.156  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  179  Collector Rew: 11.344  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  180  Collector Rew: 11.078  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  181  Collector Rew: 11.664  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  182  Collector Rew: 11.266  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  183  Collector Rew: 11.094  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  184  Collector Rew: 11.219  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  185  Collector Rew: 11.078  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  186  Collector Rew: 11.367  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  187  Collector Rew: 11.352  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  188  Collector Rew: 11.156  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  189  Collector Rew: 11.375  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  190  Collector Rew: 11.387  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  191  Collector Rew: 11.051  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  192  Collector Rew: 11.375  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  193  Collector Rew: 11.164  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  194  Collector Rew: 11.43  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  195  Collector Rew: 11.129  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  196  Collector Rew: 11.223  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  197  Collector Rew: 11.301  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  198  Collector Rew: 11.383  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  199  Collector Rew: 11.387  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  200  Collector Rew: 11.293  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  201  Collector Rew: 11.336  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  202  Collector Rew: 11.273  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  203  Collector Rew: 11.469  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  204  Collector Rew: 11.27  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  205  Collector Rew: 11.219  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  206  Collector Rew: 11.281  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  207  Collector Rew: 11.418  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  208  Collector Rew: 11.281  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  209  Collector Rew: 11.145  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  210  Collector Rew: 11.219  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  211  Collector Rew: 11.176  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  212  Collector Rew: 11.246  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  213  Collector Rew: 11.48  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  214  Collector Rew: 11.246  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  215  Collector Rew: 11.367  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  216  Collector Rew: 11.215  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  217  Collector Rew: 11.465  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  218  Collector Rew: 11.348  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  219  Collector Rew: 11.324  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  220  Collector Rew: 11.363  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  221  Collector Rew: 11.141  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  222  Collector Rew: 11.5  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  223  Collector Rew: 11.383  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  224  Collector Rew: 11.043  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  225  Collector Rew: 11.316  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  226  Collector Rew: 11.441  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  227  Collector Rew: 11.383  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  228  Collector Rew: 11.375  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  229  Collector Rew: 11.527  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  230  Collector Rew: 11.344  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  231  Collector Rew: 11.395  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  232  Collector Rew: 11.219  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  233  Collector Rew: 11.328  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  234  Collector Rew: 11.176  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  235  Collector Rew: 11.215  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  236  Collector Rew: 11.445  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  237  Collector Rew: 11.438  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  238  Collector Rew: 11.176  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  239  Collector Rew: 11.195  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  240  Collector Rew: 11.602  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  241  Collector Rew: 11.414  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  242  Collector Rew: 11.266  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  243  Collector Rew: 11.449  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  244  Collector Rew: 11.488  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  245  Collector Rew: 11.105  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  246  Collector Rew: 11.188  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  247  Collector Rew: 11.348  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  248  Collector Rew: 11.309  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  249  Collector Rew: 11.176  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  250  Collector Rew: 11.383  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  251  Collector Rew: 11.266  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  252  Collector Rew: 11.285  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  253  Collector Rew: 11.461  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  254  Collector Rew: 11.328  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  255  Collector Rew: 11.293  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  256  Collector Rew: 11.367  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  257  Collector Rew: 11.266  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  258  Collector Rew: 11.457  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  259  Collector Rew: 11.406  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  260  Collector Rew: 11.383  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  261  Collector Rew: 11.336  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  262  Collector Rew: 11.273  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  263  Collector Rew: 11.414  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  264  Collector Rew: 11.098  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  265  Collector Rew: 11.133  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  266  Collector Rew: 11.441  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  267  Collector Rew: 11.562  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  268  Collector Rew: 11.148  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  269  Collector Rew: 11.25  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  270  Collector Rew: 11.551  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  271  Collector Rew: 11.34  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  272  Collector Rew: 11.398  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  273  Collector Rew: 11.312  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  274  Collector Rew: 11.43  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  275  Collector Rew: 11.488  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  276  Collector Rew: 11.473  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  277  Collector Rew: 11.445  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  278  Collector Rew: 10.988  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  279  Collector Rew: 11.121  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  280  Collector Rew: 11.086  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  281  Collector Rew: 11.336  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  282  Collector Rew: 11.441  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  283  Collector Rew: 11.27  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  284  Collector Rew: 11.422  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  285  Collector Rew: 11.309  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  286  Collector Rew: 11.457  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  287  Collector Rew: 11.234  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  288  Collector Rew: 11.324  Guide Rew: 23.2  Msg Ent  0.0
-Epoch:  289  Collector Rew: 11.215  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  290  Collector Rew: 11.422  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  291  Collector Rew: 11.387  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  292  Collector Rew: 11.422  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  293  Collector Rew: 11.227  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  294  Collector Rew: 11.375  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  295  Collector Rew: 11.379  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  296  Collector Rew: 11.445  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  297  Collector Rew: 11.543  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  298  Collector Rew: 11.422  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  299  Collector Rew: 11.48  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  300  Collector Rew: 11.52  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  301  Collector Rew: 11.418  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  302  Collector Rew: 11.375  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  303  Collector Rew: 11.316  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  304  Collector Rew: 11.281  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  305  Collector Rew: 11.484  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  306  Collector Rew: 11.25  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  307  Collector Rew: 11.18  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  308  Collector Rew: 11.531  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  309  Collector Rew: 11.328  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  310  Collector Rew: 11.34  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  311  Collector Rew: 11.516  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  312  Collector Rew: 11.363  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  313  Collector Rew: 11.41  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  314  Collector Rew: 11.367  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  315  Collector Rew: 11.355  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  316  Collector Rew: 11.293  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  317  Collector Rew: 11.336  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  318  Collector Rew: 11.312  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  319  Collector Rew: 11.199  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  320  Collector Rew: 11.488  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  321  Collector Rew: 11.32  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  322  Collector Rew: 11.301  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  323  Collector Rew: 11.32  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  324  Collector Rew: 11.23  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  325  Collector Rew: 11.223  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  326  Collector Rew: 11.371  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  327  Collector Rew: 11.363  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  328  Collector Rew: 11.312  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  329  Collector Rew: 11.324  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  330  Collector Rew: 11.488  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  331  Collector Rew: 11.402  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  332  Collector Rew: 11.523  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  333  Collector Rew: 11.363  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  334  Collector Rew: 11.246  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  335  Collector Rew: 11.293  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  336  Collector Rew: 11.457  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  337  Collector Rew: 11.402  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  338  Collector Rew: 11.516  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  339  Collector Rew: 11.336  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  340  Collector Rew: 11.391  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  341  Collector Rew: 11.246  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  342  Collector Rew: 11.387  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  343  Collector Rew: 11.363  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  344  Collector Rew: 11.406  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  345  Collector Rew: 11.434  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  346  Collector Rew: 11.289  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  347  Collector Rew: 11.363  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  348  Collector Rew: 11.48  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  349  Collector Rew: 11.258  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  350  Collector Rew: 11.109  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  351  Collector Rew: 11.234  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  352  Collector Rew: 11.488  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  353  Collector Rew: 11.41  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  354  Collector Rew: 11.285  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  355  Collector Rew: 11.41  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  356  Collector Rew: 11.508  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  357  Collector Rew: 11.082  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  358  Collector Rew: 11.531  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  359  Collector Rew: 11.414  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  360  Collector Rew: 11.32  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  361  Collector Rew: 11.512  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  362  Collector Rew: 11.438  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  363  Collector Rew: 11.293  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  364  Collector Rew: 11.285  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  365  Collector Rew: 11.48  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  366  Collector Rew: 11.281  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  367  Collector Rew: 11.316  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  368  Collector Rew: 11.418  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  369  Collector Rew: 11.348  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  370  Collector Rew: 11.25  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  371  Collector Rew: 11.191  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  372  Collector Rew: 11.566  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  373  Collector Rew: 11.402  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  374  Collector Rew: 11.34  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  375  Collector Rew: 11.523  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  376  Collector Rew: 11.125  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  377  Collector Rew: 11.316  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  378  Collector Rew: 11.258  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  379  Collector Rew: 11.406  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  380  Collector Rew: 11.453  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  381  Collector Rew: 11.395  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  382  Collector Rew: 11.438  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  383  Collector Rew: 11.41  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  384  Collector Rew: 11.324  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  385  Collector Rew: 11.344  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  386  Collector Rew: 11.25  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  387  Collector Rew: 11.332  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  388  Collector Rew: 11.645  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  389  Collector Rew: 11.371  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  390  Collector Rew: 11.457  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  391  Collector Rew: 11.336  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  392  Collector Rew: 11.285  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  393  Collector Rew: 11.273  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  394  Collector Rew: 11.379  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  395  Collector Rew: 11.449  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  396  Collector Rew: 11.371  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  397  Collector Rew: 11.422  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  398  Collector Rew: 11.406  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  399  Collector Rew: 11.57  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  400  Collector Rew: 11.578  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  401  Collector Rew: 11.543  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  402  Collector Rew: 11.516  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  403  Collector Rew: 11.43  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  404  Collector Rew: 11.516  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  405  Collector Rew: 11.352  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  406  Collector Rew: 11.34  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  407  Collector Rew: 11.422  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  408  Collector Rew: 11.527  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  409  Collector Rew: 11.395  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  410  Collector Rew: 11.316  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  411  Collector Rew: 11.312  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  412  Collector Rew: 11.5  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  413  Collector Rew: 11.32  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  414  Collector Rew: 11.5  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  415  Collector Rew: 11.59  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  416  Collector Rew: 11.328  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  417  Collector Rew: 11.543  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  418  Collector Rew: 11.398  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  419  Collector Rew: 11.273  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  420  Collector Rew: 11.598  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  421  Collector Rew: 11.422  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  422  Collector Rew: 11.398  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  423  Collector Rew: 11.383  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  424  Collector Rew: 11.266  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  425  Collector Rew: 11.426  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  426  Collector Rew: 11.367  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  427  Collector Rew: 11.555  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  428  Collector Rew: 11.52  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  429  Collector Rew: 11.359  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  430  Collector Rew: 11.363  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  431  Collector Rew: 11.309  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  432  Collector Rew: 11.441  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  433  Collector Rew: 11.262  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  434  Collector Rew: 11.336  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  435  Collector Rew: 11.465  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  436  Collector Rew: 11.578  Guide Rew: 23.8  Msg Ent  0.0
-Epoch:  437  Collector Rew: 11.469  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  438  Collector Rew: 11.293  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  439  Collector Rew: 11.574  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  440  Collector Rew: 11.449  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  441  Collector Rew: 11.445  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  442  Collector Rew: 11.309  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  443  Collector Rew: 11.465  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  444  Collector Rew: 11.527  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  445  Collector Rew: 11.445  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  446  Collector Rew: 11.402  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  447  Collector Rew: 11.379  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  448  Collector Rew: 11.355  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  449  Collector Rew: 11.496  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  450  Collector Rew: 11.125  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  451  Collector Rew: 11.574  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  452  Collector Rew: 11.34  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  453  Collector Rew: 11.426  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  454  Collector Rew: 11.551  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  455  Collector Rew: 11.406  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  456  Collector Rew: 11.535  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  457  Collector Rew: 11.523  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  458  Collector Rew: 11.387  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  459  Collector Rew: 11.441  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  460  Collector Rew: 11.547  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  461  Collector Rew: 11.457  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  462  Collector Rew: 11.465  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  463  Collector Rew: 11.324  Guide Rew: 23.3  Msg Ent  0.0
-Epoch:  464  Collector Rew: 11.434  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  465  Collector Rew: 11.496  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  466  Collector Rew: 11.582  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  467  Collector Rew: 11.523  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  468  Collector Rew: 11.477  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  469  Collector Rew: 11.324  Guide Rew: 23.6  Msg Ent  0.0
-Epoch:  470  Collector Rew: 11.449  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  471  Collector Rew: 11.398  Guide Rew: 23.5  Msg Ent  0.0
-Epoch:  472  Collector Rew: 11.496  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  473  Collector Rew: 11.41  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  474  Collector Rew: 11.387  Guide Rew: 23.4  Msg Ent  0.0
-Epoch:  475  Collector Rew: 11.363  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  476  Collector Rew: 11.473  Guide Rew: 23.7  Msg Ent  0.0
-Epoch:  477  Collector Rew: 11.496  Guide Rew: 23.6  Msg Ent  0.0
+[ 8.2 ],
+[ 9.5 ],
+[ 9.1 ],
+[ 9.5 ],
+[11.3 ],
+[10.9 ],
+[11.6 ],
+[ 9.0 ],
+[10.6 ],
+[12.6 ],
+[ 9.0 ],
+[ 8.8 ],
+[ 9.7 ],
+[10.9 ],
+[12.2 ],
+[13.7 ],
+[13.1 ],
+[12.4 ],
+[12.5 ],
+[10.5 ],
+[10.3 ],
+[13.0 ],
+[15.7 ],
+[16.9 ],
+[17.2 ],
+[17.3 ],
+[18.2 ],
+[19.1 ],
+[19.5 ],
+[20.4 ],
+[21.1 ],
+[20.9 ],
+[21.6 ],
+[22.3 ],
+[22.2 ],
+[22.9 ],
+[22.7 ],
+[23.2 ],
+[23.3 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.8 ],
+[23.4 ],
+[23.5 ],
+[23.4 ],
+[23.6 ],
+[23.6 ],
+[23.8 ],
+[23.8 ],
+[23.7 ],
+[23.8 ],
+[23.4 ],
+[23.7 ],
+[23.6 ],
+[23.5 ],
+[23.4 ],
+[23.9 ],
+[23.9 ],
+[23.8 ],
+[23.8 ],
+[23.8 ],
+[23.5 ],
+[23.5 ],
+[23.3 ],
+[23.3 ],
+[23.3 ],
+[23.3 ],
+[23.3 ],
+[23.1 ],
+[23.0 ],
+[23.1 ],
+[23.1 ],
+[23.2 ],
+[23.1 ],
+[23.9 ],
+[23.5 ],
+[23.6 ],
+[23.1 ],
+[22.8 ],
+[23.0 ],
+[22.6 ],
+[23.0 ],
+[22.9 ],
+[22.9 ],
+[22.9 ],
+[22.9 ],
+[23.0 ],
+[23.0 ],
+[22.8 ],
+[22.7 ],
+[22.7 ],
+[22.9 ],
+[22.7 ],
+[22.9 ],
+[22.8 ],
+[22.9 ],
+[22.9 ],
+[23.1 ],
+[22.9 ],
+[23.0 ],
+[22.9 ],
+[23.0 ],
+[22.9 ],
+[23.0 ],
+[22.9 ],
+[22.8 ],
+[22.9 ],
+[23.1 ],
+[23.0 ],
+[23.1 ],
+[23.0 ],
+[22.9 ],
+[23.0 ],
+[23.1 ],
+[22.9 ],
+[23.2 ],
+[23.3 ],
+[23.2 ],
+[23.3 ],
+[23.3 ],
+[23.1 ],
+[23.3 ],
+[23.3 ],
+[23.3 ],
+[23.4 ],
+[23.4 ],
+[23.3 ],
+[23.3 ],
+[23.1 ],
+[23.4 ],
+[23.4 ],
+[23.4 ],
+[23.3 ],
+[23.4 ],
+[23.4 ],
+[23.5 ],
+[23.6 ],
+[23.7 ],
+[23.6 ],
+[23.7 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.7 ],
+[23.6 ],
+[23.6 ],
+[23.7 ],
+[23.8 ],
+[23.8 ],
+[23.4 ],
+[23.7 ],
+[23.6 ],
+[23.6 ],
+[23.9 ],
+[24.1 ],
+[23.9 ],
+[24.1 ],
+[24.4 ],
+[23.7 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.7 ],
+[23.5 ],
+[23.7 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.4 ],
+[23.5 ],
+[23.6 ],
+[23.7 ],
+[23.9 ],
+[24.3 ],
+[25.0 ],
+[25.4 ],
+[25.5 ],
+[25.0 ],
+[24.7 ],
+[24.8 ],
+[24.5 ],
+[24.1 ],
+[23.6 ],
+[23.7 ],
+[22.5 ],
+[23.0 ],
+[23.7 ],
+[23.7 ],
+[23.5 ],
+[23.6 ],
+[23.7 ],
+[23.8 ],
+[23.6 ],
+[23.7 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.4 ],
+[23.6 ],
+[23.5 ],
+[23.7 ],
+[23.6 ],
+[23.7 ],
+[23.6 ],
+[23.6 ],
+[23.8 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.8 ],
+[23.6 ],
+[23.6 ],
+[23.7 ],
+[23.5 ],
+[23.6 ],
+[23.8 ],
+[23.5 ],
+[23.7 ],
+[23.6 ],
+[23.5 ],
+[23.7 ],
+[23.7 ],
+[23.6 ],
+[23.7 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.8 ],
+[23.9 ],
+[23.6 ],
+[23.6 ],
+[23.8 ],
+[23.9 ],
+[23.6 ],
+[23.6 ],
+[23.7 ],
+[23.8 ],
+[23.7 ],
+[23.6 ],
+[23.8 ],
+[23.8 ],
+[23.8 ],
+[23.7 ],
+[23.6 ],
+[23.7 ],
+[23.6 ],
+[23.8 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.8 ],
+[23.6 ],
+[24.0 ],
+[23.6 ],
+[23.7 ],
+[23.7 ],
+[23.8 ],
+[23.7 ],
+[23.6 ],
+[23.8 ],
+[23.7 ],
+[23.8 ],
+[23.7 ],
+[24.3 ],
+[24.8 ],
+[24.7 ],
+[24.7 ],
+[24.3 ],
+[24.0 ],
+[23.9 ],
+[24.4 ],
+[24.7 ],
+[23.9 ],
+[23.8 ],
+[23.8 ],
+[23.7 ],
+[23.6 ],
+[23.6 ],
+[23.8 ],
+[23.6 ],
+[23.7 ],
+[23.6 ],
+[23.7 ],
+[23.6 ],
+[23.7 ],
+[23.7 ],
+[23.5 ],
+[23.7 ],
+[23.6 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[24.0 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.8 ],
+[23.9 ],
+[24.0 ],
+[24.2 ],
+[23.8 ],
+[23.9 ],
+[23.6 ],
+[23.7 ],
+[23.5 ],
+[23.8 ],
+[23.5 ],
+[23.6 ],
+[23.7 ],
+[23.6 ],
+[23.7 ],
+[24.3 ],
+[25.1 ],
+[25.3 ],
+[25.0 ],
+[24.8 ],
+[24.6 ],
+[24.1 ],
+[24.0 ],
+[23.8 ],
+[23.7 ],
+[23.4 ],
+[23.5 ],
+[23.6 ],
+[23.4 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.9 ],
+[23.7 ],
+[23.8 ],
+[23.7 ],
+[23.8 ],
+[23.8 ],
+[23.7 ],
+[23.7 ],
+[23.9 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.9 ],
+[23.8 ],
+[23.7 ],
+[23.8 ],
+[23.7 ],
+[23.8 ],
+[23.8 ],
+[23.9 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.5 ],
+[23.7 ],
+[23.8 ],
+[23.6 ],
+[23.8 ],
+[23.7 ],
+[24.0 ],
+[24.3 ],
+[24.3 ],
+[24.6 ],
+[25.0 ],
+[24.7 ],
+[24.4 ],
+[24.2 ],
+[24.0 ],
+[23.7 ],
+[23.6 ],
+[23.6 ],
+[23.7 ],
+[23.7 ],
+[23.6 ],
+[23.5 ],
+[23.7 ],
+[23.4 ],
+[23.7 ],
+[23.4 ],
+[23.8 ],
+[23.7 ],
+[23.7 ],
+[23.8 ],
+[23.7 ],
+[23.6 ],
+[23.5 ],
+[23.7 ],
+[23.7 ],
+[24.1 ],
+[24.2 ],
+[24.2 ],
+[24.0 ],
+[23.8 ],
+[24.0 ],
+[24.2 ],
+[23.9 ],
+[23.7 ],
+[23.8 ],
+[23.7 ],
+[23.6 ],
+[23.8 ],
+[23.6 ],
+[23.6 ],
+[23.8 ],
+[23.8 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.8 ],
+[23.7 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.8 ],
+[23.8 ],
+[23.7 ],
+[24.1 ],
+[24.2 ],
+[23.9 ],
+[23.9 ],
+[23.7 ],
+[23.7 ],
+[23.8 ],
+[23.8 ],
+[23.8 ],
+[23.7 ],
+[23.8 ],
+[23.7 ],
+[23.8 ],
+[23.7 ],
+[23.9 ],
+[23.8 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.8 ],
+[23.6 ],
+[23.7 ],
+[23.6 ],
+[23.7 ],
+[23.9 ],
+[23.8 ],
+[23.9 ],
+[24.0 ],
+[24.1 ],
+[23.9 ],
+[23.7 ],
+[23.5 ],
+[23.7 ],
+[23.6 ],
+[23.8 ],
+[23.5 ],
+[23.9 ],
+[23.7 ],
+[23.8 ],
+[23.6 ],
+[23.6 ],
+[23.7 ],
+[23.8 ],
+[23.6 ],
+[23.8 ],
+[23.6 ],
+[23.7 ],
+[23.7 ],
+[23.9 ],
+[23.9 ],
+[24.0 ],
+[23.8 ],
+[23.6 ],
+[23.8 ],
+[23.9 ],
+[23.9 ],
+[23.7 ],
+[23.9 ],
+[23.5 ],
+[23.8 ],
+[23.8 ],
+[24.0 ],
+[23.7 ],
+[23.7 ],
+[23.8 ],
+[23.5 ],
+[23.9 ],
+[23.8 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.7 ],
+[23.7 ],
+[23.8 ],
+[23.7 ],
+[23.8 ],
+[23.6 ],
+[23.7 ],
+[23.8 ],
+[23.6 ],
+[23.6 ],
+[23.7 ],
+[23.9 ],
+[23.8 ],
+[23.6 ],
+[23.6 ],
+[23.9 ],
+[23.8 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.6 ],
+[23.6 ],
+[23.8 ],
+[23.8 ],
+[23.5 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.6 ],
+[23.7 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.4 ],
+[23.7 ],
+[23.6 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.6 ],
+[23.6 ],
+[23.4 ],
+[23.6 ],
+[23.5 ],
+[23.7 ],
+[23.5 ],
+[23.6 ],
+[23.7 ],
+[23.4 ],
+[23.8 ],
+[23.5 ],
+[23.8 ],
+[23.4 ],
+[23.7 ],
+[23.5 ],
+[23.7 ],
+[23.7 ],
+[23.4 ],
+[23.7 ],
+[23.4 ],
+[23.6 ],
+[23.7 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.6 ],
+[23.7 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.4 ],
+[23.6 ],
+[23.5 ],
+[23.7 ],
+[23.6 ],
+[23.6 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.8 ],
+[23.7 ],
+[23.6 ],
+[23.9 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.8 ],
+[23.7 ],
+[23.7 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.7 ],
+[23.4 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.4 ],
+[23.6 ],
+[23.6 ],
+[23.7 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.7 ],
+[23.5 ],
+[23.5 ],
+[23.7 ],
+[23.4 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.4 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.7 ],
+[23.6 ],
+[23.6 ],
+[23.7 ],
+[23.4 ],
+[23.7 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.7 ],
+[23.4 ],
+[23.4 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.7 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.7 ],
+[23.4 ],
+[23.5 ],
+[23.4 ],
+[23.8 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.4 ],
+[23.5 ],
+[23.4 ],
+[23.4 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.4 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.4 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.4 ],
+[23.6 ],
+[23.6 ],
+[23.7 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.4 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.4 ],
+[23.6 ],
+[23.6 ],
+[23.3 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.4 ],
+[23.6 ],
+[23.4 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.4 ],
+[23.4 ],
+[23.4 ],
+[23.4 ],
+[23.4 ],
+[23.4 ],
+[23.7 ],
+[23.7 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.4 ],
+[23.5 ],
+[23.4 ],
+[23.8 ],
+[23.4 ],
+[23.5 ],
+[23.5 ],
+[23.4 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.4 ],
+[23.6 ],
+[23.4 ],
+[23.6 ],
+[23.4 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.2 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.4 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.4 ],
+[23.3 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.4 ],
+[23.4 ],
+[23.4 ],
+[23.7 ],
+[23.5 ],
+[23.4 ],
+[23.3 ],
+[23.5 ],
+[23.5 ],
+[23.7 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.7 ],
+[23.7 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.4 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.4 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.3 ],
+[23.4 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.3 ],
+[23.4 ],
+[23.3 ],
+[23.4 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.3 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.4 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.7 ],
+[23.4 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.4 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.8 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.4 ],
+[23.5 ],
+[23.7 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.4 ],
+[23.5 ],
+[23.8 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.5 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.4 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.7 ],
+[23.4 ],
+[23.6 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.4 ],
+[23.5 ],
+[23.5 ],
+[23.7 ],
+[23.8 ],
+[23.4 ],
+[23.5 ],
+[23.6 ],
+[23.4 ],
+[23.4 ],
+[23.4 ],
+[23.6 ],
+[23.5 ],
+[23.3 ],
+[23.4 ],
+[23.5 ],
+[23.7 ],
+[23.4 ],
+[23.5 ],
+[23.4 ],
+[23.5 ],
+[23.6 ],
+[23.4 ],
+[23.4 ],
+[23.5 ],
+[23.6 ],
+[23.4 ],
+[23.5 ],
+[23.5 ],
+[23.4 ],
+[23.6 ],
+[23.3 ],
+[23.7 ],
+[23.5 ],
+[23.4 ],
+[23.4 ],
+[23.5 ],
+[23.6 ],
+[23.5 ],
+[23.5 ],
+[23.4 ],
+[23.4 ],
+[23.4 ],
+[23.7 ],
+[23.7 ],
+[23.6 ],
