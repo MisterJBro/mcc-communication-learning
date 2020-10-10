@@ -10,7 +10,6 @@ import gym
 import numpy as np
 from scenario.mcc.buffers import Buffers
 from scenario.mcc.networks import Policy, Listener, Speaker, Normal
-from scenario.mcc.menagerie import Menagerie
 import seaborn as sns
 import pathlib
 from scenario.utils.envs import Envs
@@ -20,7 +19,7 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-4, lr_guide=2e-3, lr_enemy=2e-4, gamma=0.99, max_steps=500,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=2e-3, lr_enemy=1e-3, gamma=0.99, max_steps=500,
                  fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, target_kl=0.01,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
@@ -56,13 +55,13 @@ class Agents:
             self.guide.parameters(), lr=lr_guide)
         self.optimizer_e = optim.Adam(
             self.enemy.parameters(), lr=lr_enemy)
-        milestones = [500, 5000]
+        milestones = [60, 400, 5000]
         self.scheduler_c = MultiStepLR(
-            self.optimizer_c, milestones=milestones, gamma=0.3)
+            self.optimizer_c, milestones=milestones, gamma=0.2)
         self.scheduler_g = MultiStepLR(
-            self.optimizer_g, milestones=[20], gamma=0.1)
+            self.optimizer_g, milestones=milestones, gamma=0.1)
         self.scheduler_e = MultiStepLR(
-            self.optimizer_e, milestones=milestones, gamma=0.3)
+            self.optimizer_e, milestones=milestones, gamma=0.2)
         self.batch_size = batch_size
         self.val_criterion = nn.MSELoss()
         self.pred_criterion = nn.CrossEntropyLoss()
@@ -77,8 +76,6 @@ class Agents:
         self.num_layers = num_layers
         self.rnn_hidden = rnn_hidden
         self.reset_states()
-
-        self.menagerie = Menagerie(self.collector, self.guide, self.enemy)
 
         # RL
         self.max_rew = 0
@@ -164,11 +161,9 @@ class Agents:
             val_e = self.enemy.value_only(obs_e).reshape(
                 self.batch_size, self.max_steps).cpu().numpy()
 
-        vals = val_c + val_e
-
         self.buffers.expected_returns()
         self.buffers.advantage_estimation(
-            [vals, val_g, vals])
+            [val_c, val_g, val_e])
         self.buffers.standardize_adv()
 
     def get_actions(self, obs, msg):
@@ -195,14 +190,13 @@ class Agents:
 
         return np.stack([act_c, act_g, act_e]).T, np.stack([dst_c, dst_g, dst_e]), next_msg
 
-    def compute_policy_gradient(self, net, dist, act, adv, old_logp, entropy_factor=0.0):
+    def compute_policy_gradient(self, net, dist, act, adv, old_logp):
         """ Computes the policy gradient with PPO """
         logp = dist.log_prob(act)
 
         ratio = torch.exp(logp - old_logp)
         clipped = torch.clamp(ratio, 1-self.clip_ratio, 1+self.clip_ratio)*adv
-        loss = -(torch.min(ratio*adv, clipped)).mean() - \
-            entropy_factor*dist.entropy().mean()
+        loss = -(torch.min(ratio*adv, clipped)).mean()
         kl_approx = (old_logp - logp).mean().item()
         return loss, kl_approx
 
@@ -236,7 +230,7 @@ class Agents:
                 dist, _, vals = net(obs)
 
             loss, kl = self.compute_policy_gradient(
-                net, dist, act, adv, old_logp, entropy_factor=0.03)
+                net, dist, act, adv, old_logp)
             policy_loss += loss.item()
             if kl > 0.03:
                 return policy_loss, value_loss
@@ -325,8 +319,6 @@ class Agents:
             if red > self.max_rew:
                 self.max_rew = red
                 self.save()
-
-            self.menagerie.step(red, blue)
         print(epoch_rews)
 
     def save(self, path='{}/model.pt'.format(PROJECT_PATH)):
@@ -396,8 +388,8 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    agents.load()
-    agents.train(1000)
+    # agents.load()
+    agents.train(500)
 
     import code
     # code.interact(local=locals())
