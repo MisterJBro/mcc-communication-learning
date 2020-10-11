@@ -20,7 +20,7 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-4, lr_guide=2e-3, lr_enemy=2e-4, gamma=0.99, max_steps=500,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=2e-3, lr_enemy=1e-3, gamma=0.99, max_steps=500,
                  fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, target_kl=0.01,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
@@ -56,13 +56,13 @@ class Agents:
             self.guide.parameters(), lr=lr_guide)
         self.optimizer_e = optim.Adam(
             self.enemy.parameters(), lr=lr_enemy)
-        milestones = [500, 5000]
+        milestones = [30, 5000]
         self.scheduler_c = MultiStepLR(
-            self.optimizer_c, milestones=milestones, gamma=0.3)
+            self.optimizer_c, milestones=milestones, gamma=0.1)
         self.scheduler_g = MultiStepLR(
-            self.optimizer_g, milestones=[20], gamma=0.1)
+            self.optimizer_g, milestones=milestones, gamma=0.1)
         self.scheduler_e = MultiStepLR(
-            self.optimizer_e, milestones=milestones, gamma=0.3)
+            self.optimizer_e, milestones=milestones, gamma=0.1)
         self.batch_size = batch_size
         self.val_criterion = nn.MSELoss()
         self.pred_criterion = nn.CrossEntropyLoss()
@@ -163,8 +163,6 @@ class Agents:
                 self.batch_size, self.max_steps).cpu().numpy()
             val_e = self.enemy.value_only(obs_e).reshape(
                 self.batch_size, self.max_steps).cpu().numpy()
-
-        vals = val_c + val_e
 
         self.buffers.expected_returns()
         self.buffers.advantage_estimation(
@@ -288,7 +286,7 @@ class Agents:
 
         # Training Collector/Msg/Guide - Collector - Guide
         _, _ = self.update_net(
-            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 60, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
+            self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg, other_net=self.guide, other_obs=obs_g, other_opt=self.optimizer_g, other_act=act_g, other_adv=adv_g, other_ret=ret_g)
         p_loss_c, v_loss_c = self.update_net(
             self.collector, self.optimizer_c, obs_c, act_c, adv_c, ret_c, 0, msg=msg.detach())
         p_loss_g, v_loss_g = self.update_net(
@@ -302,7 +300,7 @@ class Agents:
         if self.blue_iters > 0:
             self.scheduler_e.step()
 
-        trs_found = rew_c.nonzero().size(0)/self.batch_size
+        trs_found = (rew_c.nonzero().size(0))/self.batch_size
 
         return p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent, trs_found
 
@@ -322,11 +320,11 @@ class Agents:
             print('Epoch: {:3} Coll: {:4} Enemy: {:4} Guide: {:4} Msg {:4} Trs {:3} Red {:3} Blue {:3}'.format(
                 epoch, np.round(rew[0], 3),  np.round(rew[2], 3), np.round(rew[1], 1), np.round(msg_ent, 3),  np.round(trs_found, 3), np.round(red, 2), np.round(blue, 2)))
 
-            if red > self.max_rew:
-                self.max_rew = red
-                self.save()
+            if blue > self.max_rew:
+                self.max_rew = blue
+                self.save_blue()
 
-            self.menagerie.step(red, blue)
+            #self.menagerie.step(red, blue)
         print(epoch_rews)
 
     def save(self, path='{}/model.pt'.format(PROJECT_PATH)):
@@ -339,6 +337,28 @@ class Agents:
             'optim_g': self.optimizer_g.state_dict(),
             'optim_e': self.optimizer_e.state_dict(),
         }, path)
+
+    def save_red(self, path='{}/red.pt'.format(PROJECT_PATH)):
+        torch.save({
+            'collector': self.collector.state_dict(),
+            'guide': self.guide.state_dict(),
+        }, path)
+
+    def save_blue(self, path='{}/blue.pt'.format(PROJECT_PATH)):
+        torch.save({
+            'enemy': self.enemy.state_dict(),
+        }, path)
+
+    def load_red(self, path='{}/model.pt'.format(PROJECT_PATH)):
+        """ Loads a training checkpoint """
+        checkpoint = torch.load(path)
+        self.collector.load_state_dict(checkpoint['collector'])
+        self.guide.load_state_dict(checkpoint['guide'])
+
+    def load_blue(self, path='{}/model.pt'.format(PROJECT_PATH)):
+        """ Loads a training checkpoint """
+        checkpoint = torch.load(path)
+        self.enemy.load_state_dict(checkpoint['enemy'])
 
     def load(self, path='{}/model.pt'.format(PROJECT_PATH)):
         """ Loads a training checkpoint """
@@ -396,8 +416,8 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    agents.load()
-    agents.train(1000)
+    # agents.load()
+    agents.train(200)
 
     import code
     # code.interact(local=locals())

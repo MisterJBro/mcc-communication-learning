@@ -55,7 +55,7 @@ class Agents:
             self.guide.parameters(), lr=lr_guide)
         self.optimizer_e = optim.Adam(
             self.enemy.parameters(), lr=lr_enemy)
-        milestones = [60, 400, 5000]
+        milestones = [1000, 4000, 5000]
         self.scheduler_c = MultiStepLR(
             self.optimizer_c, milestones=milestones, gamma=0.2)
         self.scheduler_g = MultiStepLR(
@@ -131,7 +131,7 @@ class Agents:
             next_obs = self.preprocess(next_obs)
 
             self.buffers.store(
-                obs, acts, dsts, rews[:, 0], rews[:, 1], rews[:, 2], msg, states)
+                obs, acts, dsts, rews[:, 0].clip(min=0), rews[:, 1], rews[:, 2].clip(min=0), msg, states)
             batch_rew[0] += rews[:, 0]
             batch_rew[1] += rews[:, 1]
             batch_rew[2] += rews[:, 2]
@@ -163,7 +163,7 @@ class Agents:
 
         self.buffers.expected_returns()
         self.buffers.advantage_estimation(
-            [val_c, val_g, val_e])
+            [val_c-val_e, val_g, val_e-val_c])
         self.buffers.standardize_adv()
 
     def get_actions(self, obs, msg):
@@ -296,7 +296,8 @@ class Agents:
         if self.blue_iters > 0:
             self.scheduler_e.step()
 
-        trs_found = rew_c.nonzero().size(0)/self.batch_size
+        trs_found = (rew_c.nonzero().size(0) +
+                     rew_e.nonzero().size(0))/self.batch_size
 
         return p_loss_c, v_loss_c, p_loss_g, v_loss_g, p_loss_e, v_loss_e, msg_ent, trs_found
 
@@ -391,7 +392,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     agents.load()
-    # agents.train(500)
+    agents.train(500)
 
     import code
     # code.interact(local=locals())
