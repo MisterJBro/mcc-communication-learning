@@ -168,7 +168,7 @@ class Agents:
 
         self.buffers.expected_returns()
         self.buffers.advantage_estimation(
-            [vals, val_g, vals])
+            [val_c - val_e, val_g, val_e - val_c])
         self.buffers.standardize_adv()
 
     def get_actions(self, obs, msg):

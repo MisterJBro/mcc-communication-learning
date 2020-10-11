@@ -353,13 +353,15 @@ class Agents:
             # msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
 
             self.envs.envs[0].render()
-            print(msg[0].detach().cpu().numpy())
+            # print(msg[0].detach().cpu().numpy())
+
             msg_sum += msg[0].detach().cpu().numpy()
             acts, _, msg = self.get_actions(obs, msg)
             obs, rews, _, _ = self.envs.step(acts)
             obs = self.preprocess(obs)
 
             episode_rew += rews[0][0]
+            print(rews[0])
         print('Result reward: ', episode_rew)
         print(msg_sum)
         self.reset_states()
@@ -388,8 +390,8 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    # agents.load()
-    agents.train(500)
+    agents.load()
+    # agents.train(500)
 
     import code
     # code.interact(local=locals())
