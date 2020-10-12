@@ -324,7 +324,7 @@ class Agents:
                 self.max_rew = trs_found
                 self.save()
 
-            self.menagerie.step(red, blue)
+            #self.menagerie.step(red, blue)
         print(epoch_rews)
 
     def save(self, path='{}/model.pt'.format(PROJECT_PATH)):
@@ -417,8 +417,8 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     agents.load()
-    agents.load_red()
-    agents.load_blue()
+    # agents.load_red()
+    # agents.load_blue()
     agents.train(500)
 
     import code
