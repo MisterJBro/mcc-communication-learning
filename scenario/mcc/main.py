@@ -20,7 +20,7 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=2e-3, lr_enemy=1e-3, gamma=0.99, max_steps=500,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=6e-4, lr_guide=6e-4, lr_enemy=6e-4, gamma=0.99, max_steps=500,
                  fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, target_kl=0.01,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
@@ -56,7 +56,7 @@ class Agents:
             self.guide.parameters(), lr=lr_guide)
         self.optimizer_e = optim.Adam(
             self.enemy.parameters(), lr=lr_enemy)
-        milestones = [30, 5000]
+        milestones = [1000, 5000]
         self.scheduler_c = MultiStepLR(
             self.optimizer_c, milestones=milestones, gamma=0.1)
         self.scheduler_g = MultiStepLR(
@@ -166,7 +166,7 @@ class Agents:
 
         self.buffers.expected_returns()
         self.buffers.advantage_estimation(
-            [val_c - val_e, val_g, val_e - val_c])
+            [(val_c - val_e)/2, val_g, (val_e - val_c)/2])
         self.buffers.standardize_adv()
 
     def get_actions(self, obs, msg):
@@ -234,7 +234,7 @@ class Agents:
                 dist, _, vals = net(obs)
 
             loss, kl = self.compute_policy_gradient(
-                net, dist, act, adv, old_logp, entropy_factor=0.03)
+                net, dist, act, adv, old_logp, entropy_factor=0.0)
             policy_loss += loss.item()
             if kl > 0.03:
                 return policy_loss, value_loss
@@ -320,11 +320,11 @@ class Agents:
             print('Epoch: {:3} Coll: {:4} Enemy: {:4} Guide: {:4} Msg {:4} Trs {:3} Red {:3} Blue {:3}'.format(
                 epoch, np.round(rew[0], 3),  np.round(rew[2], 3), np.round(rew[1], 1), np.round(msg_ent, 3),  np.round(trs_found, 3), np.round(red, 2), np.round(blue, 2)))
 
-            if blue > self.max_rew:
-                self.max_rew = blue
-                self.save_blue()
+            if trs_found > self.max_rew:
+                self.max_rew = trs_found
+                self.save()
 
-            #self.menagerie.step(red, blue)
+            self.menagerie.step(red, blue)
         print(epoch_rews)
 
     def save(self, path='{}/model.pt'.format(PROJECT_PATH)):
@@ -349,13 +349,13 @@ class Agents:
             'enemy': self.enemy.state_dict(),
         }, path)
 
-    def load_red(self, path='{}/model.pt'.format(PROJECT_PATH)):
+    def load_red(self, path='{}/red.pt'.format(PROJECT_PATH)):
         """ Loads a training checkpoint """
         checkpoint = torch.load(path)
         self.collector.load_state_dict(checkpoint['collector'])
         self.guide.load_state_dict(checkpoint['guide'])
 
-    def load_blue(self, path='{}/model.pt'.format(PROJECT_PATH)):
+    def load_blue(self, path='{}/blue.pt'.format(PROJECT_PATH)):
         """ Loads a training checkpoint """
         checkpoint = torch.load(path)
         self.enemy.load_state_dict(checkpoint['enemy'])
@@ -416,8 +416,10 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    # agents.load()
-    agents.train(200)
+    agents.load()
+    agents.load_red()
+    agents.load_blue()
+    agents.train(500)
 
     import code
     # code.interact(local=locals())
