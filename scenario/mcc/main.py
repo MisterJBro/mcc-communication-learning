@@ -71,7 +71,7 @@ class Agents:
         self.optimizer_cce = optim.Adam(
             self.central_critic_e.parameters(), lr=lr_critic)
 
-        milestones = [40, 400, 500]
+        milestones = [50, 400, 5000]
         self.scheduler_c = MultiStepLR(
             self.optimizer_c, milestones=milestones, gamma=0.2)
         self.scheduler_g = MultiStepLR(
