@@ -55,7 +55,7 @@ class Agents:
             self.guide.parameters(), lr=lr_guide)
         self.optimizer_e = optim.Adam(
             self.enemy.parameters(), lr=lr_enemy)
-        milestones = [1000, 4000, 5000]
+        milestones = [50, 4000, 5000]
         self.scheduler_c = MultiStepLR(
             self.optimizer_c, milestones=milestones, gamma=0.2)
         self.scheduler_g = MultiStepLR(
@@ -288,7 +288,7 @@ class Agents:
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
         p_loss_e, v_loss_e = self.update_net(
-            self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, 60, enemy=True)
+            self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, 20, enemy=True)
 
         if self.red_iters > 0:
             self.scheduler_c.step()
@@ -391,7 +391,7 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    agents.load()
+    # agents.load()
     agents.train(500)
 
     import code
