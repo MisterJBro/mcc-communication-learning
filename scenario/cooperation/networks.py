@@ -90,7 +90,6 @@ class Speaker(nn.Module):
         )
         self.message = nn.Sequential(
             nn.Linear(rnn_hidden, symbol_num),
-            nn.Sigmoid(),
         )
         self.value = nn.Sequential(
             nn.Linear(rnn_hidden, 1),
@@ -107,7 +106,7 @@ class Speaker(nn.Module):
         _, (h_n, c_n) = self.rnn(x, state)
         x = h_n[-1]
         action_dist = Categorical(probs=self.action(x))
-        message = self.message(x)
+        message = F.gumbel_softmax(self.message(x), self.tau, hard=True)
 
         return action_dist, message, (h_n, c_n)
 
@@ -115,7 +114,7 @@ class Speaker(nn.Module):
         x = self.tail(x)
 
         action_dists = Categorical(probs=self.action(x))
-        messages = self.message(x)
+        messages = F.gumbel_softmax(self.message(x), self.tau, hard=True)
         values = self.value(x)
         return action_dists, messages, values
 
@@ -129,7 +128,7 @@ class Speaker(nn.Module):
 
     def message_only(self, x):
         x = self.tail(x)
-        return self.message(x)
+        return F.gumbel_softmax(self.message(x), self.tau, hard=True)
 
     def tail(self, x):
         x = self.mlp(x)
