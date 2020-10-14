@@ -19,8 +19,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=2e-3, lr_enemy=1e-3, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, target_kl=0.01,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-6, lr_guide=2e-6, lr_enemy=1e-6, gamma=0.99, max_steps=500,
+                 fc_hidden=64, rnn_hidden=128, batch_size=312, lam=0.97, clip_ratio=0.2, target_kl=0.01,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -351,10 +351,12 @@ class Agents:
         msg_sum = np.zeros(self.symbol_num)
 
         for step in range(self.max_steps):
+            import time
+            time.sleep(0.05)
             # msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
 
             self.envs.envs[0].render()
-            # print(msg[0].detach().cpu().numpy())
+            print(msg[0].detach().cpu().numpy())
 
             msg_sum += msg[0].detach().cpu().numpy()
             acts, _, msg = self.get_actions(obs, msg)
@@ -366,6 +368,18 @@ class Agents:
         print('Result reward: ', episode_rew)
         print(msg_sum)
         self.reset_states()
+
+    def interpret(self, msg):
+        if msg[0]:
+            return self.last_message
+        if msg[1]:
+            return 'Treasure in Tunnel 1'
+        if msg[2]:
+            return 'Nothing in Tunnel 1'
+        if msg[3]:
+            return 'Nothing in Tunnel 1'
+        if msg[4]:
+            return 'Not ready!'
 
     def reset_states(self):
         """ Reset cell and hidden rnn states """
@@ -391,8 +405,8 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    # agents.load()
-    agents.train(200)
+    agents.load()
+    # agents.train(200)
 
     import code
     # code.interact(local=locals())
