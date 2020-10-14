@@ -55,7 +55,7 @@ class Agents:
             self.guide.parameters(), lr=lr_guide)
         self.optimizer_e = optim.Adam(
             self.enemy.parameters(), lr=lr_enemy)
-        milestones = [80, 180, 5000]
+        milestones = [1000, 1200, 5000]
         self.scheduler_c = MultiStepLR(
             self.optimizer_c, milestones=milestones, gamma=0.2)
         self.scheduler_g = MultiStepLR(
@@ -406,7 +406,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     agents.load()
-    agents.train(200)
+    agents.train(1000)
 
     import code
     # code.interact(local=locals())
