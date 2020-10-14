@@ -18,8 +18,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-4, lr_guide=1e-4, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=256, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.03,
+    def __init__(self, seed=0, device='cpu', lr_collector=1e-4, lr_guide=1e-4, gamma=0.99, max_steps=500,
+                 fc_hidden=64, rnn_hidden=128, batch_size=1, iters=40, lam=0.97, clip_ratio=0.2, target_kl=0.03,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0, entropy_factor=-0.1):
         # RNG seed
         random.seed(seed)
@@ -371,7 +371,7 @@ class Agents:
         if msg[3]:
             return 'Last Tunnel'
         if msg[4]:
-            return 'Tunnel 3'
+            return 'Tunnel 3 or 4'
 
 
 if __name__ == "__main__":
