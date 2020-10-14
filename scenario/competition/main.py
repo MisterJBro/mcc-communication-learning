@@ -274,8 +274,8 @@ class Agents:
         msg_sum = np.zeros(self.symbol_num)
 
         for step in range(self.max_steps):
-            import time
-            time.sleep(0.05)
+            #import time
+            # time.sleep(0.05)
             self.envs.envs[0].render()
 
             acts = self.get_actions(obs)
@@ -285,6 +285,7 @@ class Agents:
             episode_rew += rews[0][0]
         print('Result reward: ', episode_rew)
         print(msg_sum)
+        self.envs.envs[0].close()
         self.reset_states()
 
     def reset_states(self):

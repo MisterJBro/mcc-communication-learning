@@ -221,20 +221,21 @@ class Agents:
             rew = np.array(rew)
             obs = self.preprocess(obs)
 
-            for b in range(self.batch_size):
-                pos = self.envs.envs[b].world.red_players[0].pos[0]
-                if pos == 13:
-                    pos13 += 1
-                if pos == 14:
-                    pos14 += 1
+            # for b in range(self.batch_size):
+            #    pos = self.envs.envs[b].world.red_players[0].pos[0]
+            #    if pos == 13:
+            #        pos13 += 1
+            #    if pos == 14:
+            #        pos14 += 1
 
-            null_acts += len(np.where(act.reshape(-1) == 4)[0])
+            #null_acts += len(np.where(act.reshape(-1) == 4)[0])
             episode_rew += rew.reshape(-1)
-        print(episode_rew)
-        print(null_acts)
-        pos14 = pos14-(episode_rew.sum())
-        print(pos14)
-        print(pos13-(episode_rew.sum()*2))
+        self.envs.envs[0].close()
+        # print(episode_rew)
+        # print(null_acts)
+        #pos14 = pos14-(episode_rew.sum())
+        # print(pos14)
+        # print(pos13-(episode_rew.sum()*2))
         self.reset_states()
 
     def reset_states(self):
