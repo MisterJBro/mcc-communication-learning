@@ -19,8 +19,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-5, lr_guide=2e-5, lr_enemy=1e-5, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=312, lam=0.97, clip_ratio=0.2, target_kl=0.01,
+    def __init__(self, seed=0, device='cpu', lr_collector=1e-5, lr_guide=2e-5, lr_enemy=1e-5, gamma=0.99, max_steps=500,
+                 fc_hidden=64, rnn_hidden=128, batch_size=1, lam=0.97, clip_ratio=0.2, target_kl=0.01,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -30,7 +30,7 @@ class Agents:
         # Environment
         self.num_world_blocks = 5
         self.envs = Envs(batch_size, red_guides=1,
-                         blue_collector=1, competition=True)
+                         blue_collector=1, competition=True, show_messages=True)
         self.obs_dim = (self.num_world_blocks,) + \
             self.envs.observation_space.shape
         self.act_dim = self.envs.action_space.nvec[0]
@@ -349,14 +349,24 @@ class Agents:
         msg = torch.zeros((self.batch_size, self.symbol_num)).to(self.device)
         episode_rew = 0
         msg_sum = np.zeros(self.symbol_num)
+        self.already_in_first = False
 
         for step in range(self.max_steps):
             import time
             time.sleep(0.05)
             # msg[0] = torch.tensor([0., 0., 0., 1., 0.]).to(self.device)
+            msg_show = msg[0].detach().cpu().numpy()
+            self.last_message = self.interpret(msg_show)
 
-            self.envs.envs[0].render()
+            self.envs.envs[0].render(msg=self.interpret(msg_show))
             print(msg[0].detach().cpu().numpy())
+
+            # print(self.envs.envs[0].world.red_)
+            if self.envs.envs[0].world.red_players[0].pos[1] == 1 and self.envs.envs[0].world.red_players[0].pos[0] == 14:
+                self.already_in_first = True
+
+            if self.envs.envs[0].world.red_players[0].pos[1] == 19 and self.envs.envs[0].world.red_players[0].pos[0] == 14:
+                self.already_in_first = False
 
             msg_sum += msg[0].detach().cpu().numpy()
             acts, _, msg = self.get_actions(obs, msg)
@@ -373,13 +383,16 @@ class Agents:
         if msg[0]:
             return self.last_message
         if msg[1]:
-            return 'Treasure in Tunnel 1'
+            return 'Tunnel 2 or 4'
         if msg[2]:
-            return 'Nothing in Tunnel 1'
+            return 'Searching'
         if msg[3]:
-            return 'Nothing in Tunnel 1'
+            return 'Tunnel 2'
         if msg[4]:
-            return 'Not ready!'
+            if self.already_in_first:
+                return 'Tunnel 4'
+            else:
+                return 'Tunnel 1'
 
     def reset_states(self):
         """ Reset cell and hidden rnn states """
@@ -406,7 +419,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     agents.load()
-    agents.train(1000)
+    # agents.train(1000)
 
     import code
     # code.interact(local=locals())
