@@ -264,7 +264,7 @@ class Agents:
             self.last_message = self.interpret(msg_show)
 
             print(msg_show)
-            print(self.interpret(msg_show))
+            # print(self.interpret(msg_show))
             self.envs.envs[0].render(msg=self.interpret(msg_show))
             # print(msg[0].detach().cpu().numpy())
             acts, msg = self.get_actions(obs, msg)

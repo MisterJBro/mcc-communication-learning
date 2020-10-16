@@ -369,7 +369,7 @@ class Agents:
         if msg[2]:
             return 'Tunnel 3 or 4'
         if msg[3]:
-            return 'Last Tunnel'
+            return 'Searching'
         if msg[4]:
             return 'Tunnel 3 or 4'
 
