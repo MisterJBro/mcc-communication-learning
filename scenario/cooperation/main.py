@@ -367,4 +367,3 @@ if __name__ == "__main__":
     while True:
         input('Press enter to continue')
         agents.test()
-

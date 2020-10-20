@@ -1,287 +1,514 @@
-Epoch:   0 Coll: 0.031 Enemy: -0.031 Guide:  8.8 Msg 1.607 Trs 0.141 Red 0.09 Blue 0.05
-Epoch:   1 Coll: 0.113 Enemy: -0.113 Guide:  8.6 Msg 1.602 Trs 0.59 Red 0.35 Blue 0.24
-Epoch:   2 Coll: 0.062 Enemy: -0.062 Guide:  9.5 Msg 1.601 Trs 0.617 Red 0.34 Blue 0.28
-Epoch:   3 Coll: -0.121 Enemy: 0.121 Guide:  9.8 Msg 1.594 Trs 0.551 Red 0.21 Blue 0.34
-Epoch:   4 Coll: 0.062 Enemy: -0.062 Guide: 11.2 Msg 1.512 Trs 0.609 Red 0.34 Blue 0.27
-Epoch:   5 Coll: -0.027 Enemy: 0.027 Guide: 11.8 Msg 1.534 Trs 0.754 Red 0.36 Blue 0.39
-Epoch:   6 Coll: -0.059 Enemy: 0.059 Guide: 12.3 Msg 1.58 Trs 0.77 Red 0.36 Blue 0.41
-Epoch:   7 Coll: -0.066 Enemy: 0.066 Guide: 12.0 Msg 1.307 Trs 1.02 Red 0.48 Blue 0.54
-Epoch:   8 Coll: -0.066 Enemy: 0.066 Guide: 15.6 Msg 1.355 Trs 1.035 Red 0.48 Blue 0.55
-Epoch:   9 Coll: -0.07 Enemy: 0.07 Guide: 15.2 Msg 1.161 Trs 1.438 Red 0.68 Blue 0.75
-Epoch:  10 Coll: -0.148 Enemy: 0.148 Guide: 16.9 Msg  1.2 Trs 1.523 Red 0.69 Blue 0.84  
-Epoch:  11 Coll: 0.043 Enemy: -0.043 Guide: 16.0 Msg 1.443 Trs 1.738 Red 0.89 Blue 0.85 
-Epoch:  12 Coll: -0.07 Enemy: 0.07 Guide: 15.9 Msg 1.521 Trs 1.625 Red 0.78 Blue 0.85   
-Epoch:  13 Coll: 0.547 Enemy: -0.547 Guide: 18.1 Msg 1.48 Trs 1.305 Red 0.93 Blue 0.38  
-Epoch:  14 Coll: 0.031 Enemy: -0.031 Guide: 20.5 Msg 1.296 Trs 1.742 Red 0.89 Blue 0.86 
-Epoch:  15 Coll: 0.184 Enemy: -0.184 Guide: 22.2 Msg 1.473 Trs 1.848 Red 1.02 Blue 0.83 
-Epoch:  16 Coll: 0.297 Enemy: -0.297 Guide: 22.5 Msg 1.483 Trs 2.273 Red 1.29 Blue 0.99 
-Epoch:  17 Coll: 0.586 Enemy: -0.586 Guide: 22.1 Msg 1.45 Trs 2.578 Red 1.58 Blue 1.0   
-Epoch:  18 Coll: 0.645 Enemy: -0.645 Guide: 21.6 Msg 1.353 Trs 3.332 Red 1.99 Blue 1.34 
-Epoch:  19 Coll: 0.797 Enemy: -0.797 Guide: 21.4 Msg 1.298 Trs 3.938 Red 2.37 Blue 1.57 
-Epoch:  20 Coll: 1.141 Enemy: -1.141 Guide: 22.3 Msg 1.012 Trs 3.977 Red 2.56 Blue 1.42 
-Epoch:  21 Coll: 1.16 Enemy: -1.16 Guide: 22.7 Msg 1.105 Trs 4.004 Red 2.58 Blue 1.42
-Epoch:  22 Coll: 1.324 Enemy: -1.324 Guide: 22.5 Msg 1.186 Trs 4.246 Red 2.79 Blue 1.46
-Epoch:  23 Coll: 1.773 Enemy: -1.773 Guide: 22.3 Msg 1.168 Trs 4.664 Red 3.22 Blue 1.45
-Epoch:  24 Coll: 1.953 Enemy: -1.953 Guide: 22.2 Msg 1.227 Trs 5.172 Red 3.56 Blue 1.61
-Epoch:  25 Coll: 2.043 Enemy: -2.043 Guide: 22.2 Msg 1.404 Trs 5.559 Red 3.8 Blue 1.76
-Epoch:  26 Coll: 1.754 Enemy: -1.754 Guide: 21.9 Msg 1.417 Trs 5.77 Red 3.76 Blue 2.01
-Epoch:  27 Coll: 2.184 Enemy: -2.184 Guide: 21.8 Msg 1.357 Trs 6.418 Red 4.3 Blue 2.12
-Epoch:  28 Coll: 2.055 Enemy: -2.055 Guide: 21.9 Msg 1.318 Trs 6.688 Red 4.37 Blue 2.32
-Epoch:  29 Coll: 1.949 Enemy: -1.949 Guide: 22.5 Msg 1.404 Trs 6.691 Red 4.32 Blue 2.37
-Epoch:  30 Coll: 1.914 Enemy: -1.914 Guide: 22.4 Msg 1.392 Trs 6.766 Red 4.34 Blue 2.43
-Epoch:  31 Coll: 2.129 Enemy: -2.129 Guide: 22.4 Msg 1.384 Trs 7.434 Red 4.78 Blue 2.65
-Epoch:  32 Coll: 1.941 Enemy: -1.941 Guide: 22.4 Msg 1.134 Trs 7.348 Red 4.64 Blue 2.7
-Epoch:  33 Coll: 1.918 Enemy: -1.918 Guide: 22.5 Msg 0.781 Trs 7.621 Red 4.77 Blue 2.85
-Epoch:  34 Coll: 1.727 Enemy: -1.727 Guide: 22.5 Msg 1.138 Trs 7.594 Red 4.66 Blue 2.93
-Epoch:  35 Coll: 1.984 Enemy: -1.984 Guide: 22.2 Msg 1.301 Trs 8.312 Red 5.15 Blue 3.16
-Epoch:  36 Coll: 2.312 Enemy: -2.312 Guide: 22.2 Msg 1.395 Trs 8.812 Red 5.56 Blue 3.25
-Epoch:  37 Coll: 1.875 Enemy: -1.875 Guide: 22.4 Msg 1.417 Trs 8.719 Red 5.3 Blue 3.42
-Epoch:  38 Coll: 1.785 Enemy: -1.785 Guide: 22.2 Msg 1.438 Trs 8.98 Red 5.38 Blue 3.6
-Epoch:  39 Coll: 2.066 Enemy: -2.066 Guide: 21.7 Msg 1.368 Trs 9.324 Red 5.7 Blue 3.63
-Epoch:  40 Coll: 1.898 Enemy: -1.898 Guide: 21.5 Msg 1.414 Trs 9.352 Red 5.62 Blue 3.73
-Epoch:  41 Coll: 1.941 Enemy: -1.941 Guide: 21.7 Msg 1.448 Trs 9.395 Red 5.67 Blue 3.73
-Epoch:  42 Coll: 2.191 Enemy: -2.191 Guide: 21.9 Msg 1.438 Trs 10.074 Red 6.13 Blue 3.94
-Epoch:  43 Coll: 2.277 Enemy: -2.277 Guide: 22.4 Msg 1.423 Trs 10.082 Red 6.18 Blue 3.9
-Epoch:  44 Coll: 2.262 Enemy: -2.262 Guide: 22.2 Msg 1.402 Trs 10.473 Red 6.37 Blue 4.11
-Epoch:  45 Coll: 2.277 Enemy: -2.277 Guide: 22.2 Msg 1.436 Trs 10.543 Red 6.41 Blue 4.13
-Epoch:  46 Coll: 1.965 Enemy: -1.965 Guide: 21.9 Msg 1.415 Trs 10.574 Red 6.27 Blue 4.3
-Epoch:  47 Coll: 1.906 Enemy: -1.906 Guide: 21.9 Msg 1.394 Trs 10.922 Red 6.41 Blue 4.51
-Epoch:  48 Coll: 1.863 Enemy: -1.863 Guide: 22.1 Msg 1.423 Trs 11.02 Red 6.44 Blue 4.58
-Epoch:  49 Coll: 1.887 Enemy: -1.887 Guide: 22.0 Msg 1.461 Trs 11.574 Red 6.73 Blue 4.84
-Epoch:  50 Coll: 1.809 Enemy: -1.809 Guide: 22.1 Msg 1.449 Trs 11.332 Red 6.57 Blue 4.76
-Epoch:  51 Coll: 1.367 Enemy: -1.367 Guide: 22.1 Msg 1.477 Trs 11.852 Red 6.61 Blue 5.24
-Epoch:  52 Coll: 1.582 Enemy: -1.582 Guide: 21.9 Msg 1.493 Trs 11.723 Red 6.65 Blue 5.07
-Epoch:  53 Coll: 1.719 Enemy: -1.719 Guide: 22.0 Msg 1.441 Trs 12.227 Red 6.97 Blue 5.25
-Epoch:  54 Coll: 1.621 Enemy: -1.621 Guide: 21.8 Msg 1.524 Trs 12.074 Red 6.85 Blue 5.23
-Epoch:  55 Coll: 1.574 Enemy: -1.574 Guide: 21.6 Msg 1.514 Trs 12.91 Red 7.24 Blue 5.67
-Epoch:  56 Coll: 1.348 Enemy: -1.348 Guide: 21.7 Msg 1.557 Trs 12.621 Red 6.98 Blue 5.64
-Epoch:  57 Coll: 1.77 Enemy: -1.77 Guide: 21.7 Msg 1.553 Trs 12.699 Red 7.23 Blue 5.46
-Epoch:  58 Coll: 1.801 Enemy: -1.801 Guide: 21.6 Msg 1.588 Trs 12.66 Red 7.23 Blue 5.43
-Epoch:  59 Coll: 1.586 Enemy: -1.586 Guide: 21.8 Msg 1.584 Trs 12.805 Red 7.2 Blue 5.61
-Epoch:  60 Coll: 1.723 Enemy: -1.723 Guide: 21.7 Msg 1.547 Trs 13.199 Red 7.46 Blue 5.74
-Epoch:  61 Coll: 1.586 Enemy: -1.586 Guide: 21.6 Msg 1.553 Trs 13.102 Red 7.34 Blue 5.76
-Epoch:  62 Coll: 1.875 Enemy: -1.875 Guide: 21.7 Msg 1.574 Trs 13.188 Red 7.53 Blue 5.66
-Epoch:  63 Coll: 1.844 Enemy: -1.844 Guide: 22.1 Msg 1.529 Trs 13.039 Red 7.44 Blue 5.6
-Epoch:  64 Coll: 1.566 Enemy: -1.566 Guide: 21.9 Msg 1.41 Trs 13.176 Red 7.37 Blue 5.8
-Epoch:  65 Coll: 1.934 Enemy: -1.934 Guide: 21.8 Msg 1.573 Trs 12.957 Red 7.45 Blue 5.51
-Epoch:  66 Coll: 1.73 Enemy: -1.73 Guide: 21.9 Msg 1.576 Trs 13.004 Red 7.37 Blue 5.64
-Epoch:  67 Coll: 2.164 Enemy: -2.164 Guide: 22.4 Msg 1.557 Trs 12.258 Red 7.21 Blue 5.05
-Epoch:  68 Coll: 1.559 Enemy: -1.559 Guide: 22.3 Msg 1.183 Trs 12.605 Red 7.08 Blue 5.52
-Epoch:  69 Coll: 1.402 Enemy: -1.402 Guide: 22.2 Msg 1.454 Trs 13.293 Red 7.35 Blue 5.95
-Epoch:  70 Coll: 1.637 Enemy: -1.637 Guide: 22.1 Msg 1.508 Trs 13.199 Red 7.42 Blue 5.78
-Epoch:  71 Coll: 1.852 Enemy: -1.852 Guide: 22.1 Msg 1.535 Trs 13.695 Red 7.77 Blue 5.92
-Epoch:  72 Coll: 2.363 Enemy: -2.363 Guide: 22.4 Msg 1.537 Trs 12.855 Red 7.61 Blue 5.25
-Epoch:  73 Coll: 1.59 Enemy: -1.59 Guide: 22.5 Msg 1.443 Trs 13.129 Red 7.36 Blue 5.77
-Epoch:  74 Coll: 2.055 Enemy: -2.055 Guide: 22.6 Msg 1.477 Trs 12.961 Red 7.51 Blue 5.45
-Epoch:  75 Coll: 1.73 Enemy: -1.73 Guide: 22.5 Msg 1.469 Trs 13.035 Red 7.38 Blue 5.65
-Epoch:  76 Coll: 1.461 Enemy: -1.461 Guide: 22.1 Msg 1.472 Trs 13.664 Red 7.56 Blue 6.1
-Epoch:  77 Coll: 1.172 Enemy: -1.172 Guide: 22.1 Msg 1.523 Trs 13.609 Red 7.39 Blue 6.22
-Epoch:  78 Coll: 2.039 Enemy: -2.039 Guide: 22.3 Msg 1.535 Trs 13.359 Red 7.7 Blue 5.66
-Epoch:  79 Coll: 1.691 Enemy: -1.691 Guide: 22.4 Msg 1.498 Trs 13.613 Red 7.65 Blue 5.96
-Epoch:  80 Coll: 1.504 Enemy: -1.504 Guide: 22.2 Msg 1.549 Trs 13.996 Red 7.75 Blue 6.25
-Epoch:  81 Coll: 1.602 Enemy: -1.602 Guide: 22.3 Msg 1.543 Trs 14.117 Red 7.86 Blue 6.26
-Epoch:  82 Coll: 1.887 Enemy: -1.887 Guide: 22.5 Msg 1.558 Trs 14.387 Red 8.14 Blue 6.25
-Epoch:  83 Coll: 1.414 Enemy: -1.414 Guide: 22.1 Msg 1.55 Trs 14.719 Red 8.07 Blue 6.65
-Epoch:  84 Coll: 1.754 Enemy: -1.754 Guide: 22.3 Msg 1.558 Trs 14.793 Red 8.27 Blue 6.52
-Epoch:  85 Coll: 1.898 Enemy: -1.898 Guide: 22.4 Msg 1.556 Trs 14.312 Red 8.11 Blue 6.21
-Epoch:  86 Coll: 1.957 Enemy: -1.957 Guide: 22.3 Msg 1.568 Trs 14.77 Red 8.36 Blue 6.41
-Epoch:  87 Coll: 2.32 Enemy: -2.32 Guide: 22.2 Msg 1.588 Trs 14.547 Red 8.43 Blue 6.11
-Epoch:  88 Coll: 1.977 Enemy: -1.977 Guide: 22.2 Msg 1.579 Trs 14.461 Red 8.22 Blue 6.24
-Epoch:  89 Coll: 2.156 Enemy: -2.156 Guide: 22.4 Msg 1.581 Trs 14.719 Red 8.44 Blue 6.28
-Epoch:  90 Coll: 1.871 Enemy: -1.871 Guide: 22.2 Msg 1.578 Trs 14.613 Red 8.24 Blue 6.37
-Epoch:  91 Coll: 1.773 Enemy: -1.773 Guide: 22.1 Msg 1.565 Trs 15.195 Red 8.48 Blue 6.71
-Epoch:  92 Coll:  2.0 Enemy: -2.0 Guide: 22.5 Msg 1.567 Trs 14.906 Red 8.45 Blue 6.45
-Epoch:  93 Coll: 2.219 Enemy: -2.219 Guide: 22.3 Msg 1.582 Trs 14.828 Red 8.52 Blue 6.3
-Epoch:  94 Coll: 2.191 Enemy: -2.191 Guide: 22.5 Msg 1.587 Trs 14.598 Red 8.39 Blue 6.2
-Epoch:  95 Coll: 2.102 Enemy: -2.102 Guide: 22.3 Msg 1.586 Trs 14.875 Red 8.49 Blue 6.39
-Epoch:  96 Coll: 2.176 Enemy: -2.176 Guide: 22.0 Msg 1.577 Trs 15.02 Red 8.6 Blue 6.42
-Epoch:  97 Coll: 2.07 Enemy: -2.07 Guide: 22.3 Msg 1.562 Trs 14.781 Red 8.43 Blue 6.36
-Epoch:  98 Coll: 1.883 Enemy: -1.883 Guide: 22.1 Msg 1.577 Trs 14.789 Red 8.34 Blue 6.45
-Epoch:  99 Coll: 2.207 Enemy: -2.207 Guide: 22.3 Msg 1.584 Trs 14.324 Red 8.27 Blue 6.06
-Epoch: 100 Coll: 1.863 Enemy: -1.863 Guide: 22.2 Msg 1.577 Trs 14.918 Red 8.39 Blue 6.53
-Epoch: 101 Coll: 2.508 Enemy: -2.508 Guide: 22.2 Msg 1.575 Trs 15.102 Red 8.8 Blue 6.3
-Epoch: 102 Coll: 1.992 Enemy: -1.992 Guide: 22.1 Msg 1.585 Trs 15.086 Red 8.54 Blue 6.55
-Epoch: 103 Coll: 2.41 Enemy: -2.41 Guide: 22.3 Msg 1.558 Trs 15.207 Red 8.81 Blue 6.4
-Epoch: 104 Coll: 2.215 Enemy: -2.215 Guide: 22.3 Msg 1.556 Trs 15.27 Red 8.74 Blue 6.53
-Epoch: 105 Coll: 2.207 Enemy: -2.207 Guide: 22.2 Msg 1.529 Trs 15.176 Red 8.69 Blue 6.48
-Epoch: 106 Coll: 2.293 Enemy: -2.293 Guide: 22.3 Msg 1.543 Trs 15.199 Red 8.75 Blue 6.45
-Epoch: 107 Coll: 2.785 Enemy: -2.785 Guide: 22.3 Msg 1.556 Trs 15.457 Red 9.12 Blue 6.34
-Epoch: 108 Coll: 2.199 Enemy: -2.199 Guide: 22.1 Msg 1.546 Trs 15.098 Red 8.65 Blue 6.45
-Epoch: 109 Coll: 2.23 Enemy: -2.23 Guide: 21.9 Msg 1.565 Trs 15.441 Red 8.84 Blue 6.61
-Epoch: 110 Coll: 2.504 Enemy: -2.504 Guide: 22.2 Msg 1.569 Trs 15.465 Red 8.98 Blue 6.48
-Epoch: 111 Coll: 2.477 Enemy: -2.477 Guide: 22.1 Msg 1.558 Trs 15.594 Red 9.04 Blue 6.56
-Epoch: 112 Coll: 2.254 Enemy: -2.254 Guide: 22.4 Msg 1.556 Trs 15.184 Red 8.72 Blue 6.46
-Epoch: 113 Coll: 2.484 Enemy: -2.484 Guide: 22.1 Msg 1.548 Trs 15.359 Red 8.92 Blue 6.44
-Epoch: 114 Coll: 2.633 Enemy: -2.633 Guide: 22.3 Msg 1.553 Trs 15.188 Red 8.91 Blue 6.28
-Epoch: 115 Coll: 2.438 Enemy: -2.438 Guide: 22.3 Msg 1.569 Trs 15.281 Red 8.86 Blue 6.42
-Epoch: 116 Coll: 2.367 Enemy: -2.367 Guide: 22.4 Msg 1.579 Trs 15.242 Red 8.8 Blue 6.44
-Epoch: 117 Coll: 2.613 Enemy: -2.613 Guide: 22.3 Msg 1.563 Trs 15.176 Red 8.89 Blue 6.28
-Epoch: 118 Coll: 2.371 Enemy: -2.371 Guide: 22.4 Msg 1.537 Trs 14.879 Red 8.62 Blue 6.25
-Epoch: 119 Coll: 2.508 Enemy: -2.508 Guide: 22.2 Msg 1.545 Trs 15.367 Red 8.94 Blue 6.43
-Epoch: 120 Coll: 2.508 Enemy: -2.508 Guide: 22.4 Msg 1.553 Trs 15.016 Red 8.76 Blue 6.25
-Epoch: 121 Coll: 2.43 Enemy: -2.43 Guide: 22.4 Msg 1.546 Trs 15.312 Red 8.87 Blue 6.44
-Epoch: 122 Coll: 2.461 Enemy: -2.461 Guide: 22.1 Msg 1.563 Trs 14.859 Red 8.66 Blue 6.2
-Epoch: 123 Coll: 2.309 Enemy: -2.309 Guide: 22.3 Msg 1.576 Trs 15.34 Red 8.82 Blue 6.52
-Epoch: 124 Coll: 2.527 Enemy: -2.527 Guide: 22.3 Msg 1.582 Trs 14.902 Red 8.71 Blue 6.19
-Epoch: 125 Coll: 2.727 Enemy: -2.727 Guide: 22.7 Msg 1.569 Trs 14.445 Red 8.59 Blue 5.86
-Epoch: 126 Coll: 2.379 Enemy: -2.379 Guide: 22.5 Msg 1.558 Trs 15.238 Red 8.81 Blue 6.43
-Epoch: 127 Coll: 2.672 Enemy: -2.672 Guide: 22.3 Msg 1.572 Trs 15.219 Red 8.95 Blue 6.27
-Epoch: 128 Coll: 2.57 Enemy: -2.57 Guide: 22.5 Msg 1.57 Trs 15.039 Red 8.8 Blue 6.23
-Epoch: 129 Coll: 2.34 Enemy: -2.34 Guide: 22.6 Msg 1.569 Trs 14.645 Red 8.49 Blue 6.15
-Epoch: 130 Coll: 2.543 Enemy: -2.543 Guide: 22.4 Msg 1.557 Trs 15.23 Red 8.89 Blue 6.34
-Epoch: 131 Coll: 2.465 Enemy: -2.465 Guide: 22.4 Msg 1.569 Trs 15.113 Red 8.79 Blue 6.32
-Epoch: 132 Coll: 2.586 Enemy: -2.586 Guide: 22.5 Msg 1.565 Trs 15.328 Red 8.96 Blue 6.37
-Epoch: 133 Coll: 2.695 Enemy: -2.695 Guide: 22.5 Msg 1.559 Trs 14.961 Red 8.83 Blue 6.13
-Epoch: 134 Coll: 2.352 Enemy: -2.352 Guide: 22.4 Msg 1.56 Trs 15.352 Red 8.85 Blue 6.5
-Epoch: 135 Coll: 2.605 Enemy: -2.605 Guide: 22.2 Msg 1.58 Trs 15.441 Red 9.02 Blue 6.42
-Epoch: 136 Coll: 2.391 Enemy: -2.391 Guide: 22.5 Msg 1.577 Trs 15.359 Red 8.88 Blue 6.48
-Epoch: 137 Coll: 2.582 Enemy: -2.582 Guide: 22.2 Msg 1.591 Trs 16.012 Red 9.3 Blue 6.71
-Epoch: 138 Coll: 2.801 Enemy: -2.801 Guide: 22.3 Msg 1.593 Trs 15.637 Red 9.22 Blue 6.42
-Epoch: 139 Coll: 2.859 Enemy: -2.859 Guide: 22.4 Msg 1.594 Trs 15.523 Red 9.19 Blue 6.33
-Epoch: 140 Coll: 2.766 Enemy: -2.766 Guide: 22.3 Msg 1.576 Trs 15.781 Red 9.27 Blue 6.51
-Epoch: 141 Coll: 2.637 Enemy: -2.637 Guide: 22.3 Msg 1.574 Trs 15.605 Red 9.12 Blue 6.48
-Epoch: 142 Coll: 2.844 Enemy: -2.844 Guide: 22.5 Msg 1.569 Trs 15.172 Red 9.01 Blue 6.16
-Epoch: 143 Coll: 2.609 Enemy: -2.609 Guide: 22.3 Msg 1.565 Trs 15.672 Red 9.14 Blue 6.53
-Epoch: 144 Coll: 2.621 Enemy: -2.621 Guide: 22.6 Msg 1.562 Trs 15.527 Red 9.07 Blue 6.45
-Epoch: 145 Coll: 2.641 Enemy: -2.641 Guide: 22.7 Msg 1.57 Trs 15.281 Red 8.96 Blue 6.32
-Epoch: 146 Coll: 2.664 Enemy: -2.664 Guide: 22.2 Msg 1.56 Trs 15.812 Red 9.24 Blue 6.57
-Epoch: 147 Coll: 2.688 Enemy: -2.688 Guide: 22.4 Msg 1.575 Trs 15.648 Red 9.17 Blue 6.48
-Epoch: 148 Coll: 2.871 Enemy: -2.871 Guide: 22.4 Msg 1.583 Trs 15.66 Red 9.27 Blue 6.39
-Epoch: 149 Coll: 2.828 Enemy: -2.828 Guide: 22.3 Msg 1.563 Trs 15.547 Red 9.19 Blue 6.36
-Epoch: 150 Coll: 2.598 Enemy: -2.598 Guide: 22.4 Msg 1.575 Trs 15.645 Red 9.12 Blue 6.52
-Epoch: 151 Coll: 2.547 Enemy: -2.547 Guide: 22.4 Msg 1.578 Trs 15.391 Red 8.97 Blue 6.42
-Epoch: 152 Coll: 2.66 Enemy: -2.66 Guide: 22.2 Msg 1.572 Trs 16.121 Red 9.39 Blue 6.73
-Epoch: 153 Coll: 2.891 Enemy: -2.891 Guide: 22.3 Msg 1.589 Trs 16.148 Red 9.52 Blue 6.63
-Epoch: 154 Coll: 2.711 Enemy: -2.711 Guide: 22.3 Msg 1.59 Trs 15.68 Red 9.2 Blue 6.48
-Epoch: 155 Coll: 2.578 Enemy: -2.578 Guide: 22.1 Msg 1.574 Trs 15.672 Red 9.12 Blue 6.55
-Epoch: 156 Coll: 2.504 Enemy: -2.504 Guide: 22.3 Msg 1.581 Trs 15.715 Red 9.11 Blue 6.61
-Epoch: 157 Coll: 2.586 Enemy: -2.586 Guide: 22.2 Msg 1.579 Trs 15.633 Red 9.11 Blue 6.52
-Epoch: 158 Coll: 2.945 Enemy: -2.945 Guide: 22.2 Msg 1.586 Trs 16.195 Red 9.57 Blue 6.62
-Epoch: 159 Coll: 2.609 Enemy: -2.609 Guide: 22.3 Msg 1.58 Trs 15.578 Red 9.09 Blue 6.48
-Epoch: 160 Coll: 2.355 Enemy: -2.355 Guide: 22.2 Msg 1.588 Trs 16.004 Red 9.18 Blue 6.82
-Epoch: 161 Coll: 2.648 Enemy: -2.648 Guide: 22.3 Msg 1.593 Trs 16.086 Red 9.37 Blue 6.72
-Epoch: 162 Coll: 2.848 Enemy: -2.848 Guide: 22.5 Msg 1.583 Trs 15.652 Red 9.25 Blue 6.4
-Epoch: 163 Coll: 2.863 Enemy: -2.863 Guide: 22.5 Msg 1.589 Trs 15.879 Red 9.37 Blue 6.51
-Epoch: 164 Coll: 2.531 Enemy: -2.531 Guide: 22.5 Msg 1.575 Trs 15.484 Red 9.01 Blue 6.48
-Epoch: 165 Coll: 3.02 Enemy: -3.02 Guide: 22.3 Msg 1.573 Trs 15.504 Red 9.26 Blue 6.24
-Epoch: 166 Coll: 2.602 Enemy: -2.602 Guide: 22.3 Msg 1.559 Trs 15.805 Red 9.2 Blue 6.6
-Epoch: 167 Coll: 2.793 Enemy: -2.793 Guide: 22.4 Msg 1.566 Trs 15.832 Red 9.31 Blue 6.52
-Epoch: 168 Coll: 3.102 Enemy: -3.102 Guide: 22.4 Msg 1.585 Trs 15.742 Red 9.42 Blue 6.32
-Epoch: 169 Coll: 2.727 Enemy: -2.727 Guide: 22.5 Msg 1.575 Trs 15.594 Red 9.16 Blue 6.43
-Epoch: 170 Coll: 2.742 Enemy: -2.742 Guide: 22.2 Msg 1.569 Trs 15.961 Red 9.35 Blue 6.61
-Epoch: 171 Coll: 2.762 Enemy: -2.762 Guide: 22.4 Msg 1.565 Trs 15.973 Red 9.37 Blue 6.61
-Epoch: 172 Coll: 2.652 Enemy: -2.652 Guide: 22.2 Msg 1.556 Trs 16.012 Red 9.33 Blue 6.68
-Epoch: 173 Coll: 2.648 Enemy: -2.648 Guide: 22.2 Msg 1.564 Trs 15.945 Red 9.3 Blue 6.65
-Epoch: 174 Coll: 2.918 Enemy: -2.918 Guide: 22.4 Msg 1.575 Trs 15.504 Red 9.21 Blue 6.29
-Epoch: 175 Coll: 2.73 Enemy: -2.73 Guide: 22.3 Msg 1.562 Trs 15.668 Red 9.2 Blue 6.47
-Epoch: 176 Coll: 2.699 Enemy: -2.699 Guide: 22.2 Msg 1.548 Trs 16.371 Red 9.54 Blue 6.84
-Epoch: 177 Coll: 2.98 Enemy: -2.98 Guide: 22.3 Msg 1.549 Trs 16.043 Red 9.51 Blue 6.53
-Epoch: 178 Coll: 2.695 Enemy: -2.695 Guide: 22.2 Msg 1.55 Trs 15.867 Red 9.28 Blue 6.59
-Epoch: 179 Coll: 2.711 Enemy: -2.711 Guide: 22.4 Msg 1.558 Trs 16.297 Red 9.5 Blue 6.79
-Epoch: 180 Coll: 2.52 Enemy: -2.52 Guide: 22.2 Msg 1.56 Trs 16.637 Red 9.58 Blue 7.06
-Epoch: 181 Coll: 2.949 Enemy: -2.949 Guide: 22.3 Msg 1.562 Trs 16.309 Red 9.63 Blue 6.68
-Epoch: 182 Coll: 2.648 Enemy: -2.648 Guide: 22.4 Msg 1.562 Trs 15.945 Red 9.3 Blue 6.65
-Epoch: 183 Coll: 2.746 Enemy: -2.746 Guide: 22.2 Msg 1.561 Trs 16.051 Red 9.4 Blue 6.65
-Epoch: 184 Coll: 2.68 Enemy: -2.68 Guide: 22.1 Msg 1.557 Trs 16.297 Red 9.49 Blue 6.81
-Epoch: 185 Coll: 3.066 Enemy: -3.066 Guide: 22.4 Msg 1.584 Trs 16.379 Red 9.72 Blue 6.66
-Epoch: 186 Coll: 3.098 Enemy: -3.098 Guide: 22.4 Msg 1.582 Trs 16.246 Red 9.67 Blue 6.57
-Epoch: 187 Coll: 2.965 Enemy: -2.965 Guide: 22.5 Msg 1.587 Trs 16.551 Red 9.76 Blue 6.79
-Epoch: 188 Coll: 2.906 Enemy: -2.906 Guide: 22.2 Msg 1.59 Trs 16.453 Red 9.68 Blue 6.77
-Epoch: 189 Coll: 2.82 Enemy: -2.82 Guide: 22.1 Msg 1.581 Trs 16.328 Red 9.57 Blue 6.75
-Epoch: 190 Coll: 2.848 Enemy: -2.848 Guide: 22.1 Msg 1.574 Trs 16.23 Red 9.54 Blue 6.69
-Epoch: 191 Coll: 3.176 Enemy: -3.176 Guide: 22.4 Msg 1.582 Trs 16.691 Red 9.93 Blue 6.76
-Epoch: 192 Coll: 2.75 Enemy: -2.75 Guide: 22.4 Msg 1.578 Trs 16.32 Red 9.54 Blue 6.79
-Epoch: 193 Coll: 2.949 Enemy: -2.949 Guide: 22.3 Msg 1.578 Trs 16.059 Red 9.5 Blue 6.55
-Epoch: 194 Coll: 2.516 Enemy: -2.516 Guide: 22.3 Msg 1.571 Trs 16.359 Red 9.44 Blue 6.92
-Epoch: 195 Coll: 2.676 Enemy: -2.676 Guide: 22.2 Msg 1.552 Trs 16.309 Red 9.49 Blue 6.82
-Epoch: 196 Coll: 2.812 Enemy: -2.812 Guide: 22.2 Msg 1.564 Trs 16.109 Red 9.46 Blue 6.65
-Epoch: 197 Coll: 2.602 Enemy: -2.602 Guide: 22.0 Msg 1.554 Trs 16.172 Red 9.39 Blue 6.79
-Epoch: 198 Coll: 2.84 Enemy: -2.84 Guide: 21.9 Msg 1.562 Trs 16.48 Red 9.66 Blue 6.82
-Epoch: 199 Coll: 2.234 Enemy: -2.234 Guide: 22.1 Msg 1.56 Trs 16.094 Red 9.16 Blue 6.93
-Epoch: 200 Coll: 2.66 Enemy: -2.66 Guide: 22.1 Msg 1.58 Trs 16.363 Red 9.51 Blue 6.85
-Epoch: 201 Coll: 2.688 Enemy: -2.688 Guide: 22.0 Msg 1.567 Trs 16.664 Red 9.68 Blue 6.99
-Epoch: 202 Coll: 2.844 Enemy: -2.844 Guide: 22.4 Msg 1.569 Trs 16.188 Red 9.52 Blue 6.67
-Epoch: 203 Coll: 2.871 Enemy: -2.871 Guide: 22.1 Msg 1.573 Trs 16.66 Red 9.77 Blue 6.89
-Epoch: 204 Coll: 2.602 Enemy: -2.602 Guide: 22.0 Msg 1.581 Trs 16.461 Red 9.53 Blue 6.93
-Epoch: 205 Coll: 2.641 Enemy: -2.641 Guide: 22.3 Msg 1.581 Trs 16.5 Red 9.57 Blue 6.93
-Epoch: 206 Coll: 2.766 Enemy: -2.766 Guide: 22.1 Msg 1.58 Trs 16.758 Red 9.76 Blue 7.0
-Epoch: 207 Coll: 2.824 Enemy: -2.824 Guide: 22.1 Msg 1.58 Trs 16.762 Red 9.79 Blue 6.97
-Epoch: 208 Coll: 2.801 Enemy: -2.801 Guide: 22.2 Msg 1.578 Trs 16.98 Red 9.89 Blue 7.09
-Epoch: 209 Coll: 2.629 Enemy: -2.629 Guide: 22.2 Msg 1.586 Trs 16.551 Red 9.59 Blue 6.96
-Epoch: 210 Coll: 2.668 Enemy: -2.668 Guide: 22.2 Msg 1.582 Trs 16.543 Red 9.61 Blue 6.94
-Epoch: 211 Coll: 2.84 Enemy: -2.84 Guide: 22.3 Msg 1.576 Trs 16.652 Red 9.75 Blue 6.91
-Epoch: 212 Coll: 2.816 Enemy: -2.816 Guide: 22.1 Msg 1.577 Trs 16.598 Red 9.71 Blue 6.89
-Epoch: 213 Coll: 3.16 Enemy: -3.16 Guide: 22.3 Msg 1.582 Trs 16.121 Red 9.64 Blue 6.48
-Epoch: 214 Coll: 2.57 Enemy: -2.57 Guide: 22.3 Msg 1.569 Trs 16.469 Red 9.52 Blue 6.95
-Epoch: 215 Coll: 2.91 Enemy: -2.91 Guide: 22.3 Msg 1.57 Trs 16.887 Red 9.9 Blue 6.99
-Epoch: 216 Coll: 2.969 Enemy: -2.969 Guide: 22.3 Msg 1.569 Trs 16.5 Red 9.73 Blue 6.77
-Epoch: 217 Coll: 2.832 Enemy: -2.832 Guide: 22.1 Msg 1.559 Trs 16.293 Red 9.56 Blue 6.73
-Epoch: 218 Coll: 2.762 Enemy: -2.762 Guide: 21.9 Msg 1.568 Trs 16.379 Red 9.57 Blue 6.81
-Epoch: 219 Coll: 2.613 Enemy: -2.613 Guide: 22.0 Msg 1.565 Trs 16.762 Red 9.69 Blue 7.07
-Epoch: 220 Coll: 2.621 Enemy: -2.621 Guide: 22.2 Msg 1.557 Trs 16.777 Red 9.7 Blue 7.08
-Epoch: 221 Coll: 2.371 Enemy: -2.371 Guide: 22.1 Msg 1.551 Trs 16.668 Red 9.52 Blue 7.15
-Epoch: 222 Coll: 2.57 Enemy: -2.57 Guide: 22.1 Msg 1.553 Trs 16.625 Red 9.6 Blue 7.03
-Epoch: 223 Coll: 2.824 Enemy: -2.824 Guide: 22.2 Msg 1.572 Trs 16.449 Red 9.64 Blue 6.81
-Epoch: 224 Coll: 2.43 Enemy: -2.43 Guide: 22.0 Msg 1.578 Trs 16.875 Red 9.65 Blue 7.22
-Epoch: 225 Coll: 2.738 Enemy: -2.738 Guide: 22.3 Msg 1.574 Trs 16.707 Red 9.72 Blue 6.98
-Epoch: 226 Coll: 2.488 Enemy: -2.488 Guide: 22.2 Msg 1.577 Trs 16.566 Red 9.53 Blue 7.04
-Epoch: 227 Coll: 2.73 Enemy: -2.73 Guide: 22.0 Msg 1.577 Trs 16.785 Red 9.76 Blue 7.03
-Epoch: 228 Coll: 2.91 Enemy: -2.91 Guide: 22.2 Msg 1.58 Trs 16.238 Red 9.57 Blue 6.66
-Epoch: 229 Coll: 2.383 Enemy: -2.383 Guide: 22.1 Msg 1.572 Trs 17.164 Red 9.77 Blue 7.39
-Epoch: 230 Coll: 2.613 Enemy: -2.613 Guide: 22.2 Msg 1.577 Trs 17.043 Red 9.83 Blue 7.21
-Epoch: 231 Coll: 2.547 Enemy: -2.547 Guide: 22.0 Msg 1.57 Trs 16.602 Red 9.57 Blue 7.03
-Epoch: 232 Coll: 2.797 Enemy: -2.797 Guide: 22.0 Msg 1.564 Trs 17.102 Red 9.95 Blue 7.15
-Epoch: 233 Coll: 2.848 Enemy: -2.848 Guide: 22.1 Msg 1.57 Trs 17.152 Red 10.0 Blue 7.15
-Epoch: 234 Coll: 2.48 Enemy: -2.48 Guide: 22.0 Msg 1.566 Trs 17.176 Red 9.83 Blue 7.35
-Epoch: 235 Coll: 2.602 Enemy: -2.602 Guide: 21.8 Msg 1.559 Trs 16.938 Red 9.77 Blue 7.17
-Epoch: 236 Coll: 2.754 Enemy: -2.754 Guide: 22.0 Msg 1.563 Trs 17.348 Red 10.05 Blue 7.3
-Epoch: 237 Coll: 3.078 Enemy: -3.078 Guide: 22.1 Msg 1.558 Trs 17.109 Red 10.09 Blue 7.02
-Epoch: 238 Coll: 2.922 Enemy: -2.922 Guide: 22.1 Msg 1.55 Trs 17.0 Red 9.96 Blue 7.04
-Epoch: 239 Coll: 2.703 Enemy: -2.703 Guide: 21.9 Msg 1.549 Trs 17.016 Red 9.86 Blue 7.16
-Epoch: 240 Coll: 2.91 Enemy: -2.91 Guide: 21.9 Msg 1.567 Trs 16.949 Red 9.93 Blue 7.02
-Epoch: 241 Coll: 2.992 Enemy: -2.992 Guide: 22.2 Msg 1.563 Trs 16.898 Red 9.95 Blue 6.95
-Epoch:   0 Coll: 2.84 Enemy: -2.84 Guide: 22.0 Msg 1.549 Trs 16.816 Red 9.83 Blue 6.99
-Epoch:   1 Coll: 3.383 Enemy: -3.383 Guide: 22.3 Msg 1.541 Trs 16.93 Red 10.16 Blue 6.77
-Epoch:   2 Coll: 2.848 Enemy: -2.848 Guide: 22.1 Msg 1.54 Trs 16.934 Red 9.89 Blue 7.04
-Epoch:   3 Coll: 3.203 Enemy: -3.203 Guide: 22.2 Msg 1.556 Trs 16.922 Red 10.06 Blue 6.86
-Epoch:   4 Coll: 2.578 Enemy: -2.578 Guide: 22.1 Msg 1.566 Trs 16.875 Red 9.73 Blue 7.15
-Epoch:   5 Coll: 2.891 Enemy: -2.891 Guide: 22.2 Msg 1.567 Trs 16.867 Red 9.88 Blue 6.99
-Epoch:   6 Coll: 2.727 Enemy: -2.727 Guide: 22.3 Msg 1.57 Trs 16.992 Red 9.86 Blue 7.13
-Epoch:   7 Coll: 2.547 Enemy: -2.547 Guide: 21.9 Msg 1.556 Trs 16.719 Red 9.63 Blue 7.09
-Epoch:   8 Coll: 2.602 Enemy: -2.602 Guide: 22.1 Msg 1.571 Trs 17.109 Red 9.86 Blue 7.25
-Epoch:   9 Coll: 2.887 Enemy: -2.887 Guide: 22.3 Msg 1.567 Trs 16.77 Red 9.83 Blue 6.94
-Epoch:  10 Coll: 2.512 Enemy: -2.512 Guide: 22.1 Msg 1.56 Trs 16.777 Red 9.64 Blue 7.13
-Epoch:  11 Coll: 2.742 Enemy: -2.742 Guide: 22.1 Msg 1.559 Trs 17.008 Red 9.88 Blue 7.13
-Epoch:  12 Coll: 2.777 Enemy: -2.777 Guide: 22.0 Msg 1.562 Trs 16.98 Red 9.88 Blue 7.1
-Epoch:  13 Coll: 2.852 Enemy: -2.852 Guide: 22.1 Msg 1.568 Trs 16.922 Red 9.89 Blue 7.04
-Epoch:  14 Coll: 2.445 Enemy: -2.445 Guide: 22.1 Msg 1.563 Trs 16.977 Red 9.71 Blue 7.27
-Epoch:  15 Coll: 3.125 Enemy: -3.125 Guide: 22.2 Msg 1.567 Trs 17.086 Red 10.11 Blue 6.98
-Epoch:  16 Coll: 2.77 Enemy: -2.77 Guide: 22.1 Msg 1.568 Trs 17.082 Red 9.93 Blue 7.16
-Epoch:  17 Coll: 2.75 Enemy: -2.75 Guide: 22.1 Msg 1.567 Trs 17.227 Red 9.99 Blue 7.24
-Epoch:  18 Coll: 3.168 Enemy: -3.168 Guide: 22.2 Msg 1.575 Trs 17.262 Red 10.21 Blue 7.05
-Epoch:  19 Coll: 3.004 Enemy: -3.004 Guide: 22.4 Msg 1.57 Trs 16.801 Red 9.9 Blue 6.9
-Epoch:  20 Coll: 2.848 Enemy: -2.848 Guide: 22.2 Msg 1.557 Trs 16.902 Red 9.88 Blue 7.03
-Epoch:  21 Coll: 3.227 Enemy: -3.227 Guide: 22.3 Msg 1.564 Trs 17.07 Red 10.15 Blue 6.92
-Epoch:  22 Coll: 2.895 Enemy: -2.895 Guide: 22.2 Msg 1.567 Trs 17.207 Red 10.05 Blue 7.169
-Epoch:  27 Coll: 2.625 Enemy: -2.625 Guide: 22.0 Msg 1.553 Trs 17.195 Red 9.91 Blue 7.29
-Epoch:  28 Coll: 2.754 Enemy: -2.754 Guide: 22.1 Msg 1.559 Trs 17.152 Red 9.95 Blue 7.2
-Epoch:  29 Coll: 3.434 Enemy: -3.434 Guide: 22.3 Msg 1.568 Trs 17.121 Red 10.28 Blue 6.84
-Epoch:  30 Coll: 3.031 Enemy: -3.031 Guide: 22.0 Msg 1.575 Trs 17.43 Red 10.23 Blue 7.2
-Epoch:  31 Coll: 2.648 Enemy: -2.648 Guide: 22.3 Msg 1.57 Trs 17.234 Red 9.94 Blue 7.29
-Epoch:  32 Coll: 2.633 Enemy: -2.633 Guide: 22.3 Msg 1.573 Trs 16.875 Red 9.75 Blue 7.12
-Epoch:  33 Coll: 2.824 Enemy: -2.824 Guide: 22.3 Msg 1.574 Trs 16.824 Red 9.82 Blue 7.0
-Epoch:  34 Coll: 2.926 Enemy: -2.926 Guide: 22.2 Msg 1.575 Trs 16.926 Red 9.93 Blue 7.0
-Epoch:  35 Coll: 2.809 Enemy: -2.809 Guide: 22.3 Msg 1.58 Trs 16.715 Red 9.76 Blue 6.95
-Epoch:  36 Coll: 2.953 Enemy: -2.953 Guide: 22.3 Msg 1.581 Trs 16.656 Red 9.8 Blue 6.85
-Epoch:  37 Coll: 2.391 Enemy: -2.391 Guide: 22.2 Msg 1.573 Trs 16.828 Red 9.61 Blue 7.22
-Epoch:  38 Coll: 2.352 Enemy: -2.352 Guide: 22.1 Msg 1.577 Trs 17.164 Red 9.76 Blue 7.41
-Epoch:  39 Coll: 2.559 Enemy: -2.559 Guide: 22.0 Msg 1.572 Trs 17.355 Red 9.96 Blue 7.4
-Epoch:  40 Coll: 2.477 Enemy: -2.477 Guide: 22.2 Msg 1.576 Trs 17.016 Red 9.75 Blue 7.27
-Epoch:  41 Coll: 2.793 Enemy: -2.793 Guide: 22.2 Msg 1.576 Trs 17.051 Red 9.92 Blue 7.13
-Epoch:  42 Coll: 2.695 Enemy: -2.695 Guide: 21.9 Msg 1.566 Trs 16.844 Red 9.77 Blue 7.07
-Epoch:  44 Coll: 2.586 Enemy: -2.586 Guide: 22.1 Msg 1.576 Trs 17.281 Red 9.93 Blue 7.35
-Epoch:  45 Coll: 2.762 Enemy: -2.762 Guide: 22.2 Msg 1.588 Trs 16.832 Red 9.8 Blue 7.04
-Epoch:  46 Coll: 2.652 Enemy: -2.652 Guide: 22.2 Msg 1.581 Trs 16.957 Red 9.8 Blue 7.15
-Epoch:  47 Coll: 2.801 Enemy: -2.801 Guide: 22.1 Msg 1.574 Trs 17.207 Red 10.0 Blue 7.2
-Epoch:  48 Coll: 2.539 Enemy: -2.539 Guide: 22.0 Msg 1.57 Trs 16.703 Red 9.62 Blue 7.08
-Epoch:  49 Coll: 2.824 Enemy: -2.824 Guide: 22.2 Msg 1.562 Trs 17.223 Red 10.02 Blue 7.2
+[ 0.05],
+[ 0.24],
+[ 0.28],
+[ 0.34],
+[ 0.27],
+[ 0.39],
+[ 0.41],
+[ 0.54],
+[ 0.55],
+[ 0.75],
+[ 0.84],
+[ 0.85],
+[ 0.85],
+[ 0.38],
+[ 0.86],
+[ 0.83],
+[ 0.99],
+[ 1.0],
+[ 1.34],
+[ 1.57],
+[ 1.42],
+[ 1.42],
+[ 1.46],
+[ 1.45],
+[ 1.61],
+[ 1.76],
+[ 2.01],
+[ 2.12],
+[ 2.32],
+[ 2.37],
+[ 2.43],
+[ 2.65],
+[ 2.7],
+[ 2.85],
+[ 2.93],
+[ 3.16],
+[ 3.25],
+[ 3.42],
+[ 3.6],
+[ 3.63],
+[ 3.73],
+[ 3.73],
+[ 3.94],
+[ 3.9],
+[ 4.11],
+[ 4.13],
+[ 4.3],
+[ 4.51],
+[ 4.58],
+[ 4.84],
+[ 4.76],
+[ 5.24],
+[ 5.07],
+[ 5.25],
+[ 5.23],
+[ 5.67],
+[ 5.64],
+[ 5.46],
+[ 5.43],
+[ 5.61],
+[ 5.74],
+[ 5.76],
+[ 5.66],
+[ 5.6],
+[ 5.8],
+[ 5.51],
+[ 5.64],
+[ 5.05],
+[ 5.52],
+[ 5.95],
+[ 5.78],
+[ 5.92],
+[ 5.25],
+[ 5.77],
+[ 5.45],
+[ 5.65],
+[ 6.1],
+[ 6.22],
+[ 5.66],
+[ 5.96],
+[ 6.25],
+[ 6.26],
+[ 6.25],
+[ 6.65],
+[ 6.52],
+[ 6.21],
+[ 6.41],
+[ 6.11],
+[ 6.24],
+[ 6.28],
+[ 6.37],
+[ 6.71],
+[ 6.45],
+[ 6.3],
+[ 6.2],
+[ 6.39],
+[ 6.42],
+[ 6.36],
+[ 6.45],
+[ 6.06],
+[ 6.53],
+[ 6.3],
+[ 6.55],
+[ 6.4],
+[ 6.53],
+[ 6.48],
+[ 6.45],
+[ 6.34],
+[ 6.45],
+[ 6.61],
+[ 6.48],
+[ 6.56],
+[ 6.46],
+[ 6.44],
+[ 6.28],
+[ 6.42],
+[ 6.44],
+[ 6.28],
+[ 6.25],
+[ 6.43],
+[ 6.25],
+[ 6.44],
+[ 6.2],
+[ 6.52],
+[ 6.19],
+[ 5.86],
+[ 6.43],
+[ 6.27],
+[ 6.23],
+[ 6.15],
+[ 6.34],
+[ 6.32],
+[ 6.37],
+[ 6.13],
+[ 6.5],
+[ 6.42],
+[ 6.48],
+[ 6.71],
+[ 6.42],
+[ 6.33],
+[ 6.51],
+[ 6.48],
+[ 6.16],
+[ 6.53],
+[ 6.45],
+[ 6.32],
+[ 6.57],
+[ 6.48],
+[ 6.39],
+[ 6.36],
+[ 6.52],
+[ 6.42],
+[ 6.73],
+[ 6.63],
+[ 6.48],
+[ 6.55],
+[ 6.61],
+[ 6.52],
+[ 6.62],
+[ 6.48],
+[ 6.82],
+[ 6.72],
+[ 6.4],
+[ 6.51],
+[ 6.48],
+[ 6.24],
+[ 6.6],
+[ 6.52],
+[ 6.32],
+[ 6.43],
+[ 6.61],
+[ 6.61],
+[ 6.68],
+[ 6.65],
+[ 6.29],
+[ 6.47],
+[ 6.84],
+[ 6.53],
+[ 6.59],
+[ 6.79],
+[ 7.06],
+[ 6.68],
+[ 6.65],
+[ 6.65],
+[ 6.81],
+[ 6.66],
+[ 6.57],
+[ 6.79],
+[ 6.77],
+[ 6.75],
+[ 6.69],
+[ 6.76],
+[ 6.79],
+[ 6.55],
+[ 6.92],
+[ 6.82],
+[ 6.65],
+[ 6.79],
+[ 6.82],
+[ 6.93],
+[ 6.85],
+[ 6.99],
+[ 6.67],
+[ 6.89],
+[ 6.93],
+[ 6.93],
+[ 7.0],
+[ 6.97],
+[ 7.09],
+[ 6.96],
+[ 6.94],
+[ 6.91],
+[ 6.89],
+[ 6.48],
+[ 6.95],
+[ 6.99],
+[ 6.77],
+[ 6.73],
+[ 6.81],
+[ 7.07],
+[ 7.08],
+[ 7.15],
+[ 7.03],
+[ 6.81],
+[ 7.22],
+[ 6.98],
+[ 7.04],
+[ 7.03],
+[ 6.66],
+[ 7.39],
+[ 7.21],
+[ 7.03],
+[ 7.15],
+[ 7.15],
+[ 7.35],
+[ 7.17],
+[ 7.3],
+[ 7.02],
+[ 7.04],
+[ 7.16],
+[ 7.02],
+[ 6.95],
+[ 6.99],
+[ 6.77],
+[ 7.04],
+[ 6.86],
+[ 7.15],
+[ 6.99],
+[ 7.13],
+[ 7.09],
+[ 7.25],
+[ 6.94],
+[ 7.13],
+[ 7.13],
+[ 7.1],
+[ 7.04],
+[ 7.27],
+[ 6.98],
+[ 7.16],
+[ 7.24],
+[ 7.05],
+[ 6.9],
+[ 7.03],
+[ 6.92],
+[ 7.169],
+[ 7.29],
+[ 7.2],
+[ 6.84],
+[ 7.2],
+[ 7.29],
+[ 7.12],
+[ 7.0],
+[ 7.0],
+[ 6.95],
+[ 6.85],
+[ 7.22],
+[ 7.41],
+[ 7.4],
+[ 7.27],
+[ 7.13],
+[ 7.07],
+[ 7.35],
+[ 7.04],
+[ 7.15],
+[ 7.2],
+[ 7.08],
+[ 7.2],
+[ 7.47],
+[ 7.51],
+[ 7.23],
+[ 7.22],
+[ 7.21],
+[ 7.27],
+[ 7.35],
+[ 7.41],
+[ 7.21],
+[ 7.39],
+[ 7.56],
+[ 7.34],
+[ 7.49],
+[ 7.27],
+[ 7.51],
+[ 7.4],
+[ 7.42],
+[ 7.28],
+[ 7.26],
+[ 7.28],
+[ 7.35],
+[ 7.45],
+[ 7.41],
+[ 7.5],
+[ 7.45],
+[ 7.36],
+[ 7.46],
+[ 7.22],
+[ 7.43],
+[ 7.56],
+[ 7.43],
+[ 7.33],
+[ 7.36],
+[ 7.48],
+[ 7.19],
+[ 7.57],
+[ 7.39],
+[ 7.32],
+[ 7.36],
+[ 7.31],
+[ 7.2],
+[ 7.31],
+[ 7.45],
+[ 7.32],
+[ 7.19],
+[ 7.45],
+[ 7.35],
+[ 7.16],
+[ 7.46],
+[ 7.42],
+[ 7.67],
+[ 7.46],
+[ 7.29],
+[ 7.41],
+[ 7.36],
+[ 7.35],
+[ 7.52],
+[ 7.27],
+[ 7.52],
+[ 7.27],
+[ 7.37],
+[ 7.53],
+[ 7.46],
+[ 7.23],
+[ 7.27],
+[ 7.21],
+[ 7.64],
+[ 7.57],
+[ 7.54],
+[ 7.28],
+[ 7.6],
+[ 7.61],
+[ 7.42],
+[ 7.56],
+[ 7.41],
+[ 7.36],
+[ 7.26],
+[ 7.45],
+[ 7.74],
+[ 7.48],
+[ 7.51],
+[ 7.41],
+[ 7.69],
+[ 7.5],
+[ 7.45],
+[ 7.3],
+[ 7.25],
+[ 7.55],
+[ 7.26],
+[ 7.37],
+[ 7.5],
+[ 7.53],
+[ 7.6],
+[ 7.53],
+[ 7.52],
+[ 7.59],
+[ 7.28],
+[ 7.46],
+[ 7.45],
+[ 7.63],
+[ 7.69],
+[ 7.76],
+[ 7.46],
+[ 7.46],
+[ 7.55],
+[ 7.64],
+[ 7.48],
+[ 7.71],
+[ 7.62],
+[ 7.57],
+[ 7.48],
+[ 7.43],
+[ 7.56],
+[ 7.5],
+[ 7.75],
+[ 7.34],
+[ 7.4],
+[ 7.21],
+[ 7.36],
+[ 7.38],
+[ 7.5],
+[ 7.6],
+[ 7.57],
+[ 7.59],
+[ 7.37],
+[ 7.7],
+[ 7.3],
+[ 7.41],
+[ 7.36],
+[ 7.73],
+[ 7.43],
+[ 7.65],
+[ 7.51],
+[ 7.49],
+[ 7.37],
+[ 7.35],
+[ 7.27],
+[ 7.43],
+[ 7.38],
+[ 7.51],
+[ 7.4],
+[ 7.36],
+[ 7.55],
+[ 7.59],
+[ 7.51],
+[ 7.44],
+[ 7.37],
+[ 7.58],
+[ 7.48],
+[ 7.36],
+[ 7.41],
+[ 7.3],
+[ 7.5],
+[ 7.48],
+[ 7.37],
+[ 7.38],
+[ 7.62],
+[ 7.51],
+[ 7.41],
+[ 7.45],
+[ 7.39],
+[ 7.69],
+[ 7.45],
+[ 7.66],
+[ 7.58],
+[ 7.5],
+[ 7.56],
+[ 7.54],
+[ 7.63],
+[ 7.48],
+[ 7.35],
+[ 7.57],
+[ 7.58],
+[ 7.39],
+[ 7.5],
+[ 7.25],
+[ 7.51],
+[ 7.35],
+[ 7.31],
+[ 7.5],
+[ 7.61],
+[ 7.42],
+[ 7.55],
+[ 7.31],
+[ 7.58],
+[ 7.46],
+[ 7.39],
+[ 7.22],
+[ 7.52],
+[ 7.62],
+[ 7.45],
+[ 7.3],
+[ 7.44],
+[ 7.39],
+[ 7.61],
+[ 7.55],
+[ 7.6],
+[ 7.5],
+[ 7.51],
+[ 7.78],
+[ 7.69],
+[ 7.48],
+[ 7.17],
+[ 7.41],
+[ 7.51],
+[ 7.42],
+[ 7.42],
+[ 7.56],
+[ 7.38],
+[ 7.54],
+[ 7.71],
+[ 7.66],
+[ 7.31],
+[ 7.59],
+[ 7.42],
+[ 7.5],
+[ 7.54],
+[ 7.66],
+[ 7.65],
+[ 7.44],
+[ 7.45],
+[ 7.59],
+[ 7.68],
+[ 7.34],
+[ 7.46],
+[ 7.49],
+[ 7.39]

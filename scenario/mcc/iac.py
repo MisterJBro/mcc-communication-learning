@@ -19,8 +19,8 @@ PROJECT_PATH = pathlib.Path(
 
 
 class Agents:
-    def __init__(self, seed=0, device='cuda:0', lr_collector=2e-5, lr_guide=2e-5, lr_enemy=2e-5, gamma=0.99, max_steps=500,
-                 fc_hidden=64, rnn_hidden=128, batch_size=312, lam=0.97, clip_ratio=0.2, target_kl=0.01,
+    def __init__(self, seed=0, device='cuda:0', lr_collector=1e-3, lr_guide=2e-3, lr_enemy=1e-3, gamma=0.99, max_steps=500,
+                 fc_hidden=64, rnn_hidden=128, batch_size=256, lam=0.97, clip_ratio=0.2, target_kl=0.01,
                  num_layers=1, grad_clip=1.0, symbol_num=5, tau=1.0):
         # RNG seed
         random.seed(seed)
@@ -55,7 +55,7 @@ class Agents:
             self.guide.parameters(), lr=lr_guide)
         self.optimizer_e = optim.Adam(
             self.enemy.parameters(), lr=lr_enemy)
-        milestones = [80, 1200, 5000]
+        milestones = [50, 300, 5000]
         self.scheduler_c = MultiStepLR(
             self.optimizer_c, milestones=milestones, gamma=0.1)
         self.scheduler_g = MultiStepLR(
@@ -288,7 +288,7 @@ class Agents:
         p_loss_g, v_loss_g = self.update_net(
             self.guide, self.optimizer_g, obs_g, act_g, adv_g, ret_g, 0)
         p_loss_e, v_loss_e = self.update_net(
-            self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, 60, enemy=True)
+            self.enemy, self.optimizer_e, obs_e, act_e, adv_e, ret_e, 10, enemy=True)
 
         if self.red_iters > 0:
             self.scheduler_c.step()
@@ -418,8 +418,8 @@ class Agents:
 
 if __name__ == "__main__":
     agents = Agents()
-    agents.load()
-    agents.train(300)
+    # agents.load()
+    agents.train(500)
 
     import code
     # code.interact(local=locals())

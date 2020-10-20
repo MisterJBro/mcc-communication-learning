@@ -553,7 +553,7 @@ class Agents:
 if __name__ == "__main__":
     agents = Agents()
     # agents.load()
-    agents.train(1000)
+    agents.train(500)
 
     import code
     # code.interact(local=locals())
